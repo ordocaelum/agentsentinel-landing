@@ -4,71 +4,100 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>AgentSentinel Landing Page</title>
-    <link rel="stylesheet" href="styles.css">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS for gradient animations and hover effects */
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        .bg-gradient {
+            background: linear-gradient(270deg, #6a11cb, #2575fc);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+        }
+        .hover-effect:hover {
+            transform: scale(1.05);
+            transition: transform 0.3s;
+        }
+    </style>
 </head>
-<body>
-    <!-- Hero Section -->
-    <header class="hero">
-        <h1>Welcome to AgentSentinel</h1>
-        <p>Your trusted agent management solution.</p>
-        <a href="#pricing" class="cta-button">Get Started</a>
+<body class="bg-gray-100">
+    <header class="bg-gradient text-white p-10">
+        <h1 class="text-5xl font-bold text-center">Prevent AI Agent Cost Overruns</h1>
+        <p class="text-lg mt-4 text-center">Your AI agent works. Until it costs you $3,000 in a day.</p>
     </header>
-
-    <!-- Features Section -->
-    <section class="features">
-        <h2>Features</h2>
-        <ul>
-            <li>Real-time Agent Monitoring</li>
-            <li>In-depth Analytics</li>
-            <li>Customizable Dashboards</li>
-            <li>Seamless Integration</li>
-        </ul>
-    </section>
-
-    <!-- Pricing Section -->
-    <section id="pricing" class="pricing">
-        <h2>Pricing Plans</h2>
-        <div class="plan">
-            <h3>Basic</h3>
-            <p>$9.99/month</p>
-            <a href="#" class="cta-button">Choose Plan</a>
-        </div>
-        <div class="plan">
-            <h3>Pro</h3>
-            <p>$29.99/month</p>
-            <a href="#" class="cta-button">Choose Plan</a>
-        </div>
-        <div class="plan">
-            <h3>Enterprise</h3>
-            <p>Contact us for pricing</p>
-            <a href="#" class="cta-button">Contact Sales</a>
-        </div>
-    </section>
-
-    <!-- Testimonials Section -->
-    <section class="testimonials">
-        <h2>What Our Customers Say</h2>
-        <blockquote>
-            <p>"AgentSentinel has transformed our operations!" - Happy Customer</p>
-        </blockquote>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="faq">
-        <h2>Frequently Asked Questions</h2>
-        <div class="faq-item">
-            <h3>Question 1?</h3>
-            <p>Answer to question 1.</p>
-        </div>
-        <div class="faq-item">
-            <h3>Question 2?</h3>
-            <p>Answer to question 2.</p>
-        </div>
-    </section>
-
-    <!-- Footer Section -->
-    <footer>
-        <p>&copy; 2026 AgentSentinel. All rights reserved.</p>
+    <main class="p-5">
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Statistics</h2>
+            <p class="text-center">Over 40% of companies have faced unexpected AI costs. Don't be one of them.</p>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">The Problem</h2>
+            <p class="text-center">AI agents can lead to significant financial losses if not monitored properly.</p>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Our Features</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div class="p-5 bg-white shadow-lg hover-effect">
+                    <h3 class="text-xl font-semibold">Real-Time Monitoring</h3>
+                    <p>Keep track of AI agent expenditures in real time.</p>
+                </div>
+                <div class="p-5 bg-white shadow-lg hover-effect">
+                    <h3 class="text-xl font-semibold">Cost Alerts</h3>
+                    <p>Get notified when spending exceeds your set limits.</p>
+                </div>
+                <div class="p-5 bg-white shadow-lg hover-effect">
+                    <h3 class="text-xl font-semibold">Optimized Spending</h3>
+                    <p>Make adjustments to prevent unnecessary costs.</p>
+                </div>
+            </div>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Code Examples</h2>
+            <pre class="bg-gray-800 text-white p-5 rounded"><code>const aiAgent = new AI();
+aiAgent.monitorCosts();</code></pre>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Testimonials</h2>
+            <blockquote class="bg-white p-5 shadow-lg">
+                <p>“AgentSentinel saved us thousands!” - Happy Customer</p>
+            </blockquote>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Pricing</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div class="p-5 bg-white shadow-lg">
+                    <h3 class="text-xl font-bold">Solo</h3>
+                    <p>$50/month</p>
+                </div>
+                <div class="p-5 bg-white shadow-lg">
+                    <h3 class="text-xl font-bold">Team</h3>
+                    <p>$200/month</p>
+                </div>
+                <div class="p-5 bg-white shadow-lg">
+                    <h3 class="text-xl font-bold">Enterprise</h3>
+                    <p>Contact us</p>
+                </div>
+            </div>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">FAQs</h2>
+            <div class="bg-white p-5 rounded">
+                <details>
+                    <summary class="font-semibold">What is AgentSentinel?</summary>
+                    <p>AgentSentinel helps monitor and manage AI costs.</p>
+                </details>
+            </div>
+        </section>
+        <section class="my-10">
+            <h2 class="text-3xl font-bold text-center">Get Started Today!</h2>
+            <p class="text-center">Sign up now to keep your AI costs in check!</p>
+        </section>
+    </main>
+    <footer class="bg-gray-800 text-white p-5">
+        <p class="text-center">&copy; 2026 AgentSentinel. All Rights Reserved.</p>
     </footer>
 </body>
 </html>
