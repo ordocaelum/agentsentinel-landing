@@ -107,6 +107,18 @@
 
     /* ── Subtle section separator ────────────────────────────────────── */
     .section-alt { background-color: #0a1628; }
+
+    /* ── Copy button ─────────────────────────────────────────────────── */
+    .copy-btn { cursor: pointer; background: none; border: none; padding: 0; }
+    .copy-btn.copied { color: #34d399 !important; }
+
+    /* ── Code language tabs ──────────────────────────────────────────── */
+    .lang-tab { cursor: pointer; transition: color 0.15s, background-color 0.15s; }
+    .lang-tab.active { color: #fff; background-color: rgba(255,255,255,0.1); border-radius: 6px; }
+
+    /* ── Mobile nav ──────────────────────────────────────────────────── */
+    #mobile-menu { display: none; }
+    #mobile-menu.open { display: block; }
   </style>
 </head>
 
@@ -117,21 +129,38 @@
   ════════════════════════════════════════════════════════════════ -->
   <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
     <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
+      <a href="#" class="flex items-center gap-2.5">
         <span class="text-xl">🛡️</span>
         <span class="text-lg font-bold tracking-tight text-white">AgentSentinel</span>
-      </div>
+      </a>
       <div class="hidden md:flex items-center gap-7 text-slate-400 text-sm font-medium">
-        <a href="#features" class="hover:text-white transition-colors">Features</a>
-        <a href="#how-it-works" class="hover:text-white transition-colors">Docs</a>
-        <a href="#pricing"  class="hover:text-white transition-colors">Pricing</a>
-        <a href="#faq"      class="hover:text-white transition-colors">FAQ</a>
+        <a href="#features"    class="hover:text-white transition-colors">Features</a>
+        <a href="#how-it-works" class="hover:text-white transition-colors">SDK</a>
+        <a href="#pricing"     class="hover:text-white transition-colors">Pricing</a>
+        <a href="#faq"         class="hover:text-white transition-colors">FAQ</a>
       </div>
       <div class="flex items-center gap-3">
-        <a href="#" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">Sign in</a>
-        <a href="#" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
+        <a href="mailto:hello@agentsentinel.dev?subject=Early%20Access%20Request" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">Sign in</a>
+        <a href="#how-it-works" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
           Get Started Free
         </a>
+        <!-- Mobile hamburger -->
+        <button id="nav-menu-btn" aria-label="Toggle menu" class="md:hidden flex items-center justify-center w-9 h-9 text-slate-400 hover:text-white transition-colors rounded-lg border border-slate-700/60">
+          <span class="menu-icon text-lg leading-none">☰</span>
+        </button>
+      </div>
+    </div>
+    <!-- Mobile dropdown -->
+    <div id="mobile-menu" class="md:hidden border-t border-slate-800/60" style="background-color:rgba(5,13,26,0.97)">
+      <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-4 text-slate-300 text-sm font-medium">
+        <a href="#features"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Features</a>
+        <a href="#how-it-works" onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">SDK / Quick Start</a>
+        <a href="#pricing"      onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Pricing</a>
+        <a href="#faq"          onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">FAQ</a>
+        <div class="border-t border-slate-800/60 pt-4 flex flex-col gap-3">
+          <a href="mailto:hello@agentsentinel.dev?subject=Early%20Access%20Request" class="hover:text-white transition-colors py-1">Sign in</a>
+          <a href="#how-it-works" onclick="closeMobileMenu()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-center">Get Started Free</a>
+        </div>
       </div>
     </div>
   </nav>
@@ -164,7 +193,7 @@
 
       <!-- CTAs -->
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-12">
-        <a href="#" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">
+        <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
           Install the SDK — it's free
         </a>
@@ -378,13 +407,19 @@
           <div>
             <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">1 · Install</p>
             <div class="space-y-2.5">
-              <div class="group flex items-center justify-between bg-slate-900 border border-slate-800 hover:border-blue-700/60 rounded-xl px-5 py-3.5 cursor-pointer transition-colors">
-                <code class="code-block text-slate-300 text-sm">pip install agentsentinel</code>
-                <span class="text-slate-600 group-hover:text-blue-400 text-xs font-semibold transition-colors">Python</span>
+              <div class="flex items-center justify-between bg-slate-900 border border-slate-800 hover:border-blue-700/60 rounded-xl px-5 py-3.5 transition-colors">
+                <code class="code-block text-slate-300 text-sm select-all">pip install agentsentinel</code>
+                <button onclick="copyText('pip install agentsentinel', this)" class="copy-btn flex items-center gap-1.5 text-slate-500 hover:text-blue-400 text-xs font-semibold transition-colors shrink-0 ml-4">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  Copy
+                </button>
               </div>
-              <div class="group flex items-center justify-between bg-slate-900 border border-slate-800 hover:border-cyan-700/60 rounded-xl px-5 py-3.5 cursor-pointer transition-colors">
-                <code class="code-block text-slate-300 text-sm">npm i @agentsentinel/sdk</code>
-                <span class="text-slate-600 group-hover:text-cyan-400 text-xs font-semibold transition-colors">Node.js</span>
+              <div class="flex items-center justify-between bg-slate-900 border border-slate-800 hover:border-cyan-700/60 rounded-xl px-5 py-3.5 transition-colors">
+                <code class="code-block text-slate-300 text-sm select-all">npm install @agentsentinel/sdk</code>
+                <button onclick="copyText('npm install @agentsentinel/sdk', this)" class="copy-btn flex items-center gap-1.5 text-slate-500 hover:text-cyan-400 text-xs font-semibold transition-colors shrink-0 ml-4">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                  Copy
+                </button>
               </div>
             </div>
           </div>
@@ -429,9 +464,18 @@
               <span class="w-3 h-3 rounded-full bg-amber-500/80"></span>
               <span class="w-3 h-3 rounded-full bg-emerald-500/80"></span>
             </div>
-            <span class="text-slate-500 text-xs font-medium">my_agent.py</span>
-            <div class="w-12"></div>
+            <!-- Language tabs -->
+            <div class="flex items-center gap-1 bg-slate-950/60 rounded-lg p-1">
+              <button data-lang="python" onclick="switchLang('python')" class="lang-tab active text-slate-400 text-xs font-semibold px-3 py-1">Python</button>
+              <button data-lang="typescript" onclick="switchLang('typescript')" class="lang-tab text-slate-400 text-xs font-semibold px-3 py-1">TypeScript</button>
+            </div>
+            <button onclick="copyCodePanel(this)" class="copy-btn flex items-center gap-1.5 text-slate-500 hover:text-slate-300 text-xs font-semibold transition-colors">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              Copy
+            </button>
           </div>
+          <!-- Python panel -->
+          <div class="code-panel" data-lang="python">
           <pre class="p-6 code-block text-sm overflow-x-auto leading-7"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
 
 <span class="token-comment"># 1. Define your safety policy</span>
@@ -457,6 +501,35 @@
     <span class="token-comment"># then proceeds only if approved.</span>
     email_client.send(to, subject, body)
 </code></pre>
+          </div>
+          <!-- TypeScript panel -->
+          <div class="code-panel" data-lang="typescript" style="display:none">
+          <pre class="p-6 code-block text-sm overflow-x-auto leading-7"><code><span class="token-keyword">import</span> { AgentGuard, AgentPolicy } <span class="token-keyword">from</span> <span class="token-string">'@agentsentinel/sdk'</span>;
+
+<span class="token-comment">// 1. Define your safety policy</span>
+<span class="token-keyword">const</span> <span class="token-fn">policy</span> = <span class="token-keyword">new</span> <span class="token-fn">AgentPolicy</span>({
+  dailyBudget: <span class="token-num">10.00</span>,        <span class="token-comment">// hard stop at $10/day</span>
+  hourlyBudget: <span class="token-num">2.00</span>,       <span class="token-comment">// never more than $2/hour</span>
+  requireApproval: [
+    <span class="token-string">'delete_*'</span>,              <span class="token-comment">// any destructive action</span>
+    <span class="token-string">'send_email'</span>,            <span class="token-comment">// outbound comms</span>
+    <span class="token-string">'execute_sql'</span>,           <span class="token-comment">// database writes</span>
+  ],
+  alertChannel: <span class="token-string">'slack'</span>,
+});
+
+<span class="token-comment">// 2. Create a guard from your policy</span>
+<span class="token-keyword">const</span> <span class="token-fn">guard</span> = <span class="token-keyword">new</span> <span class="token-fn">AgentGuard</span>({ policy });
+
+<span class="token-comment">// 3. Wrap any tool that needs protection</span>
+<span class="token-keyword">const</span> <span class="token-fn">sendEmail</span> = guard.protect(<span class="token-keyword">async</span> (to, subject, body) =&gt; {
+  <span class="token-comment">// ⏸ AgentSentinel pauses here,</span>
+  <span class="token-comment">// sends a Slack approval request,</span>
+  <span class="token-comment">// then proceeds only if approved.</span>
+  <span class="token-keyword">await</span> emailClient.send(to, subject, body);
+});
+</code></pre>
+          </div>
         </div>
 
       </div>
@@ -582,7 +655,7 @@
             <li class="flex items-start gap-2.5 text-slate-600"><span class="shrink-0 mt-0.5">✗</span> Human approval gates</li>
             <li class="flex items-start gap-2.5 text-slate-600"><span class="shrink-0 mt-0.5">✗</span> Slack / email alerts</li>
           </ul>
-          <a href="#" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+          <a href="#how-it-works" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
             Get Started Free
           </a>
         </div>
@@ -607,7 +680,7 @@
             <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Human approval gates</li>
             <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Slack &amp; email alerts</li>
           </ul>
-          <a href="#" class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
+          <a href="mailto:hello@agentsentinel.dev?subject=Team%20Plan%20-%2014-Day%20Trial&body=Hi%2C%20I%E2%80%99d%20like%20to%20start%20a%2014-day%20free%20trial%20of%20the%20AgentSentinel%20Team%20plan." class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
             Start 14-Day Free Trial →
           </a>
         </div>
@@ -627,7 +700,7 @@
             <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> SLA &amp; dedicated support</li>
             <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Custom integrations</li>
           </ul>
-          <a href="#" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+          <a href="mailto:sales@agentsentinel.dev?subject=Enterprise%20Inquiry%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20learn%20more%20about%20AgentSentinel%E2%80%99s%20Enterprise%20plan." class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
             Contact Sales
           </a>
         </div>
@@ -738,11 +811,11 @@
       </p>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-        <a href="#" class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-slate-100 transition-colors shadow-2xl">
+        <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-slate-100 transition-colors shadow-2xl">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
           Install Free — takes 60 seconds
         </a>
-        <a href="#" class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
+        <a href="mailto:hello@agentsentinel.dev?subject=Demo%20Request%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20book%20a%20demo%20of%20AgentSentinel." class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
           Book a Demo
         </a>
       </div>
@@ -771,13 +844,13 @@
           Safety controls and spend limits for AI agents. Prevent runaway costs before they start.
         </p>
         <div class="flex gap-4">
-          <a href="#" aria-label="X / Twitter" class="text-slate-600 hover:text-white transition-colors">
+          <a href="https://twitter.com/agentsentinel" target="_blank" rel="noopener" aria-label="Twitter" class="text-slate-600 hover:text-white transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
           </a>
-          <a href="#" aria-label="GitHub" class="text-slate-600 hover:text-white transition-colors">
+          <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" aria-label="GitHub" class="text-slate-600 hover:text-white transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" clip-rule="evenodd"/></svg>
           </a>
-          <a href="#" aria-label="Discord" class="text-slate-600 hover:text-white transition-colors">
+          <a href="mailto:hello@agentsentinel.dev?subject=Discord%20Community%20Access" aria-label="Discord" class="text-slate-600 hover:text-white transition-colors">
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M20.317 4.37a19.791 19.791 0 00-4.885-1.515.074.074 0 00-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 00-5.487 0 12.64 12.64 0 00-.617-1.25.077.077 0 00-.079-.037A19.736 19.736 0 003.677 4.37a.07.07 0 00-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 00.031.057 19.9 19.9 0 005.993 3.03.078.078 0 00.084-.028c.462-.63.874-1.295 1.226-1.994a.076.076 0 00-.041-.106 13.107 13.107 0 01-1.872-.892.077.077 0 01-.008-.128 10.2 10.2 0 00.372-.292.074.074 0 01.077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 01.078.01c.12.098.246.198.373.292a.077.077 0 01-.006.127 12.299 12.299 0 01-1.873.892.077.077 0 00-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 00.084.028 19.839 19.839 0 006.002-3.03.077.077 0 00.032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 00-.031-.03z"/></svg>
           </a>
         </div>
@@ -789,9 +862,9 @@
         <ul class="space-y-3 text-slate-500 text-sm">
           <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
           <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Changelog</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Roadmap</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Status</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing/releases" target="_blank" rel="noopener" class="hover:text-white transition-colors">Changelog</a></li>
+          <li><a href="mailto:hello@agentsentinel.dev?subject=Roadmap%20Feedback" class="hover:text-white transition-colors">Roadmap</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing/issues" target="_blank" rel="noopener" class="hover:text-white transition-colors">Status</a></li>
         </ul>
       </div>
 
@@ -799,11 +872,11 @@
       <div>
         <h4 class="text-white text-sm font-semibold mb-5">Resources</h4>
         <ul class="space-y-3 text-slate-500 text-sm">
-          <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">API Reference</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">GitHub</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Community</a></li>
+          <li><a href="#how-it-works" class="hover:text-white transition-colors">Documentation</a></li>
+          <li><a href="#how-it-works" class="hover:text-white transition-colors">API Reference</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a></li>
+          <li><a href="mailto:hello@agentsentinel.dev?subject=Newsletter%20Signup" class="hover:text-white transition-colors">Blog</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing/discussions" target="_blank" rel="noopener" class="hover:text-white transition-colors">Community</a></li>
         </ul>
       </div>
 
@@ -811,11 +884,11 @@
       <div>
         <h4 class="text-white text-sm font-semibold mb-5">Company</h4>
         <ul class="space-y-3 text-slate-500 text-sm">
-          <li><a href="#" class="hover:text-white transition-colors">About</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Security</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Privacy Policy</a></li>
-          <li><a href="#" class="hover:text-white transition-colors">Terms of Service</a></li>
+          <li><a href="#features" class="hover:text-white transition-colors">About</a></li>
+          <li><a href="mailto:hello@agentsentinel.dev?subject=Careers%20at%20AgentSentinel" class="hover:text-white transition-colors">Careers</a></li>
+          <li><a href="mailto:security@agentsentinel.dev?subject=Security%20Inquiry" class="hover:text-white transition-colors">Security</a></li>
+          <li><a href="mailto:privacy@agentsentinel.dev?subject=Privacy%20Policy%20Inquiry" class="hover:text-white transition-colors">Privacy Policy</a></li>
+          <li><a href="mailto:hello@agentsentinel.dev?subject=Terms%20of%20Service%20Inquiry" class="hover:text-white transition-colors">Terms of Service</a></li>
         </ul>
       </div>
 
@@ -827,5 +900,85 @@
     </div>
   </footer>
 
+  <script>
+    // ── Copy to Clipboard ──────────────────────────────────────────────
+    function copyText(text, btn) {
+      var orig = btn.innerHTML;
+      var checkIcon = '<svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>';
+      function showCopied() {
+        btn.classList.add('copied');
+        btn.innerHTML = checkIcon + ' Copied!';
+        setTimeout(function() {
+          btn.classList.remove('copied');
+          btn.innerHTML = orig;
+        }, 2000);
+      }
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(showCopied).catch(function() {
+          fallbackCopy(text, showCopied);
+        });
+      } else {
+        fallbackCopy(text, showCopied);
+      }
+    }
+
+    function fallbackCopy(text, cb) {
+      var el = document.createElement('textarea');
+      el.value = text;
+      el.style.position = 'fixed';
+      el.style.opacity = '0';
+      document.body.appendChild(el);
+      el.focus();
+      el.select();
+      try { document.execCommand('copy'); cb(); } catch(e) {}
+      document.body.removeChild(el);
+    }
+
+    // Copy the currently visible code panel
+    function copyCodePanel(btn) {
+      var panels = document.querySelectorAll('.code-panel');
+      var text = '';
+      panels.forEach(function(p) {
+        if (p.style.display !== 'none') {
+          text = p.querySelector('pre').innerText;
+        }
+      });
+      if (text) copyText(text, btn);
+    }
+
+    // ── Language Tab Switching ─────────────────────────────────────────
+    function switchLang(lang) {
+      document.querySelectorAll('.lang-tab').forEach(function(tab) {
+        tab.classList.toggle('active', tab.dataset.lang === lang);
+      });
+      document.querySelectorAll('.code-panel').forEach(function(panel) {
+        panel.style.display = panel.dataset.lang === lang ? 'block' : 'none';
+      });
+    }
+
+    // ── Mobile Nav Toggle ──────────────────────────────────────────────
+    var menuBtn = document.getElementById('nav-menu-btn');
+    var mobileMenu = document.getElementById('mobile-menu');
+    if (menuBtn && mobileMenu) {
+      menuBtn.addEventListener('click', function() {
+        mobileMenu.classList.toggle('open');
+        var icon = menuBtn.querySelector('.menu-icon');
+        if (icon) icon.textContent = mobileMenu.classList.contains('open') ? '✕' : '☰';
+      });
+    }
+
+    function closeMobileMenu() {
+      if (mobileMenu) {
+        mobileMenu.classList.remove('open');
+        var icon = menuBtn && menuBtn.querySelector('.menu-icon');
+        if (icon) icon.textContent = '☰';
+      }
+    }
+
+    // Close mobile menu when clicking anchor links
+    document.querySelectorAll('#mobile-menu a[href^="#"]').forEach(function(link) {
+      link.addEventListener('click', closeMobileMenu);
+    });
+  </script>
 </body>
 </html>
