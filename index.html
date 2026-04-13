@@ -3,101 +3,132 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgentSentinel Landing Page</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <style>
-        /* Custom CSS for gradient animations and hover effects */
-        @keyframes gradient {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        .gradient-bg {
+            background: linear-gradient(90deg, rgba(255,0,150,1) 0%, rgba(0,204,255,1) 100%);
+            -webkit-animation: gradient 5s ease infinite;
+            animation: gradient 5s ease infinite;
         }
-        .bg-gradient {
-            background: linear-gradient(270deg, #6a11cb, #2575fc);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
         }
         .hover-effect:hover {
             transform: scale(1.05);
-            transition: transform 0.3s;
         }
     </style>
+    <title>AgentSentinel Landing Page</title>
 </head>
-<body class="bg-gray-100">
-    <header class="bg-gradient text-white p-10">
-        <h1 class="text-5xl font-bold text-center">Prevent AI Agent Cost Overruns</h1>
-        <p class="text-lg mt-4 text-center">Your AI agent works. Until it costs you $3,000 in a day.</p>
+<body class="bg-slate-900 text-white">
+    <header class="gradient-bg p-8 text-center">
+        <h1 class="text-3xl font-bold">Your AI agent works. Until it costs you $3,000 in a day.</h1>
     </header>
-    <main class="p-5">
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Statistics</h2>
-            <p class="text-center">Over 40% of companies have faced unexpected AI costs. Don't be one of them.</p>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">The Problem</h2>
-            <p class="text-center">AI agents can lead to significant financial losses if not monitored properly.</p>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Our Features</h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
-                <div class="p-5 bg-white shadow-lg hover-effect">
-                    <h3 class="text-xl font-semibold">Real-Time Monitoring</h3>
-                    <p>Keep track of AI agent expenditures in real time.</p>
-                </div>
-                <div class="p-5 bg-white shadow-lg hover-effect">
-                    <h3 class="text-xl font-semibold">Cost Alerts</h3>
-                    <p>Get notified when spending exceeds your set limits.</p>
-                </div>
-                <div class="p-5 bg-white shadow-lg hover-effect">
-                    <h3 class="text-xl font-semibold">Optimized Spending</h3>
-                    <p>Make adjustments to prevent unnecessary costs.</p>
-                </div>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Stats</h2>
+        <div class="flex justify-around mt-4">
+            <div class="text-center">
+                <h3 class="text-4xl">$847K</h3>
+                <p>Saved</p>
             </div>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Code Examples</h2>
-            <pre class="bg-gray-800 text-white p-5 rounded"><code>const aiAgent = new AI();
-aiAgent.monitorCosts();</code></pre>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Testimonials</h2>
-            <blockquote class="bg-white p-5 shadow-lg">
-                <p>“AgentSentinel saved us thousands!” - Happy Customer</p>
-            </blockquote>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Pricing</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
-                <div class="p-5 bg-white shadow-lg">
-                    <h3 class="text-xl font-bold">Solo</h3>
-                    <p>$50/month</p>
-                </div>
-                <div class="p-5 bg-white shadow-lg">
-                    <h3 class="text-xl font-bold">Team</h3>
-                    <p>$200/month</p>
-                </div>
-                <div class="p-5 bg-white shadow-lg">
-                    <h3 class="text-xl font-bold">Enterprise</h3>
-                    <p>Contact us</p>
-                </div>
+            <div class="text-center">
+                <h3 class="text-4xl">2,341</h3>
+                <p>Dangerous Actions Blocked</p>
             </div>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">FAQs</h2>
-            <div class="bg-white p-5 rounded">
-                <details>
-                    <summary class="font-semibold">What is AgentSentinel?</summary>
-                    <p>AgentSentinel helps monitor and manage AI costs.</p>
-                </details>
+            <div class="text-center">
+                <h3 class="text-4xl">98.7%</h3>
+                <p>Uptime</p>
             </div>
-        </section>
-        <section class="my-10">
-            <h2 class="text-3xl font-bold text-center">Get Started Today!</h2>
-            <p class="text-center">Sign up now to keep your AI costs in check!</p>
-        </section>
-    </main>
-    <footer class="bg-gray-800 text-white p-5">
-        <p class="text-center">&copy; 2026 AgentSentinel. All Rights Reserved.</p>
+        </div>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Problem Statements</h2>
+        <ul class="list-disc mt-4 mx-auto max-w-2xl">
+            <li>Infinite Loop Costs</li>
+            <li>Embarrassing Messages</li>
+            <li>Dangerous Actions</li>
+        </ul>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Features</h2>
+        <div class="flex justify-around mt-4">
+            <div class="hover-effect p-4 bg-blue-600 rounded-lg transition duration-300">
+                <h3>Cap Costs</h3>
+            </div>
+            <div class="hover-effect p-4 bg-blue-600 rounded-lg transition duration-300">
+                <h3>Require Approval</h3>
+            </div>
+            <div class="hover-effect p-4 bg-blue-600 rounded-lg transition duration-300">
+                <h3>See Everything</h3>
+            </div>
+        </div>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Code Example</h2>
+        <pre class="bg-gray-800 p-4 rounded"><code class="language-python">
+# Example of using the Python SDK for AgentSentinel
+import agentsentinel
+
+agent = agentsentinel.Agent()
+agent.perform_action()
+        </code></pre>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Testimonials</h2>
+        <ul class="list-disc mt-4 mx-auto max-w-2xl">
+            <li>"AgentSentinel saved us a fortune!" - James Chen</li>
+            <li>"Thanks to AgentSentinel, we can sleep easy!" - Sarah Kim</li>
+            <li>"A game changer in our workflow!" - Mike Rodriguez</li>
+        </ul>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">Pricing</h2>
+        <div class="flex justify-around mt-4">
+            <div>
+                <h3>Solo</h3>
+                <p>$0/month</p>
+            </div>
+            <div class="bg-blue-400 p-4 rounded-lg">
+                <h3 class="font-bold">Team</h3>
+                <p>$49/month</p>
+                <p><strong>Most Popular</strong></p>
+            </div>
+            <div>
+                <h3>Enterprise</h3>
+                <p>Custom</p>
+            </div>
+        </div>
+    </section>
+    <section class="p-10">
+        <h2 class="text-2xl font-bold text-center">FAQ</h2>
+        <details class="mt-2"><summary>Question 1</summary>
+            <p>Answer to question 1.</p>
+        </details>
+        <details class="mt-2"><summary>Question 2</summary>
+            <p>Answer to question 2.</p>
+        </details>
+        <details class="mt-2"><summary>Question 3</summary>
+            <p>Answer to question 3.</p>
+        </details>
+        <details class="mt-2"><summary>Question 4</summary>
+            <p>Answer to question 4.</p>
+        </details>
+        <details class="mt-2"><summary>Question 5</summary>
+            <p>Answer to question 5.</p>
+        </details>
+        <details class="mt-2"><summary>Question 6</summary>
+            <p>Answer to question 6.</p>
+        </details>
+    </section>
+    <footer class="p-10 bg-gray-800 text-center">
+        <p>Product | Resources | Company</p>
     </footer>
 </body>
 </html>
