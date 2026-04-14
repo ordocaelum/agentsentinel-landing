@@ -2,6 +2,7 @@ export type Decision =
   | "allowed"
   | "blocked_budget"
   | "blocked_rate_limit"
+  | "blocked_security"
   | "approval_required"
   | "approved"
   | "error";

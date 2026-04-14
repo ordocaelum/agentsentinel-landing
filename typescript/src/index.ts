@@ -15,6 +15,7 @@ export {
   BudgetExceededError,
   ApprovalRequiredError,
   RateLimitExceededError,
+  ToolBlockedError,
 } from "./errors";
 
 export {
@@ -29,5 +30,8 @@ export { DenyAllApprover, InMemoryApprover } from "./approval";
 export type { ApprovalHandler } from "./approval";
 
 export { RateLimiter } from "./rateLimit";
+
+export { SecurityConfig, redactSensitive, isToolBlocked } from "./security";
+export type { SecurityConfigOptions } from "./security";
 
 export const VERSION = "0.1.0-preview";

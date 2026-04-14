@@ -1,3 +1,5 @@
+import { SecurityConfig } from "./security";
+
 /** Configuration for agent safety controls. */
 export interface AgentPolicyOptions {
   /** Maximum cumulative cost (USD) allowed per calendar day. Default: unlimited. */
@@ -27,6 +29,17 @@ export interface AgentPolicyOptions {
    * Used when no explicit `cost` is supplied to `AgentGuard.protect()`.
    */
   costEstimator?: (toolName: string, args: unknown[]) => number;
+  /**
+   * Fine-grained security settings: blocked-tools kill-list, sensitive tools that
+   * always require approval, secrets redaction patterns, and parameter log controls.
+   */
+  security?: SecurityConfig;
+  /**
+   * When `true`, applies extra restrictions for untrusted/experimental agents:
+   * all {@link SecurityConfig.sensitiveTools} are implicitly added to the approval
+   * list, and blocked-tool violations raise immediately.
+   */
+  sandboxMode?: boolean;
 }
 
 /** Immutable policy value object used by {@link AgentGuard}. */
@@ -38,6 +51,8 @@ export class AgentPolicy {
   readonly auditLog: boolean;
   readonly alertChannel: string;
   readonly costEstimator: ((toolName: string, args: unknown[]) => number) | undefined;
+  readonly security: SecurityConfig;
+  readonly sandboxMode: boolean;
 
   constructor(options: AgentPolicyOptions = {}) {
     this.dailyBudget = options.dailyBudget ?? Infinity;
@@ -47,5 +62,7 @@ export class AgentPolicy {
     this.auditLog = options.auditLog ?? true;
     this.alertChannel = options.alertChannel ?? "console";
     this.costEstimator = options.costEstimator;
+    this.security = options.security ?? new SecurityConfig();
+    this.sandboxMode = options.sandboxMode ?? false;
   }
 }

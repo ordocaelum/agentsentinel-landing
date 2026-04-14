@@ -1,8 +1,9 @@
 import { AuditEvent, AuditLogger, ConsoleAuditSink } from "./audit";
-import { ApprovalRequiredError, BudgetExceededError } from "./errors";
+import { ApprovalRequiredError, BudgetExceededError, ToolBlockedError } from "./errors";
 import { AgentPolicy } from "./policy";
 import { RateLimiter } from "./rateLimit";
 import { ApprovalHandler, DenyAllApprover } from "./approval";
+import { isToolBlocked, redactSensitive } from "./security";
 
 export interface ProtectOptions {
   /** Override the tool name used for policy matching and audit logs. */
@@ -74,7 +75,12 @@ export class AgentGuard {
   }
 
   private requiresApproval(toolName: string): boolean {
+    // Explicit policy patterns
     for (const pattern of this.policy.requireApproval) {
+      if (this.matchesPattern(toolName, pattern)) return true;
+    }
+    // Sensitive tools always require approval
+    for (const pattern of this.policy.security.sensitiveTools) {
       if (this.matchesPattern(toolName, pattern)) return true;
     }
     return false;
@@ -87,6 +93,12 @@ export class AgentGuard {
       "^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*").replace(/\?/g, ".") + "$"
     );
     return re.test(name);
+  }
+
+  private safeErrorStr(message: string): string {
+    const sec = this.policy.security;
+    if (sec.logFullParams) return message;
+    return redactSensitive(message, sec.redactPatterns);
   }
 
   // -----------------------------------------------------------------------
@@ -107,6 +119,21 @@ export class AgentGuard {
     const self = this;
 
     const wrapped = async function (...args: Parameters<T>): Promise<Awaited<ReturnType<T>>> {
+      const sec = self.policy.security;
+
+      // --- Security: blocked tools (hard stop, no approval pathway) ---
+      if (isToolBlocked(resolvedName, sec.blockedTools)) {
+        self.auditLogger.record(
+          AuditEvent.now(resolvedName, "blocked", 0, "blocked_security", {
+            reason: "tool_in_blocked_list",
+          })
+        );
+        throw new ToolBlockedError(
+          `Tool '${resolvedName}' is permanently blocked by security policy.`,
+          { toolName: resolvedName }
+        );
+      }
+
       const invocationCost =
         cost !== 0 ? cost : (self.policy.costEstimator?.(resolvedName, args) ?? 0);
 
@@ -141,7 +168,7 @@ export class AgentGuard {
       // --- Rate limit check ---
       self.rateLimiter.check(resolvedName);
 
-      // --- Approval check ---
+      // --- Approval check (policy + sensitive tools) ---
       if (self.requiresApproval(resolvedName)) {
         const approved = await self.approvalHandler.requestApproval(resolvedName, args);
         if (!approved) {
@@ -169,7 +196,7 @@ export class AgentGuard {
       } catch (err) {
         self.auditLogger.record(
           AuditEvent.now(resolvedName, "error", 0, "error", {
-            error: err instanceof Error ? err.message : String(err),
+            error: self.safeErrorStr(err instanceof Error ? err.message : String(err)),
           })
         );
         throw err;

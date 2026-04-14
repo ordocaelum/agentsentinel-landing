@@ -52,3 +52,22 @@ export class RateLimitExceededError extends AgentSentinelError {
     this.limit = limit;
   }
 }
+
+/**
+ * Thrown when a tool is permanently blocked by the security policy.
+ *
+ * Unlike {@link ApprovalRequiredError} there is no approval pathway —
+ * the tool is hard-blocked and will never execute.
+ */
+export class ToolBlockedError extends AgentSentinelError {
+  readonly toolName: string;
+
+  constructor(
+    message = "Tool is blocked by security policy",
+    { toolName = "" }: { toolName?: string } = {}
+  ) {
+    super(message);
+    this.name = "ToolBlockedError";
+    this.toolName = toolName;
+  }
+}

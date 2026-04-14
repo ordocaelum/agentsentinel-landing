@@ -3,6 +3,8 @@
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 
+from .security import SecurityConfig
+
 
 @dataclass
 class AgentPolicy:
@@ -34,6 +36,15 @@ class AgentPolicy:
         Optional callable ``(tool_name, kwargs) -> float`` that returns an
         estimated cost for a given tool invocation.  Used when no explicit
         ``cost`` is passed to :meth:`AgentGuard.protect`.
+    security:
+        Fine-grained security settings: blocked-tools kill-list, sensitive
+        tools that always require approval, secrets redaction patterns, and
+        parameter log controls.
+    sandbox_mode:
+        When ``True``, applies extra restrictions suited for untrusted or
+        experimental agents: all :attr:`.SecurityConfig.sensitive_tools`
+        are implicitly added to the approval list, and blocked-tool
+        violations raise immediately without any fallback.
     """
 
     daily_budget: float = float("inf")
@@ -43,3 +54,9 @@ class AgentPolicy:
     audit_log: bool = True
     alert_channel: str = "console"
     cost_estimator: Optional[Callable[[str, dict], float]] = None
+
+    # Security settings
+    security: SecurityConfig = field(default_factory=SecurityConfig)
+
+    # Sandbox mode — extra restrictions for untrusted agents
+    sandbox_mode: bool = False
