@@ -20,7 +20,7 @@ from .policy import AgentPolicy
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
-__version__ = "0.1.0-preview"
+__version__ = "0.2.0-preview"
 
 __all__ = [
     # Policy
@@ -65,4 +65,11 @@ __all__ = [
     "ContentInspector",
     "InspectionResult",
     "InspectionReport",
+    # Optional integrations (imported lazily to avoid hard framework deps)
+    # from agentsentinel.integrations.langchain import LangChainGuard, protect_langchain_agent
+    # from agentsentinel.integrations.autogen  import AutoGenGuard, protect_function_map
+    # Optional handlers
+    # from agentsentinel.handlers.slack import SlackApprover, SlackConfig
+    # Dashboard (stdlib only — no extra deps)
+    # from agentsentinel.dashboard import DashboardServer, start_dashboard
 ]

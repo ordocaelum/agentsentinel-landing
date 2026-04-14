@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AgentSentinel Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            sentinel: {
+              50:  '#f0f9ff',
+              100: '#e0f2fe',
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+              700: '#0369a1',
+              900: '#0c4a6e',
+            },
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    /* Glow effects */
+    .card-glow {
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08),
+                  0 4px 24px rgba(14, 165, 233, 0.10);
+      transition: box-shadow 0.2s ease;
+    }
+    .card-glow:hover {
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.18),
+                  0 8px 40px rgba(14, 165, 233, 0.22);
+    }
+    .glow-green  { box-shadow: 0 0 18px rgba(34, 197, 94, 0.25); }
+    .glow-red    { box-shadow: 0 0 18px rgba(239, 68, 68, 0.25); }
+    .glow-blue   { box-shadow: 0 0 18px rgba(14, 165, 233, 0.25); }
+    .glow-yellow { box-shadow: 0 0 18px rgba(234, 179, 8, 0.25); }
+
+    /* Scrollbar styling */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+
+    /* Blinking dot */
+    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
+    .blink { animation: blink 1.4s step-end infinite; }
+
+    /* Progress bar shine */
+    .bar-shine {
+      background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 60%, #7dd3fc 100%);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-200 min-h-screen font-sans antialiased">
+
+  <!-- ── Header ─────────────────────────────────────────────────────── -->
+  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-3">
+        <!-- Shield icon -->
+        <svg class="w-7 h-7 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round"
+                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6
+                   1.44 1.44 0 013 8.001v.005a8.954 8.954 0 006 8.497
+                   8.956 8.956 0 006-8.497v-.005a1.44 1.44 0 00-.598-1.997
+                   A11.96 11.96 0 0112 2.714z" />
+        </svg>
+        <span class="text-lg font-semibold tracking-tight text-white">
+          AgentSentinel
+          <span class="ml-1 text-sky-400 font-normal text-base">Dashboard</span>
+        </span>
+      </div>
+
+      <div class="flex items-center gap-4 text-sm">
+        <span class="flex items-center gap-1.5 text-slate-400">
+          <span id="live-dot" class="blink inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
+          <span id="live-label">Live</span>
+        </span>
+        <span class="text-slate-500">Auto-refresh 2s</span>
+        <span id="last-updated" class="text-slate-500">—</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
+
+    <!-- ── Stats Cards ──────────────────────────────────────────────── -->
+    <section>
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+
+        <!-- Total Events -->
+        <div class="card-glow glow-blue rounded-2xl bg-slate-900 border border-slate-800 p-5">
+          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Events</p>
+          <p id="stat-total" class="text-4xl font-bold text-white tabular-nums">—</p>
+          <p class="mt-1 text-xs text-slate-500">All tool invocations</p>
+        </div>
+
+        <!-- Allowed -->
+        <div class="card-glow glow-green rounded-2xl bg-slate-900 border border-slate-800 p-5">
+          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Allowed</p>
+          <p id="stat-allowed" class="text-4xl font-bold text-emerald-400 tabular-nums">—</p>
+          <p id="stat-allowed-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+        </div>
+
+        <!-- Blocked -->
+        <div class="card-glow glow-red rounded-2xl bg-slate-900 border border-slate-800 p-5">
+          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Blocked</p>
+          <p id="stat-blocked" class="text-4xl font-bold text-rose-400 tabular-nums">—</p>
+          <p id="stat-blocked-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+        </div>
+
+        <!-- Total Cost -->
+        <div class="card-glow glow-yellow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Cost</p>
+          <p id="stat-cost" class="text-4xl font-bold text-yellow-400 tabular-nums">—</p>
+          <p id="stat-budget" class="mt-1 text-xs text-slate-500">No budget set</p>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- ── Per-Tool Breakdown ────────────────────────────────────────── -->
+    <section>
+      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">
+          Per-Tool Breakdown
+        </h2>
+        <div id="tool-breakdown" class="space-y-4">
+          <p class="text-slate-600 text-sm italic">No tool data yet…</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Recent Event Log ─────────────────────────────────────────── -->
+    <section>
+      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">
+            Recent Events
+          </h2>
+          <span class="text-xs text-slate-600">Last 50 events</span>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
+                <th class="text-left pb-2 pr-4 font-medium">Time</th>
+                <th class="text-left pb-2 pr-4 font-medium">Tool</th>
+                <th class="text-left pb-2 pr-4 font-medium">Decision</th>
+                <th class="text-left pb-2 pr-4 font-medium">Status</th>
+                <th class="text-right pb-2 font-medium">Cost</th>
+              </tr>
+            </thead>
+            <tbody id="event-log" class="divide-y divide-slate-800/60">
+              <tr>
+                <td colspan="5" class="py-6 text-center text-slate-600 italic text-sm">
+                  No events yet…
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ── Footer ──────────────────────────────────────────────────────── -->
+  <footer class="border-t border-slate-800 mt-12 py-5">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-slate-600">
+      <span>AgentSentinel — Developer Preview</span>
+      <a href="https://github.com/ordocaelum/agentsentinel-landing"
+         target="_blank" rel="noopener"
+         class="hover:text-sky-400 transition-colors">GitHub ↗</a>
+    </div>
+  </footer>
+
+  <!-- ── JavaScript ──────────────────────────────────────────────────── -->
+  <script>
+    // -----------------------------------------------------------------------
+    // Helpers
+    // -----------------------------------------------------------------------
+    function fmt(n, decimals = 0) {
+      if (n == null || n === '') return '—';
+      return Number(n).toLocaleString(undefined, {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals,
+      });
+    }
+
+    function pct(part, total) {
+      if (!total) return '0%';
+      return Math.round((part / total) * 100) + '%';
+    }
+
+    function fmtCost(usd) {
+      if (usd == null) return '—';
+      if (usd < 0.01) return '$' + usd.toFixed(6);
+      return '$' + usd.toFixed(4);
+    }
+
+    function fmtTime(ts) {
+      const d = new Date(ts * 1000);
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    }
+
+    function decisionBadge(decision) {
+      const map = {
+        allowed:          'bg-emerald-950 text-emerald-300 ring-1 ring-emerald-700/40',
+        blocked_budget:   'bg-rose-950   text-rose-300   ring-1 ring-rose-700/40',
+        blocked_rate_limit:'bg-orange-950 text-orange-300 ring-1 ring-orange-700/40',
+        blocked_security: 'bg-red-950    text-red-300    ring-1 ring-red-700/40',
+        blocked_pii:      'bg-purple-950 text-purple-300 ring-1 ring-purple-700/40',
+        blocked_content:  'bg-pink-950   text-pink-300   ring-1 ring-pink-700/40',
+        approval_required:'bg-yellow-950 text-yellow-300 ring-1 ring-yellow-700/40',
+        approved:         'bg-teal-950   text-teal-300   ring-1 ring-teal-700/40',
+        error:            'bg-slate-800  text-slate-400  ring-1 ring-slate-600/40',
+      };
+      const cls = map[decision] || 'bg-slate-800 text-slate-400';
+      return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${cls}">${decision}</span>`;
+    }
+
+    function statusDot(status) {
+      const map = {
+        success: 'bg-emerald-400',
+        blocked: 'bg-rose-400',
+        error:   'bg-orange-400',
+        approved:'bg-teal-400',
+      };
+      const cls = map[status] || 'bg-slate-400';
+      return `<span class="inline-block w-2 h-2 rounded-full ${cls} mr-1.5"></span>`;
+    }
+
+    // -----------------------------------------------------------------------
+    // Stats rendering
+    // -----------------------------------------------------------------------
+    function renderStats(data) {
+      const total   = data.total   || 0;
+      const allowed = data.allowed || 0;
+      const blocked = data.blocked || 0;
+
+      document.getElementById('stat-total').textContent   = fmt(total);
+      document.getElementById('stat-allowed').textContent = fmt(allowed);
+      document.getElementById('stat-blocked').textContent = fmt(blocked);
+      document.getElementById('stat-cost').textContent    = fmtCost(data.total_cost);
+
+      document.getElementById('stat-allowed-pct').textContent = pct(allowed, total) + ' of total';
+      document.getElementById('stat-blocked-pct').textContent = pct(blocked, total) + ' of total';
+
+      // Budget line
+      const spent   = data.daily_spent || 0;
+      const budget  = data.daily_budget;
+      const budgetEl = document.getElementById('stat-budget');
+      if (budget != null) {
+        const spentPct = budget > 0 ? Math.round((spent / budget) * 100) : 0;
+        budgetEl.textContent = `$${spent.toFixed(4)} / $${budget.toFixed(2)} today (${spentPct}%)`;
+      } else {
+        budgetEl.textContent = 'No daily budget set';
+      }
+    }
+
+    // -----------------------------------------------------------------------
+    // Per-tool breakdown
+    // -----------------------------------------------------------------------
+    function renderTools(tools) {
+      const container = document.getElementById('tool-breakdown');
+      if (!tools || tools.length === 0) {
+        container.innerHTML = '<p class="text-slate-600 text-sm italic">No tool data yet…</p>';
+        return;
+      }
+
+      const sorted = [...tools].sort((a, b) => b.calls - a.calls);
+      const maxCalls = sorted[0].calls || 1;
+
+      container.innerHTML = sorted.map(t => {
+        const barPct   = Math.round((t.calls / maxCalls) * 100);
+        const blockPct = t.calls > 0 ? Math.round((t.blocked / t.calls) * 100) : 0;
+
+        return `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-slate-200 font-mono">${escHtml(t.name)}</span>
+              <div class="flex items-center gap-3 text-xs text-slate-500">
+                <span>${fmt(t.calls)} calls</span>
+                <span class="text-rose-400">${fmt(t.blocked)} blocked (${blockPct}%)</span>
+                <span class="text-yellow-400">${fmtCost(t.cost)}</span>
+              </div>
+            </div>
+            <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bar-shine rounded-full" style="width: ${barPct}%"></div>
+            </div>
+          </div>`;
+      }).join('');
+    }
+
+    // -----------------------------------------------------------------------
+    // Event log
+    // -----------------------------------------------------------------------
+    function renderEvents(events) {
+      const tbody = document.getElementById('event-log');
+      if (!events || events.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-600 italic text-sm">No events yet…</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = events.map(e => `
+        <tr class="hover:bg-slate-800/40 transition-colors">
+          <td class="py-2 pr-4 text-xs text-slate-500 tabular-nums whitespace-nowrap">${fmtTime(e.timestamp)}</td>
+          <td class="py-2 pr-4 text-sm font-mono text-slate-200 max-w-[180px] truncate" title="${escHtml(e.tool_name)}">${escHtml(e.tool_name)}</td>
+          <td class="py-2 pr-4">${decisionBadge(e.decision)}</td>
+          <td class="py-2 pr-4 text-sm">
+            ${statusDot(e.status)}<span class="text-slate-400">${escHtml(e.status)}</span>
+          </td>
+          <td class="py-2 text-right text-xs text-yellow-400 tabular-nums">${fmtCost(e.cost)}</td>
+        </tr>`).join('');
+    }
+
+    // -----------------------------------------------------------------------
+    // XSS helper
+    // -----------------------------------------------------------------------
+    function escHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    // -----------------------------------------------------------------------
+    // Fetch loop
+    // -----------------------------------------------------------------------
+    async function refresh() {
+      try {
+        const res = await fetch('/api/stats');
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        const data = await res.json();
+
+        renderStats(data);
+        renderTools(data.tools);
+        renderEvents(data.recent_events);
+
+        const now = new Date();
+        document.getElementById('last-updated').textContent =
+          'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+
+        document.getElementById('live-dot').style.background = '#4ade80';
+        document.getElementById('live-label').textContent = 'Live';
+      } catch (err) {
+        document.getElementById('live-dot').style.background = '#f87171';
+        document.getElementById('live-label').textContent = 'Offline';
+      }
+    }
+
+    // Initial load + 2-second poll
+    refresh();
+    setInterval(refresh, 2000);
+  </script>
+</body>
+</html>
