@@ -76,9 +76,117 @@
     section[id] { scroll-margin-top:80px; }
     /* Quick stats bar */
     #quick-stats-bar { transition:transform .3s ease; }
+    /* Agent tabs */
+    .agent-tab { display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:8px 8px 0 0;font-size:.75rem;font-weight:500;cursor:pointer;transition:all .15s;user-select:none;border:1px solid transparent;border-bottom:none;white-space:nowrap; }
+    .agent-tab.active { background:#1e293b;border-color:#334155;color:#e2e8f0; }
+    .agent-tab:not(.active) { background:transparent;color:#64748b; }
+    .agent-tab:not(.active):hover { background:#1e293b80;color:#94a3b8; }
+    .agent-tab .status-dot { width:7px;height:7px;border-radius:50%;flex-shrink:0; }
+    .agent-tab .badge { background:#dc2626;color:#fff;border-radius:99px;font-size:.6rem;padding:1px 5px;font-weight:700;line-height:1.4; }
+    /* Notification drawer */
+    #notif-drawer { position:fixed;top:0;right:0;bottom:0;width:380px;max-width:100vw;background:#0f172a;border-left:1px solid #1e293b;z-index:150;transform:translateX(100%);transition:transform .3s ease;display:flex;flex-direction:column; }
+    #notif-drawer.open { transform:translateX(0); }
+    #notif-overlay { position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:149;display:none; }
+    #notif-overlay.open { display:block; }
+    /* Toggle switch */
+    .toggle-wrap { display:inline-flex;align-items:center;cursor:pointer;gap:6px; }
+    .toggle-input { position:absolute;opacity:0;width:0;height:0; }
+    .toggle-track { display:inline-block;width:32px;height:18px;background:#334155;border-radius:99px;position:relative;transition:background .2s;flex-shrink:0; }
+    .toggle-input:checked + .toggle-track { background:#0ea5e9; }
+    .toggle-thumb { position:absolute;top:2px;left:2px;width:14px;height:14px;background:#fff;border-radius:50%;transition:left .2s; }
+    .toggle-input:checked + .toggle-track .toggle-thumb { left:16px; }
+    /* Control button big */
+    .ctrl-btn { display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:12px 16px;border-radius:12px;font-size:.7rem;font-weight:600;transition:all .15s;cursor:pointer;user-select:none;min-width:80px;text-align:center; }
+    .ctrl-btn:active { transform:scale(.93); }
+    .ctrl-btn-stop { background:rgba(220,38,38,.2);color:#fca5a5;border:2px solid rgba(220,38,38,.5); }
+    .ctrl-btn-stop:hover { background:rgba(220,38,38,.4);border-color:#dc2626;box-shadow:0 0 20px rgba(220,38,38,.4); }
+    .ctrl-btn-pause { background:rgba(245,158,11,.1);color:#fcd34d;border:2px solid rgba(245,158,11,.3); }
+    .ctrl-btn-pause:hover { background:rgba(245,158,11,.25);border-color:#f59e0b; }
+    .ctrl-btn-resume { background:rgba(16,185,129,.1);color:#6ee7b7;border:2px solid rgba(16,185,129,.3); }
+    .ctrl-btn-resume:hover { background:rgba(16,185,129,.25);border-color:#10b981; }
+    .ctrl-btn-default { background:#1e293b;color:#94a3b8;border:2px solid #334155; }
+    .ctrl-btn-default:hover { background:#334155;color:#e2e8f0; }
+    /* Budget slider */
+    input[type=range].budget-slider { -webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:3px;background:#334155;outline:none; }
+    input[type=range].budget-slider::-webkit-slider-thumb { -webkit-appearance:none;width:18px;height:18px;border-radius:50%;background:#0ea5e9;cursor:pointer;box-shadow:0 0 6px rgba(14,165,233,.5); }
+    input[type=range].budget-slider::-moz-range-thumb { width:18px;height:18px;border-radius:50%;background:#0ea5e9;cursor:pointer;border:none; }
+    /* Policy editor */
+    #policy-yaml-editor { font-family:monospace;font-size:.8rem;line-height:1.6;background:#0d1117;color:#c9d1d9;border:1px solid #30363d;border-radius:8px;padding:16px;resize:vertical;min-height:280px;width:100%;outline:none; }
+    #policy-yaml-editor:focus { border-color:#0ea5e9;box-shadow:0 0 0 2px rgba(14,165,233,.2); }
+    /* Quick actions floating bar */
+    #quick-actions { transition:transform .3s ease,opacity .3s; }
+    /* Pulse animation for pending approvals */
+    @keyframes pulse-ring { 0%{transform:scale(.9);box-shadow:0 0 0 0 rgba(250,204,21,.4)} 70%{transform:scale(1);box-shadow:0 0 0 8px rgba(250,204,21,0)} 100%{transform:scale(.9)} }
+    .approval-pulse { animation:pulse-ring 2s infinite; }
+    /* Shake animation for stop button */
+    @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+    .shake { animation:shake .4s ease; }
+    /* Confetti placeholder */
+    @keyframes confetti-drop { 0%{transform:translateY(-20px) rotate(0);opacity:1} 100%{transform:translateY(80px) rotate(360deg);opacity:0} }
+    .confetti-piece { position:fixed;width:8px;height:8px;border-radius:2px;pointer-events:none;animation:confetti-drop .8s ease-out forwards; }
+    /* Context menu */
+    .ctx-menu { position:fixed;background:#1e293b;border:1px solid #334155;border-radius:8px;padding:4px;z-index:200;box-shadow:0 8px 32px rgba(0,0,0,.5);min-width:140px; }
+    .ctx-menu-item { display:block;width:100%;padding:6px 12px;text-align:left;font-size:.75rem;color:#cbd5e1;border-radius:4px;cursor:pointer;transition:background .1s; }
+    .ctx-menu-item:hover { background:#334155; }
+    /* Countdown timer */
+    .countdown-ring { transform:rotate(-90deg); }
+    /* Light mode fixes for new elements */
+    html.light #notif-drawer { background:#fff;border-left-color:#e2e8f0; }
+    html.light .agent-tab.active { background:#f8fafc;border-color:#e2e8f0; }
+    html.light .ctrl-btn-default { background:#f8fafc;border-color:#e2e8f0;color:#475569; }
+    html.light .toggle-track { background:#cbd5e1; }
+    html.light #policy-yaml-editor { background:#f8fafc;color:#1e293b;border-color:#e2e8f0; }
+    html.light .ctx-menu { background:#fff;border-color:#e2e8f0; }
+    html.light .ctx-menu-item { color:#475569; }
+    html.light .ctx-menu-item:hover { background:#f1f5f9; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen font-sans antialiased">
+
+<!-- Notification overlay -->
+<div id="notif-overlay" onclick="closeNotifDrawer()"></div>
+
+<!-- Notification Drawer -->
+<div id="notif-drawer" role="dialog" aria-label="Notification Center">
+  <div class="flex items-center justify-between px-5 py-4 border-b border-slate-800">
+    <div class="flex items-center gap-2">
+      <span class="text-sm font-semibold text-white">🔔 Notifications</span>
+      <span id="notif-drawer-unread" class="hidden items-center justify-center min-w-[18px] h-[18px] rounded-full bg-rose-600 text-white text-xs font-bold px-1">0</span>
+    </div>
+    <div class="flex gap-1.5">
+      <button onclick="markAllNotifRead()" class="btn btn-ghost text-xs py-1 px-2">✓ All Read</button>
+      <button onclick="openModal('modal-notif-settings')" class="btn btn-ghost text-xs py-1 px-2">⚙️</button>
+      <button onclick="closeNotifDrawer()" class="btn btn-ghost text-xs py-1 px-2">✕</button>
+    </div>
+  </div>
+  <!-- Filter tabs -->
+  <div class="flex gap-1 px-4 py-2 border-b border-slate-800">
+    <button onclick="setNotifFilter('all')" id="nf-all" class="btn btn-active py-0.5 px-2 text-xs">All</button>
+    <button onclick="setNotifFilter('unread')" id="nf-unread" class="btn btn-ghost py-0.5 px-2 text-xs">Unread</button>
+    <button onclick="setNotifFilter('approval_needed')" id="nf-approval" class="btn btn-ghost py-0.5 px-2 text-xs">🟡 Approval</button>
+    <button onclick="setNotifFilter('budget_warning')" id="nf-budget" class="btn btn-ghost py-0.5 px-2 text-xs">🔴 Budget</button>
+  </div>
+  <div id="notif-list" class="flex-1 overflow-y-auto p-3 space-y-2">
+    <p class="text-slate-600 text-sm italic text-center py-8">Loading…</p>
+  </div>
+  <div class="px-4 py-3 border-t border-slate-800">
+    <div class="flex items-center gap-2">
+      <label class="toggle-wrap text-xs text-slate-400 flex-1">
+        <input type="checkbox" id="sound-toggle" class="toggle-input" onchange="toggleSound(this.checked)"/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🔊 Sound alerts
+      </label>
+      <label class="toggle-wrap text-xs text-slate-400">
+        <input type="checkbox" id="push-toggle" class="toggle-input" onchange="togglePush(this.checked)"/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        📱 Push
+      </label>
+    </div>
+  </div>
+</div>
+
+<!-- Context menu (shared) -->
+<div id="ctx-menu" class="ctx-menu hidden"></div>
 
 <!-- Toast container -->
 <div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none max-w-xs w-full"></div>
@@ -121,6 +229,11 @@
           <span id="theme-icon">🌙</span><span id="theme-label" class="hidden sm:inline">Dark</span>
         </button>
         <button onclick="showShortcutsModal()" class="btn btn-ghost" title="Shortcuts (?)">⌨️</button>
+        <!-- Notification Bell -->
+        <button onclick="openNotifDrawer()" class="btn btn-ghost relative" title="Notifications (N)" id="btn-notif-bell">
+          🔔
+          <span id="notif-bell-badge" class="hidden absolute -top-1 -right-1 min-w-[16px] h-4 rounded-full bg-rose-600 text-white text-[10px] font-bold flex items-center justify-center px-1">0</span>
+        </button>
         <span id="last-updated" class="text-xs text-slate-500 hidden md:inline">—</span>
       </div>
     </div>
@@ -137,15 +250,37 @@
       <span class="flex items-center gap-1 text-xs text-emerald-400 ml-2">
         <span class="blink w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> LIVE
       </span>
-      <div class="ml-auto flex gap-1 text-xs">
-        <a href="#section-stats"  class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">① Stats</a>
-        <a href="#section-charts" class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">② Charts</a>
-        <a href="#section-tools"  class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">③ Tools</a>
-        <a href="#section-events" class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">④ Events</a>
+      <div class="ml-auto flex gap-1 text-xs flex-wrap">
+        <a href="#section-stats"    class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">① Stats</a>
+        <a href="#section-controls" class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">② Controls</a>
+        <a href="#section-budget"   class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">③ Budget</a>
+        <a href="#section-charts"   class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">④ Charts</a>
+        <a href="#section-tools"    class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">⑤ Tools</a>
+        <a href="#section-policy"   class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">⑥ Policy</a>
+        <a href="#section-events"   class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">⑦ Events</a>
       </div>
     </div>
   </div>
 </header>
+
+<!-- ═══════════════════════════════════════════════ AGENT TABS BAR ════ -->
+<div class="border-b border-slate-800 bg-slate-900/70 sticky top-[calc(var(--header-h,96px))] z-40">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6">
+    <div class="flex items-end gap-0.5 overflow-x-auto pt-2 pb-0 scrollbar-none" id="agent-tabs-bar">
+      <!-- All agents tab -->
+      <button onclick="selectAgentTab('all')" id="agtab-all" class="agent-tab active" title="All Agents">
+        <span class="status-dot bg-sky-400"></span>
+        📊 All Agents
+      </button>
+      <!-- Dynamic agent tabs rendered by JS -->
+      <div id="agent-tabs-dynamic" class="contents"></div>
+      <!-- Add agent button -->
+      <button onclick="openModal('modal-add-agent')" class="agent-tab shrink-0 ml-1 text-sky-400 border-dashed border border-slate-700 rounded-lg mb-1" title="Add Agent (Ctrl+A)">
+        ➕ Add Agent
+      </button>
+    </div>
+  </div>
+</div>
 
 <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
 
@@ -230,6 +365,144 @@
   </div>
 </section>
 
+<!-- ═══════════════════════════════════════ ② AGENT CONTROL PANEL ════ -->
+<section id="section-controls">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🎮 Agent Controls</h2>
+        <!-- Status badge -->
+        <div id="agent-status-badge" class="flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-950/50 border border-emerald-700/40 text-xs font-medium text-emerald-300">
+          <span class="blink w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          <span id="agent-status-text">Running</span>
+        </div>
+      </div>
+      <div class="flex items-center gap-3 text-xs text-slate-500">
+        <span>Uptime: <span id="agent-uptime" class="text-slate-300 font-mono">0s</span></span>
+        <span>Last activity: <span id="agent-last-activity" class="text-slate-300">—</span></span>
+        <span id="agent-lock-indicator" class="hidden items-center gap-1 text-amber-400">🔒 Locked</span>
+      </div>
+    </div>
+    <!-- Big control buttons -->
+    <div class="flex flex-wrap gap-3 mb-5">
+      <button id="ctrl-pause-btn" onclick="agentControl('pause')" class="ctrl-btn ctrl-btn-pause" title="Pause agent (P)">
+        <span class="text-2xl">⏸️</span>
+        <span>Pause</span>
+      </button>
+      <button id="ctrl-resume-btn" onclick="agentControl('resume')" class="ctrl-btn ctrl-btn-resume" title="Resume agent">
+        <span class="text-2xl">▶️</span>
+        <span>Resume</span>
+      </button>
+      <button id="ctrl-stop-btn" onclick="confirmEmergencyStop()" class="ctrl-btn ctrl-btn-stop" title="Emergency STOP (S)">
+        <span class="text-2xl">🛑</span>
+        <span>STOP</span>
+      </button>
+      <button onclick="agentControl('reset')" class="ctrl-btn ctrl-btn-default" title="Reset session (counters)">
+        <span class="text-2xl">🔄</span>
+        <span>Reset</span>
+      </button>
+      <button id="ctrl-lock-btn" onclick="agentControl('lock')" class="ctrl-btn ctrl-btn-default" title="Lock config">
+        <span class="text-2xl">🔒</span>
+        <span>Lock</span>
+      </button>
+      <button id="ctrl-unlock-btn" onclick="agentControl('unlock')" class="ctrl-btn ctrl-btn-default" title="Unlock config">
+        <span class="text-2xl">🔓</span>
+        <span>Unlock</span>
+      </button>
+    </div>
+    <!-- Approval preset quick-select -->
+    <div class="border-t border-slate-800 pt-4">
+      <p class="text-xs text-slate-500 mb-2 font-medium uppercase tracking-wider">Approval Preset</p>
+      <div class="flex flex-wrap gap-2">
+        <button onclick="setApprovalPreset('permissive')" id="preset-permissive" class="btn btn-ghost text-xs py-1.5 px-3">🟢 Permissive</button>
+        <button onclick="setApprovalPreset('balanced')"   id="preset-balanced"   class="btn btn-active text-xs py-1.5 px-3">🟡 Balanced</button>
+        <button onclick="setApprovalPreset('strict')"     id="preset-strict"     class="btn btn-ghost text-xs py-1.5 px-3">🔴 Strict</button>
+        <button onclick="setApprovalPreset('paranoid')"   id="preset-paranoid"   class="btn btn-ghost text-xs py-1.5 px-3">🛡️ Paranoid</button>
+        <button onclick="openModal('modal-approval-settings')" class="btn btn-ghost text-xs py-1.5 px-3">⚙️ Settings</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ ③ LIVE BUDGET CONTROLS ════ -->
+<section id="section-budget">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">💰 Live Budget Controls</h2>
+        <span id="budget-lock-indicator" class="hidden items-center gap-1 text-amber-400 text-xs">🔒 Locked</span>
+      </div>
+      <div class="flex gap-2">
+        <button onclick="budgetControl('lock')" class="btn btn-ghost text-xs py-1">🔒 Lock</button>
+        <button onclick="budgetControl('unlock')" class="btn btn-ghost text-xs py-1">🔓 Unlock</button>
+        <button onclick="openModal('modal-budget-thresholds')" class="btn btn-ghost text-xs py-1">⚠️ Thresholds</button>
+      </div>
+    </div>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Daily Budget Gauge (circular) -->
+      <div class="flex flex-col items-center justify-center gap-3">
+        <p class="text-xs text-slate-500 uppercase tracking-widest">Daily Budget</p>
+        <div class="relative" style="width:140px;height:140px">
+          <canvas id="dailyBudgetGauge" width="140" height="140"></canvas>
+          <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none">
+            <p id="daily-gauge-pct" class="text-2xl font-bold text-white tabular-nums">0%</p>
+            <p id="daily-gauge-spent" class="text-xs text-yellow-400">$0.0000</p>
+          </div>
+        </div>
+        <p class="text-xs text-slate-500">of <span id="daily-gauge-budget" class="text-slate-300">—</span></p>
+      </div>
+      <!-- Controls column -->
+      <div class="lg:col-span-2 space-y-4">
+        <!-- Daily budget slider + input -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs text-slate-400 font-medium">Daily Budget ($)</label>
+            <input id="daily-budget-input" type="number" step="0.5" min="0" placeholder="—"
+              class="w-20 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-sky-500"
+              onchange="applyBudgetInput('daily',+this.value)"/>
+          </div>
+          <input id="daily-budget-slider" type="range" class="budget-slider" min="0" max="100" step="0.5" value="10"
+            oninput="syncBudgetSlider('daily',+this.value)"/>
+        </div>
+        <!-- Hourly budget bar -->
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="text-xs text-slate-400 font-medium">Hourly Budget ($)</label>
+            <input id="hourly-budget-input" type="number" step="0.1" min="0" placeholder="—"
+              class="w-20 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 text-right focus:outline-none focus:ring-1 focus:ring-sky-500"
+              onchange="applyBudgetInput('hourly',+this.value)"/>
+          </div>
+          <div class="h-3 rounded-full bg-slate-800 overflow-hidden relative">
+            <div id="hourly-budget-bar" class="h-full rounded-full bg-sky-500 transition-all duration-500" style="width:0%"></div>
+            <div class="absolute inset-0 flex items-center justify-end pr-2">
+              <span id="hourly-budget-label" class="text-[10px] text-white/80 font-mono">0%</span>
+            </div>
+          </div>
+        </div>
+        <!-- Quick boost buttons -->
+        <div>
+          <p class="text-xs text-slate-500 mb-2">Quick Boost:</p>
+          <div class="flex flex-wrap gap-2">
+            <button onclick="boostBudget(1)"  class="btn btn-ghost text-xs py-1.5">+$1</button>
+            <button onclick="boostBudget(5)"  class="btn btn-ghost text-xs py-1.5">+$5</button>
+            <button onclick="boostBudget(10)" class="btn btn-ghost text-xs py-1.5">+$10</button>
+            <button onclick="boostBudget(50)" class="btn btn-ghost text-xs py-1.5">+$50</button>
+            <input id="custom-boost-input" type="number" step="1" min="0" placeholder="Custom…"
+              class="w-24 bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+            <button onclick="boostBudget(parseFloat(document.getElementById('custom-boost-input').value)||0)" class="btn btn-success text-xs py-1.5">+ Boost</button>
+          </div>
+        </div>
+        <!-- Forecast -->
+        <div class="bg-slate-800/50 rounded-xl p-3 text-xs space-y-1">
+          <p class="text-slate-500 font-medium uppercase tracking-wider text-[10px]">Spend Forecast</p>
+          <p>At current rate: <span id="budget-forecast-msg" class="text-amber-300">calculating…</span></p>
+          <p>Projected daily total: <span id="budget-forecast-daily" class="text-yellow-400 font-medium">—</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- ═══════════════════════════════════════════════════ ALERTS PANEL ════ -->
 <section id="section-alerts">
   <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800">
@@ -259,10 +532,31 @@
         <span class="text-sm font-semibold uppercase tracking-widest text-slate-400">✅ Approval Queue</span>
         <span id="approvals-badge" class="hidden items-center justify-center w-5 h-5 rounded-full bg-yellow-600 text-white text-xs font-bold">0</span>
       </div>
-      <span id="approvals-chevron" class="text-slate-500 transition-transform duration-200">▼</span>
+      <div class="flex items-center gap-2">
+        <button onclick="event.stopPropagation();handleApprovalBulk('approve-all')" class="btn btn-success text-xs py-1 px-3">✅ Approve All</button>
+        <button onclick="event.stopPropagation();handleApprovalBulk('reject-all')" class="btn btn-danger text-xs py-1 px-3">❌ Reject All</button>
+        <span id="approvals-chevron" class="text-slate-500 transition-transform duration-200">▼</span>
+      </div>
     </div>
-    <div id="approvals-body" class="px-6 pb-5">
-      <div id="approvals-list" class="space-y-2">
+    <!-- Auto-reject timeout + sound setting -->
+    <div class="px-6 py-2 border-b border-slate-800/60 flex flex-wrap items-center gap-4">
+      <label class="flex items-center gap-2 text-xs text-slate-500">
+        Auto-reject timeout:
+        <select id="auto-reject-select" onchange="saveApprovalSettings()" class="bg-slate-800 border border-slate-700 rounded px-2 py-1 text-xs text-slate-300 focus:outline-none">
+          <option value="30">30s</option>
+          <option value="60" selected>60s</option>
+          <option value="300">5min</option>
+          <option value="0">Never</option>
+        </select>
+      </label>
+      <label class="toggle-wrap text-xs text-slate-400">
+        <input type="checkbox" id="approval-sound-toggle" class="toggle-input" checked onchange="saveApprovalSettings()"/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🔊 Sound
+      </label>
+    </div>
+    <div id="approvals-body" class="px-6 pb-5 pt-3">
+      <div id="approvals-list" class="space-y-3">
         <p class="text-slate-600 text-sm italic">No pending approvals…</p>
       </div>
     </div>
@@ -361,13 +655,16 @@
   </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════ ③ TOOL BREAKDOWN ════ -->
+<!-- ═══════════════════════════════════════════════ ⑤ TOOL BREAKDOWN ════ -->
 <section id="section-tools">
   <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
     <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
       <div class="flex items-center justify-between mb-4">
         <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🔧 Per-Tool Breakdown</h2>
-        <button onclick="expandAllTools()" class="btn btn-ghost text-xs py-1">Expand All</button>
+        <div class="flex gap-2">
+          <button onclick="expandAllTools()" class="btn btn-ghost text-xs py-1">Expand All</button>
+          <button onclick="refreshTools()" class="btn btn-ghost text-xs py-1">🔄</button>
+        </div>
       </div>
       <div id="tool-breakdown" class="space-y-3">
         <p class="text-slate-600 text-sm italic">No tool data yet…</p>
@@ -375,7 +672,7 @@
     </div>
     <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
       <div class="flex items-center justify-between mb-4">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🤖 Cost By Model</h2>
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🤖 Per-Model Controls</h2>
         <button onclick="showAddBudgetModal()" class="btn btn-ghost text-xs py-1">💰 Set Budget</button>
       </div>
       <div id="model-breakdown" class="space-y-3">
@@ -385,7 +682,117 @@
   </div>
 </section>
 
-<!-- ═════════════════════════════════════════════════ ④ EVENT LOG ════ -->
+<!-- ═══════════════════════════════════════════════════ ⑥ POLICY EDITOR ════ -->
+<section id="section-policy">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-5">
+      <div class="flex items-center gap-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">📝 Policy Editor</h2>
+        <span id="policy-lock-badge" class="hidden items-center gap-1 text-amber-400 text-xs">🔒 Locked</span>
+        <span id="policy-version-badge" class="text-xs text-slate-500">v1</span>
+      </div>
+      <div class="flex flex-wrap gap-2 items-center">
+        <!-- Simple/Advanced toggle -->
+        <div class="flex rounded-lg overflow-hidden border border-slate-700">
+          <button onclick="setPolicyMode('simple')" id="policy-mode-simple" class="btn btn-active rounded-none border-0 px-3 py-1.5 text-xs">Simple</button>
+          <button onclick="setPolicyMode('advanced')" id="policy-mode-advanced" class="btn btn-ghost rounded-none border-0 border-l border-slate-700 px-3 py-1.5 text-xs">Advanced</button>
+        </div>
+        <button onclick="validatePolicy()" class="btn btn-ghost text-xs py-1">✅ Validate</button>
+        <button onclick="previewPolicyDiff()" class="btn btn-ghost text-xs py-1">👁 Diff</button>
+        <button onclick="applyPolicy()" class="btn btn-success text-xs py-1.5 px-3">🔄 Apply</button>
+        <button onclick="revertPolicy()" class="btn btn-ghost text-xs py-1">↩️ Revert</button>
+        <button onclick="loadPolicyHistory()" class="btn btn-ghost text-xs py-1">📜 History</button>
+        <button onclick="exportPolicy()" class="btn btn-ghost text-xs py-1">📥 Export</button>
+        <button onclick="document.getElementById('policy-import-file').click()" class="btn btn-ghost text-xs py-1">📤 Import</button>
+        <input type="file" id="policy-import-file" class="hidden" accept=".yaml,.yml,.json" onchange="importPolicy(this)"/>
+        <button onclick="togglePolicyLock()" class="btn btn-ghost text-xs py-1">🔒 Lock</button>
+      </div>
+    </div>
+    <!-- Preset buttons -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <span class="text-xs text-slate-500 self-center">Presets:</span>
+      <button onclick="applyPolicyPreset('permissive')" class="btn btn-ghost text-xs py-1">🟢 Permissive</button>
+      <button onclick="applyPolicyPreset('balanced')"   class="btn btn-ghost text-xs py-1">🟡 Balanced</button>
+      <button onclick="applyPolicyPreset('strict')"     class="btn btn-ghost text-xs py-1">🔴 Strict</button>
+      <button onclick="applyPolicyPreset('paranoid')"   class="btn btn-ghost text-xs py-1">🛡️ Paranoid</button>
+    </div>
+    <!-- Simple Mode -->
+    <div id="policy-simple-mode">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-1.5">Daily Budget ($)</label>
+            <input id="simple-daily-budget" type="number" step="0.5" min="0" placeholder="e.g. 10.00"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-1.5">Hourly Budget ($)</label>
+            <input id="simple-hourly-budget" type="number" step="0.1" min="0" placeholder="e.g. 2.00"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-1.5">Rate Limit (default)</label>
+            <select id="simple-rate-limit" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-sky-500">
+              <option value="unlimited">Unlimited</option>
+              <option value="60/min">60/min</option>
+              <option value="30/min">30/min</option>
+              <option value="20/min">20/min</option>
+              <option value="10/min">10/min</option>
+              <option value="5/min">5/min</option>
+              <option value="1/min">1/min</option>
+            </select>
+          </div>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-2">Security Settings</label>
+            <div class="space-y-2">
+              <label class="toggle-wrap text-sm text-slate-300">
+                <input type="checkbox" id="simple-pii" class="toggle-input" checked/>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                PII Detection
+              </label>
+              <label class="toggle-wrap text-sm text-slate-300">
+                <input type="checkbox" id="simple-network" class="toggle-input" checked/>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                Network Controls
+              </label>
+              <label class="toggle-wrap text-sm text-slate-300">
+                <input type="checkbox" id="simple-dlp" class="toggle-input"/>
+                <span class="toggle-track"><span class="toggle-thumb"></span></span>
+                DLP (Data Loss Prevention)
+              </label>
+            </div>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-1.5">Blocked Tools (comma-separated)</label>
+            <input id="simple-blocked-tools" type="text" placeholder="e.g. delete_file, exec_shell"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+          </div>
+          <div>
+            <label class="text-xs text-slate-400 font-medium block mb-1.5">Require Approval For</label>
+            <input id="simple-approval-tools" type="text" placeholder="e.g. send_email, delete_file"
+              class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Advanced Mode (YAML Editor) -->
+    <div id="policy-advanced-mode" class="hidden">
+      <div class="flex items-center justify-between mb-2">
+        <p class="text-xs text-slate-500">Edit policy YAML directly. Changes take effect when you click Apply.</p>
+        <div class="flex gap-1.5">
+          <button onclick="formatYaml()" class="btn btn-ghost text-xs py-1">⚙️ Format</button>
+          <button onclick="copyPolicyYaml()" class="btn btn-ghost text-xs py-1">📋 Copy</button>
+        </div>
+      </div>
+      <textarea id="policy-yaml-editor" spellcheck="false" onkeydown="handleYamlKeydown(event)"></textarea>
+      <div id="policy-validate-msg" class="hidden mt-2 p-2 rounded-lg text-xs font-medium"></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════════════════════════════ ⑦ EVENT LOG ════ -->
 <section id="section-events">
   <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
     <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -474,33 +881,41 @@
 
 </main>
 
-<!-- ═══════════════════════════════════════════════ QUICK STATS BAR ════ -->
-<div id="quick-stats-bar" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
-  <div class="flex items-center gap-4 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-2xl px-5 py-2.5 shadow-2xl text-xs">
-    <div class="flex items-center gap-1.5">
-      <span class="text-slate-500">Events/min</span>
-      <span id="qs-events-min" class="text-white font-bold tabular-nums">0.0</span>
+<!-- ═══════════════════════════════════════ QUICK STATS + ACTIONS BAR ════ -->
+<div id="quick-stats-bar" class="fixed bottom-0 left-0 right-0 z-40" style="padding-bottom:env(safe-area-inset-bottom,0px)">
+  <div class="max-w-[1600px] mx-auto px-3 pb-3">
+    <!-- Quick Actions row -->
+    <div id="quick-actions" class="flex items-center gap-2 bg-slate-900/98 backdrop-blur border border-slate-700 rounded-2xl px-4 py-2.5 shadow-2xl overflow-x-auto">
+      <!-- Stats mini-display -->
+      <div class="flex items-center gap-3 text-xs shrink-0">
+        <span class="text-slate-500">ev/min</span><span id="qs-events-min" class="text-white font-bold tabular-nums">0.0</span>
+        <span class="w-px h-4 bg-slate-700 inline-block"></span>
+        <span class="text-slate-500">$/min</span><span id="qs-cost-min" class="text-yellow-400 font-bold tabular-nums">$0.000000</span>
+        <span class="w-px h-4 bg-slate-700 inline-block"></span>
+        <span id="qs-last-update" class="text-slate-500">—</span>
+      </div>
+      <div class="w-px h-5 bg-slate-700 shrink-0 hidden sm:block"></div>
+      <!-- Action buttons -->
+      <div class="flex items-center gap-1.5 flex-wrap">
+        <button id="qa-pause-btn" onclick="agentControl('pause')" class="btn btn-ghost text-xs py-1.5 px-2.5 shrink-0" title="Pause/Resume (P)">⏸️ <span class="hidden sm:inline">Pause</span></button>
+        <button onclick="confirmEmergencyStop()" class="btn btn-danger text-xs py-1.5 px-2.5 shrink-0 font-bold" title="Emergency STOP (S)">🛑 STOP</button>
+        <button id="qa-approve-all-btn" onclick="handleApprovalBulk('approve-all')" class="btn btn-success text-xs py-1.5 px-2.5 shrink-0" title="Approve All (Shift+A)">✅ Approve All <span id="qa-pending-count" class="badge hidden">0</span></button>
+        <button onclick="boostBudget(5)" class="btn btn-ghost text-xs py-1.5 px-2.5 shrink-0" title="Quick +$5 budget (B)">💰 +$5</button>
+        <button onclick="manualRefresh()" class="btn btn-ghost text-xs py-1.5 px-2.5 shrink-0" title="Refresh (R)">🔄</button>
+        <button onclick="openModal('modal-shortcuts')" class="btn btn-ghost text-xs py-1.5 px-2.5 shrink-0" title="Shortcuts (?)">⌨️</button>
+        <button onclick="openNotifDrawer()" class="btn btn-ghost text-xs py-1.5 px-2.5 shrink-0 relative" title="Notifications (N)">🔔<span id="qa-notif-badge" class="hidden absolute -top-1 -right-1 min-w-[14px] h-3.5 rounded-full bg-rose-600 text-[9px] text-white font-bold flex items-center justify-center px-0.5">0</span></button>
+      </div>
+      <div class="ml-auto shrink-0">
+        <button onclick="document.getElementById('quick-stats-bar').classList.toggle('translate-y-full')" class="text-slate-500 hover:text-slate-300 transition-colors text-xs" title="Hide">✕</button>
+      </div>
     </div>
-    <div class="w-px h-4 bg-slate-700"></div>
-    <div class="flex items-center gap-1.5">
-      <span class="text-slate-500">Cost/min</span>
-      <span id="qs-cost-min" class="text-yellow-400 font-bold tabular-nums">$0.000000</span>
-    </div>
-    <div class="w-px h-4 bg-slate-700"></div>
-    <div class="flex items-center gap-1.5">
-      <span class="text-slate-500">Block rate</span>
-      <span id="qs-block-rate" class="text-rose-400 font-bold tabular-nums">0.0%</span>
-    </div>
-    <div class="w-px h-4 bg-slate-700"></div>
-    <span id="qs-last-update" class="text-slate-400">—</span>
-    <button onclick="document.getElementById('quick-stats-bar').classList.toggle('translate-y-24')" class="text-slate-500 hover:text-slate-300 transition-colors" title="Hide">✕</button>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════════════════ FOOTER ════ -->
-<footer class="border-t border-slate-800 mt-16 py-5 pb-20">
+<footer class="border-t border-slate-800 mt-16 py-5 pb-28">
   <div class="max-w-[1600px] mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-slate-600">
-    <span>AgentSentinel — Developer Preview</span>
+    <span>AgentSentinel — Dashboard v1.1.1</span>
     <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-sky-400 transition-colors">GitHub ↗</a>
   </div>
 </footer>
@@ -509,20 +924,32 @@
 
 <!-- Keyboard Shortcuts -->
 <div id="modal-shortcuts" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-shortcuts')">
-  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:480px">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:560px">
     <div class="flex items-center justify-between mb-5">
       <h3 class="text-base font-semibold text-white">⌨️ Keyboard Shortcuts</h3>
       <button onclick="closeModal('modal-shortcuts')" class="btn btn-ghost py-1 px-2">✕</button>
     </div>
-    <div class="grid grid-cols-2 gap-3 text-sm">
+    <div class="grid grid-cols-2 gap-2.5 text-sm">
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">R</kbd><span class="text-slate-400">Refresh</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">P</kbd><span class="text-slate-400">Pause / Resume</span></div>
-      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">D</kbd><span class="text-slate-400">Toggle theme</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">S</kbd><span class="text-slate-400">Emergency STOP</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">A</kbd><span class="text-slate-400">Approve next pending</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">X</kbd><span class="text-slate-400">Reject next pending</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">⇧A</kbd><span class="text-slate-400">Approve ALL pending</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">B</kbd><span class="text-slate-400">Focus budget input</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">T</kbd><span class="text-slate-400">Toggle theme</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">M</kbd><span class="text-slate-400">Toggle sound mute</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">E</kbd><span class="text-slate-400">Open policy editor</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">N</kbd><span class="text-slate-400">Notifications</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">F</kbd><span class="text-slate-400">Focus search</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">1</kbd><span class="text-slate-400">Jump to Stats</span></div>
-      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">2</kbd><span class="text-slate-400">Jump to Charts</span></div>
-      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">3</kbd><span class="text-slate-400">Jump to Tools</span></div>
-      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">4</kbd><span class="text-slate-400">Jump to Events</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">2</kbd><span class="text-slate-400">Jump to Controls</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">3</kbd><span class="text-slate-400">Jump to Budget</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">4</kbd><span class="text-slate-400">Jump to Charts</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">5</kbd><span class="text-slate-400">Jump to Tools</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">6</kbd><span class="text-slate-400">Jump to Policy</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">7</kbd><span class="text-slate-400">Jump to Events</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Ctrl+S</kbd><span class="text-slate-400">Save policy</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">?</kbd><span class="text-slate-400">This dialog</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Esc</kbd><span class="text-slate-400">Close modal</span></div>
     </div>
@@ -598,6 +1025,266 @@
 </div>
 
 <!-- ═══════════════════════════════════════════════════ JAVASCRIPT ════ -->
+<!-- NEW MODALS inserted before JavaScript -->
+
+<!-- Emergency Stop Confirm -->
+<div id="modal-emergency-stop" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-emergency-stop')">
+  <div class="modal-box bg-slate-900 border border-rose-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="text-center mb-5">
+      <div class="text-5xl mb-3">🛑</div>
+      <h3 class="text-xl font-bold text-rose-400">Emergency Stop</h3>
+      <p class="text-sm text-slate-400 mt-2">This will immediately halt ALL tool execution and block all requests. Are you sure?</p>
+    </div>
+    <div class="flex gap-3">
+      <button onclick="closeModal('modal-emergency-stop')" class="btn btn-ghost flex-1" style="justify-content:center">Cancel</button>
+      <button onclick="executeEmergencyStop()" class="btn btn-danger flex-1 font-bold text-sm" style="justify-content:center">🛑 STOP NOW</button>
+    </div>
+  </div>
+</div>
+
+<!-- Reject Reason -->
+<div id="modal-reject-reason" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-reject-reason')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">❌ Reject Request</h3>
+      <button onclick="closeModal('modal-reject-reason')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <input type="hidden" id="reject-approval-id"/>
+    <div class="space-y-3">
+      <select id="reject-reason-select" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500" onchange="toggleCustomReason(this.value)">
+        <option value="too_expensive">💸 Too expensive</option>
+        <option value="not_authorized">🚫 Not authorized</option>
+        <option value="suspicious">⚠️ Suspicious activity</option>
+        <option value="policy_violation">📋 Policy violation</option>
+        <option value="custom">✏️ Custom reason…</option>
+      </select>
+      <input id="reject-reason-custom" type="text" placeholder="Enter custom reason…"
+        class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 hidden"/>
+      <button onclick="submitReject()" class="btn btn-danger w-full font-semibold" style="justify-content:center">❌ Reject</button>
+    </div>
+  </div>
+</div>
+
+<!-- View Full Args -->
+<div id="modal-view-args" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-view-args')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">👁 Full Arguments</h3>
+      <div class="flex gap-2">
+        <button onclick="copyArgsJson()" class="btn btn-ghost py-1 px-2 text-xs">📋 Copy</button>
+        <button onclick="closeModal('modal-view-args')" class="btn btn-ghost py-1 px-2">✕</button>
+      </div>
+    </div>
+    <pre id="args-json-content" class="bg-slate-950 rounded-xl p-4 text-xs text-emerald-300 font-mono overflow-auto max-h-96 whitespace-pre-wrap"></pre>
+  </div>
+</div>
+
+<!-- Add Agent -->
+<div id="modal-add-agent" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-add-agent')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">➕ Connect Agent</h3>
+      <button onclick="closeModal('modal-add-agent')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="space-y-3">
+      <input id="new-agent-id" type="text" placeholder="Agent ID (e.g. my-agent-1)"
+        class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      <input id="new-agent-nickname" type="text" placeholder="Nickname (e.g. Research Bot)"
+        class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      <button onclick="addAgent()" class="btn btn-primary w-full" style="justify-content:center">Connect Agent</button>
+    </div>
+  </div>
+</div>
+
+<!-- Approval Settings -->
+<div id="modal-approval-settings" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-approval-settings')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:480px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">⚙️ Approval Settings</h3>
+      <button onclick="closeModal('modal-approval-settings')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="text-xs text-slate-400 font-medium block mb-1.5">Auto-reject timeout</label>
+        <select id="modal-auto-reject" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-sky-500">
+          <option value="30">30 seconds</option>
+          <option value="60" selected>1 minute</option>
+          <option value="300">5 minutes</option>
+          <option value="0">Never</option>
+        </select>
+      </div>
+      <div class="space-y-2">
+        <label class="toggle-wrap text-sm text-slate-300">
+          <input type="checkbox" id="modal-approval-sound" class="toggle-input" checked/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          🔊 Sound on new approval
+        </label>
+        <label class="toggle-wrap text-sm text-slate-300">
+          <input type="checkbox" id="modal-approval-push" class="toggle-input"/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          📱 Browser push notifications
+        </label>
+      </div>
+      <button onclick="saveApprovalSettingsModal()" class="btn btn-primary w-full" style="justify-content:center">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Budget Thresholds -->
+<div id="modal-budget-thresholds" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-budget-thresholds')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">⚠️ Warning Thresholds</h3>
+      <button onclick="closeModal('modal-budget-thresholds')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <p class="text-xs text-slate-400 mb-4">Alert me when budget usage reaches:</p>
+    <div class="space-y-2">
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="thresh-50" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        50% — Early warning
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="thresh-75" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        75% — Getting high
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="thresh-90" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        90% — Critical
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="thresh-95" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        95% — Almost gone
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="thresh-100" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        100% — Exhausted!
+      </label>
+    </div>
+    <button onclick="saveThresholds()" class="btn btn-primary w-full mt-4" style="justify-content:center">Save</button>
+  </div>
+</div>
+
+<!-- Notification Settings -->
+<div id="modal-notif-settings" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-notif-settings')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:480px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">🔔 Notification Settings</h3>
+      <button onclick="closeModal('modal-notif-settings')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="space-y-3">
+      <p class="text-xs text-slate-500 uppercase tracking-wider font-medium">Notification Types</p>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="ns-approval" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🟡 Approval needed
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="ns-budget" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🔴 Budget warning
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="ns-rate-limit" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🟠 Rate limit hit
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="ns-security" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        🔴 Security block
+      </label>
+      <label class="toggle-wrap text-sm text-slate-300">
+        <input type="checkbox" id="ns-info" class="toggle-input" checked/>
+        <span class="toggle-track"><span class="toggle-thumb"></span></span>
+        ⚪ Info / agent events
+      </label>
+      <div class="border-t border-slate-800 pt-3 mt-2 space-y-2">
+        <label class="toggle-wrap text-sm text-slate-300">
+          <input type="checkbox" id="ns-sound" class="toggle-input" checked/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          🔊 Sound alerts
+        </label>
+        <label class="toggle-wrap text-sm text-slate-300">
+          <input type="checkbox" id="ns-push" class="toggle-input"/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          📱 Browser push notifications
+        </label>
+        <label class="toggle-wrap text-sm text-slate-300">
+          <input type="checkbox" id="ns-dnd" class="toggle-input"/>
+          <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          🔇 Do Not Disturb
+        </label>
+      </div>
+      <div>
+        <label class="text-xs text-slate-400 font-medium block mb-1.5">Email digest</label>
+        <select id="ns-email" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-300 focus:outline-none focus:ring-1 focus:ring-sky-500">
+          <option value="off" selected>Off</option>
+          <option value="realtime">Real-time</option>
+          <option value="hourly">Hourly</option>
+          <option value="daily">Daily digest</option>
+        </select>
+      </div>
+      <button onclick="saveNotifSettings()" class="btn btn-primary w-full" style="justify-content:center">Save Settings</button>
+    </div>
+  </div>
+</div>
+
+<!-- Tool Note Modal -->
+<div id="modal-tool-note" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-tool-note')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">📝 Add Note</h3>
+      <button onclick="closeModal('modal-tool-note')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <input type="hidden" id="note-tool-name"/>
+    <textarea id="tool-note-content" rows="4" placeholder="Notes about this tool…"
+      class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500 resize-none"></textarea>
+    <button onclick="saveToolNote()" class="btn btn-primary w-full mt-3" style="justify-content:center">Save Note</button>
+  </div>
+</div>
+
+<!-- Policy History -->
+<div id="modal-policy-history" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-policy-history')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:560px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">📜 Policy Version History</h3>
+      <button onclick="closeModal('modal-policy-history')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div id="policy-history-list" class="space-y-2 max-h-80 overflow-y-auto">
+      <p class="text-slate-600 text-sm italic text-center py-4">No history yet…</p>
+    </div>
+  </div>
+</div>
+
+<!-- Policy Diff Preview -->
+<div id="modal-policy-diff" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-policy-diff')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">👁 Policy Diff Preview</h3>
+      <button onclick="closeModal('modal-policy-diff')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div>
+        <p class="text-xs text-slate-500 mb-2">Current</p>
+        <pre id="diff-current" class="bg-slate-950 rounded-lg p-3 text-xs text-slate-400 font-mono overflow-auto max-h-64 whitespace-pre-wrap"></pre>
+      </div>
+      <div>
+        <p class="text-xs text-slate-500 mb-2">Pending</p>
+        <pre id="diff-pending" class="bg-slate-950 rounded-lg p-3 text-xs text-emerald-300 font-mono overflow-auto max-h-64 whitespace-pre-wrap"></pre>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-4">
+      <button onclick="closeModal('modal-policy-diff')" class="btn btn-ghost flex-1" style="justify-content:center">Cancel</button>
+      <button onclick="applyPolicy();closeModal('modal-policy-diff')" class="btn btn-success flex-1" style="justify-content:center">Apply Changes</button>
+    </div>
+  </div>
+</div>
+
 <script>
 'use strict';
 
@@ -609,6 +1296,20 @@ const STATE = {
   pageSize: 50, totalPages: 1,
   searchDebounce: null, refreshTimer: null,
   pinnedCards: new Set(), lastData: null,
+  // New in v1.1.1
+  agentStatus: 'running',
+  currentAgent: 'all',
+  agentUptimeStart: Date.now(),
+  soundEnabled: true,
+  notifFilter: 'all',
+  policyMode: 'simple',
+  policyYaml: '',
+  policyLocked: false,
+  policyVersion: 1,
+  budgetLocked: false,
+  notifSettings: {},
+  agents: [],
+  muted: false,
 };
 const CHARTS = {};
 let currentPage = 1;
@@ -1008,45 +1709,8 @@ function renderStats(data){
 }
 
 /* ─── Tool breakdown ─────────────────────────────────────────────────── */
-function renderTools(tools){
-  const container=document.getElementById('tool-breakdown');
-  if(!tools||tools.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No tool data yet…</p>';return;}
-  const sorted=[...tools].sort((a,b)=>b.calls-a.calls);
-  const maxC=sorted[0].calls||1;
-  // Update filter dropdown
-  const sel=document.getElementById('filter-tool');
-  const existing=new Set([...sel.options].map(o=>o.value));
-  sorted.forEach(t=>{ if(!existing.has(t.name)){const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);} });
-  container.innerHTML=sorted.map(t=>{
-    const bp=Math.round((t.calls/maxC)*100);
-    const blkP=t.calls>0?Math.round((t.blocked/t.calls)*100):0;
-    return `<div class="border border-slate-800 rounded-xl overflow-hidden">
-      <div class="flex items-center justify-between px-4 py-3 gap-2">
-        <div class="flex items-center gap-2 min-w-0">
-          <button onclick="toggleToolRow(this)" class="text-slate-500 hover:text-slate-300 text-xs shrink-0 w-4">▶</button>
-          <span class="text-sm font-medium text-slate-200 font-mono truncate">${escHtml(t.name)}</span>
-        </div>
-        <div class="flex items-center gap-2 shrink-0">
-          <span class="text-xs text-slate-500">${fmt(t.calls)}c</span>
-          <span class="text-xs text-rose-400">${fmt(t.blocked)}blk</span>
-          <span class="text-xs text-yellow-400">${fmtCost(t.cost)}</span>
-          <div class="flex gap-1">
-            <button onclick="viewToolHistory('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="History">📊</button>
-            <button onclick="copyToolName('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">🔗</button>
-            <button onclick="quickAction('${jsStr(t.name)}','pause')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Pause">⏸</button>
-            <button onclick="quickAction('${jsStr(t.name)}','rl')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Rate Limit">⚙️</button>
-          </div>
-        </div>
-      </div>
-      <div class="px-4 pb-2"><div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div></div>
-      <div class="tool-detail hidden px-4 pb-3 border-t border-slate-800/60 pt-3 grid grid-cols-3 gap-3 text-xs text-slate-400">
-        <div><p class="text-slate-500">Block rate</p><p class="text-white font-semibold">${blkP}%</p></div>
-        <div><p class="text-slate-500">Avg cost</p><p class="text-yellow-400 font-semibold">${fmtCost(t.calls>0?t.cost/t.calls:0)}</p></div>
-        <div><p class="text-slate-500">Total cost</p><p class="text-yellow-400 font-semibold">${fmtCost(t.cost)}</p></div>
-      </div>
-    </div>`;
-  }).join('');
-}
+/* renderTools and renderModels are defined as window.* assignments below */
+function renderTools(tools){ window.renderTools(tools); }
 function toggleToolRow(btn){
   const d=btn.closest('.border').querySelector('.tool-detail');
   if(!d) return;
@@ -1061,10 +1725,6 @@ function expandAllTools(){
   });
 }
 function copyToolName(n){ navigator.clipboard.writeText(n).then(()=>toast('Copied: '+n)); }
-function quickAction(n,a){
-  if(a==='pause') toast('Hint: add "'+n+'" to blocked_tools in AgentPolicy','warning');
-  else toast('Hint: rate_limits={"'+n+'":"20/min"} in AgentPolicy','info');
-}
 function viewToolHistory(name){
   document.getElementById('tool-history-title').textContent='Tool: '+name;
   const hist=STATE.lastData?.history||{};
@@ -1086,35 +1746,7 @@ function viewToolHistory(name){
 }
 
 /* ─── Model breakdown ───────────────────────────────────────────────── */
-function renderModels(models){
-  const container=document.getElementById('model-breakdown');
-  if(!models||models.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No model data yet…</p>';return;}
-  const sel=document.getElementById('budget-model');
-  sel.innerHTML='<option value="">Select model…</option>';
-  models.forEach(m=>{const o=document.createElement('option');o.value=m.model;o.textContent=m.model;sel.appendChild(o);});
-  const maxC=models[0].cost||1;
-  container.innerHTML=models.map(m=>{
-    const bp=maxC>0?Math.round((m.cost/maxC)*100):0;
-    const budg=m.budget!=null?`
-      <div class="mt-1.5"><div class="flex justify-between text-xs text-slate-500 mb-0.5"><span>${fmtCost(m.cost)} / ${fmtCost(m.budget)}</span><span>${Math.min(100,Math.round((m.cost/m.budget)*100))}%</span></div>
-      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full ${m.cost/m.budget>=0.9?'bg-rose-500':m.cost/m.budget>=0.7?'bg-yellow-500':'bg-emerald-500'}" style="width:${Math.min(100,Math.round((m.cost/m.budget)*100))}%"></div></div></div>`:'';
-    return `<div class="border border-slate-800 rounded-xl p-4">
-      <div class="flex items-center justify-between mb-2 gap-2">
-        <span class="text-sm font-medium text-slate-200 font-mono truncate">${escHtml(m.model)}</span>
-        <div class="flex items-center gap-1.5 shrink-0">
-          <span class="text-xs text-slate-500">${fmt(m.calls)}c</span>
-          <span class="text-xs text-slate-500">${fmt((m.input_tokens||0)+(m.output_tokens||0))}t</span>
-          <span class="text-xs text-yellow-400">${fmtCost(m.cost)}</span>
-          <button onclick="viewModelStats('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Stats">📊</button>
-          <button onclick="copyModelName('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
-          <button onclick="document.getElementById('budget-model').value='${jsStr(m.model)}';showAddBudgetModal()" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Budget">💰</button>
-        </div>
-      </div>
-      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div>
-      ${budg}
-    </div>`;
-  }).join('');
-}
+function renderModels(models){ window.renderModels(models); }
 function copyModelName(n){ navigator.clipboard.writeText(n).then(()=>toast('Copied: '+n)); }
 function viewModelStats(name){
   document.getElementById('model-stats-title').textContent='Model: '+name;
@@ -1232,35 +1864,6 @@ function exportEvents(format){
 function dlBlob(blob,name){ const a=document.createElement('a'); a.download=name; a.href=URL.createObjectURL(blob); a.click(); }
 
 /* ─── Approvals ─────────────────────────────────────────────────────── */
-async function loadApprovals(){
-  try {
-    const r=await fetch('/api/approvals');
-    const d=await r.json();
-    const pending=(d.approvals||[]).filter(a=>a.status==='pending');
-    const badge=document.getElementById('approvals-badge');
-    if(pending.length>0){ badge.textContent=pending.length; badge.classList.remove('hidden'); badge.classList.add('inline-flex'); }
-    else badge.classList.add('hidden');
-    const list=document.getElementById('approvals-list');
-    if(pending.length===0){ list.innerHTML='<p class="text-slate-600 text-sm italic">No pending approvals…</p>'; return; }
-    list.innerHTML=pending.map(a=>`<div class="flex items-start justify-between p-3 rounded-xl border border-yellow-800/40 bg-yellow-950/20 gap-3">
-      <div class="min-w-0">
-        <p class="text-sm font-medium text-yellow-200 font-mono truncate">${escHtml(a.tool_name)}</p>
-        <p class="text-xs text-slate-400 truncate">${escHtml(a.action)}</p>
-        <p class="text-xs text-slate-500">${fmtDateTime(a.timestamp)}</p>
-      </div>
-      <div class="flex gap-2 shrink-0">
-        <button onclick="handleApproval('${a.id}','approve')" class="btn btn-success py-1 px-3">✅ Approve</button>
-        <button onclick="handleApproval('${a.id}','reject')"  class="btn btn-danger  py-1 px-3">❌ Reject</button>
-      </div>
-    </div>`).join('');
-  } catch(_){}
-}
-async function handleApproval(id,action){
-  try {
-    const r=await fetch('/api/approvals/'+id+'/'+action,{method:'POST'});
-    if(r.ok){ toast('Request '+action+'d',action==='approve'?'success':'warning'); loadApprovals(); }
-  } catch(_){ toast('Failed to '+action+' request','error'); }
-}
 
 /* ─── Alerts ─────────────────────────────────────────────────────────── */
 async function loadAlerts(){
@@ -1358,18 +1961,44 @@ function manualRefresh(){ doRefresh(); toast('Dashboard refreshed','success'); }
 
 /* ─── Keyboard shortcuts ─────────────────────────────────────────────── */
 document.addEventListener('keydown',e=>{
-  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA') return;
-  switch(e.key.toLowerCase()){
-    case 'r': manualRefresh(); break;
-    case 'p': togglePause(); break;
-    case 'd': toggleTheme(); break;
-    case 'f': e.preventDefault(); document.getElementById('event-search')?.focus(); break;
+  const inInput=e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA';
+  // Allow Ctrl+S in textarea for policy save
+  if(e.ctrlKey && e.key.toLowerCase()==='s'){
+    e.preventDefault();
+    if(!inInput || e.target.id==='policy-yaml-editor') applyPolicy();
+    return;
+  }
+  if(inInput) return;
+  switch(e.key){
+    case 'r': case 'R': manualRefresh(); break;
+    case 'p': case 'P': togglePause(); break;
+    case 's': case 'S': confirmEmergencyStop(); break;
+    case 'a': case 'A':
+      if(e.shiftKey) handleApprovalBulk('approve-all');
+      else approveNext();
+      break;
+    case 'x': case 'X': rejectNext(); break;
+    case 'b': case 'B': e.preventDefault(); focusBudgetInput(); break;
+    case 't': case 'T': toggleTheme(); break;
+    case 'm': case 'M': toggleMute(); break;
+    case 'e': case 'E': document.getElementById('section-policy')?.scrollIntoView({behavior:'smooth'}); break;
+    case 'n': case 'N': openNotifDrawer(); break;
+    case 'f': case 'F': e.preventDefault(); document.getElementById('event-search')?.focus(); break;
     case '1': document.getElementById('section-stats')?.scrollIntoView({behavior:'smooth'}); break;
-    case '2': document.getElementById('section-charts')?.scrollIntoView({behavior:'smooth'}); break;
-    case '3': document.getElementById('section-tools')?.scrollIntoView({behavior:'smooth'}); break;
-    case '4': document.getElementById('section-events')?.scrollIntoView({behavior:'smooth'}); break;
+    case '2': document.getElementById('section-controls')?.scrollIntoView({behavior:'smooth'}); break;
+    case '3': document.getElementById('section-budget')?.scrollIntoView({behavior:'smooth'}); break;
+    case '4': document.getElementById('section-charts')?.scrollIntoView({behavior:'smooth'}); break;
+    case '5': document.getElementById('section-tools')?.scrollIntoView({behavior:'smooth'}); break;
+    case '6': document.getElementById('section-policy')?.scrollIntoView({behavior:'smooth'}); break;
+    case '7': document.getElementById('section-events')?.scrollIntoView({behavior:'smooth'}); break;
     case '?': showShortcutsModal(); break;
-    case 'escape': ['modal-shortcuts','modal-fullscreen','modal-tool-history','modal-model-stats','modal-add-metric','modal-set-budget'].forEach(closeModal); break;
+    case 'Escape':
+      closeNotifDrawer();
+      ['modal-shortcuts','modal-fullscreen','modal-tool-history','modal-model-stats','modal-add-metric',
+       'modal-set-budget','modal-emergency-stop','modal-reject-reason','modal-view-args','modal-add-agent',
+       'modal-approval-settings','modal-budget-thresholds','modal-notif-settings','modal-tool-note',
+       'modal-policy-history','modal-policy-diff'].forEach(closeModal);
+      break;
   }
 });
 
@@ -1385,12 +2014,952 @@ function restorePrefs(){
     const pinned=JSON.parse(localStorage.getItem('as_pinned')||'[]');
     pinned.forEach(id=>{ STATE.pinnedCards.add(id); const c=document.getElementById('card-'+id); if(c){c.style.outline='2px solid #38bdf8';c.style.outlineOffset='2px';} });
   } catch(_){}
+  // Restore sound toggle
+  const soundOff=localStorage.getItem('as_sound')==='off';
+  STATE.soundEnabled=!soundOff;
+  STATE.muted=soundOff;
+  const st=document.getElementById('sound-toggle');
+  if(st) st.checked=STATE.soundEnabled;
 }
 
 /* ─── Boot ───────────────────────────────────────────────────────────── */
 restorePrefs();
 doRefresh();
 resetTimer();
+loadAgents();
+loadNotifications();
+loadPolicy();
+// Uptime ticker
+setInterval(()=>{
+  const el=document.getElementById('agent-uptime');
+  if(!el) return;
+  const sec=Math.floor((Date.now()-STATE.agentUptimeStart)/1000);
+  const h=Math.floor(sec/3600), m=Math.floor((sec%3600)/60), s=sec%60;
+  el.textContent=h>0?`${h}h ${m}m ${s}s`:m>0?`${m}m ${s}s`:`${s}s`;
+},1000);
+
+/* ══════════════════════════════════════════════════════════════════════
+   NEW FUNCTIONALITY — v1.1.1
+   ══════════════════════════════════════════════════════════════════════ */
+
+/* ─── Notification Center ────────────────────────────────────────────── */
+function openNotifDrawer(){
+  document.getElementById('notif-drawer').classList.add('open');
+  document.getElementById('notif-overlay').classList.add('open');
+  loadNotifications();
+}
+function closeNotifDrawer(){
+  document.getElementById('notif-drawer').classList.remove('open');
+  document.getElementById('notif-overlay').classList.remove('open');
+}
+function setNotifFilter(f){
+  STATE.notifFilter=f;
+  ['all','unread','approval_needed','budget_warning'].forEach(id=>{
+    const el=document.getElementById('nf-'+id);
+    if(!el) return;
+    if(id===f){el.classList.add('btn-active');el.classList.remove('btn-ghost');}
+    else{el.classList.remove('btn-active');el.classList.add('btn-ghost');}
+  });
+  renderNotifications();
+}
+async function loadNotifications(){
+  try {
+    const r=await fetch('/api/notifications');
+    const d=await r.json();
+    STATE._notifications=d.notifications||[];
+    renderNotifications();
+    const unread=STATE._notifications.filter(n=>!n.read).length;
+    updateNotifBadge(unread);
+  } catch(_){}
+}
+function renderNotifications(){
+  const notifs=STATE._notifications||[];
+  const filter=STATE.notifFilter;
+  const filtered=notifs.filter(n=>{
+    if(filter==='unread') return !n.read;
+    if(filter==='all') return true;
+    return n.type===filter;
+  });
+  const list=document.getElementById('notif-list');
+  if(!list) return;
+  if(filtered.length===0){list.innerHTML='<p class="text-slate-600 text-sm italic text-center py-8">No notifications…</p>';return;}
+  const typeIcon={'approval_needed':'🟡','budget_warning':'🔴','rate_limit':'🟠','security_block':'🔴','info':'⚪'};
+  list.innerHTML=filtered.map(n=>`
+    <div id="notif-${n.id}" class="p-3 rounded-xl border ${n.read?'border-slate-800 bg-slate-800/20':'border-slate-700 bg-slate-800/50'} text-sm transition-all">
+      <div class="flex items-start justify-between gap-2">
+        <div class="flex-1 min-w-0">
+          <div class="flex items-center gap-1.5 mb-0.5">
+            <span>${typeIcon[n.type]||'⚪'}</span>
+            <span class="font-medium text-white text-xs ${n.read?'opacity-70':''}">${escHtml(n.title)}</span>
+            ${!n.read?'<span class="w-1.5 h-1.5 rounded-full bg-sky-400 inline-block shrink-0"></span>':''}
+          </div>
+          <p class="text-slate-400 text-xs">${escHtml(n.message)}</p>
+          <p class="text-slate-600 text-[10px] mt-0.5">${new Date(n.timestamp*1000).toLocaleTimeString()}</p>
+        </div>
+        <div class="flex gap-1 shrink-0">
+          ${!n.read?`<button onclick="markNotifRead('${n.id}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Mark read">✓</button>`:''}
+          <button onclick="snoozeNotif('${n.id}',15)" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Snooze 15min">⏰</button>
+          <button onclick="dismissNotif('${n.id}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Dismiss">✕</button>
+        </div>
+      </div>
+    </div>`).join('');
+}
+async function markNotifRead(id){
+  try { await fetch('/api/notifications/'+id+'/read',{method:'POST'}); } catch(_){}
+  const n=STATE._notifications?.find(x=>x.id===id);
+  if(n) n.read=true;
+  renderNotifications();
+  updateNotifBadge((STATE._notifications||[]).filter(x=>!x.read).length);
+}
+async function markAllNotifRead(){
+  try { await fetch('/api/notifications/read-all',{method:'POST'}); } catch(_){}
+  (STATE._notifications||[]).forEach(n=>n.read=true);
+  renderNotifications();
+  updateNotifBadge(0);
+  toast('All notifications marked as read','success');
+}
+async function dismissNotif(id){
+  try { await fetch('/api/notifications/'+id+'/dismiss',{method:'POST'}); } catch(_){}
+  STATE._notifications=(STATE._notifications||[]).filter(n=>n.id!==id);
+  renderNotifications();
+}
+async function snoozeNotif(id,minutes){
+  try { await fetch('/api/notifications/'+id+'/snooze',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({minutes})}); } catch(_){}
+  STATE._notifications=(STATE._notifications||[]).filter(n=>n.id!==id);
+  renderNotifications();
+  toast(`Snoozed for ${minutes} min`,'info');
+}
+function updateNotifBadge(count){
+  const badge=document.getElementById('notif-bell-badge');
+  const drawerBadge=document.getElementById('notif-drawer-unread');
+  const qaBadge=document.getElementById('qa-notif-badge');
+  if(count>0){
+    [badge,drawerBadge,qaBadge].forEach(b=>{
+      if(!b) return;
+      b.classList.remove('hidden');
+      if(b.classList.contains('inline-flex')) b.classList.add('inline-flex');
+      b.textContent=count;
+    });
+  } else {
+    [badge,drawerBadge,qaBadge].forEach(b=>b&&b.classList.add('hidden'));
+  }
+}
+function toggleSound(enabled){
+  STATE.soundEnabled=enabled;
+  STATE.muted=!enabled;
+  localStorage.setItem('as_sound',enabled?'on':'off');
+  toast(enabled?'Sound alerts on 🔊':'Sound muted 🔇');
+}
+function toggleMute(){
+  STATE.muted=!STATE.muted;
+  STATE.soundEnabled=!STATE.muted;
+  localStorage.setItem('as_sound',STATE.soundEnabled?'on':'off');
+  const st=document.getElementById('sound-toggle');
+  if(st) st.checked=STATE.soundEnabled;
+  toast(STATE.muted?'Sound muted 🔇':'Sound on 🔊');
+}
+function togglePush(enabled){
+  toast(enabled?'Push notifications enabled':'Push notifications disabled');
+}
+async function saveNotifSettings(){
+  const settings={
+    approval_needed:document.getElementById('ns-approval')?.checked,
+    budget_warning:document.getElementById('ns-budget')?.checked,
+    rate_limit:document.getElementById('ns-rate-limit')?.checked,
+    security_block:document.getElementById('ns-security')?.checked,
+    info:document.getElementById('ns-info')?.checked,
+    sound_enabled:document.getElementById('ns-sound')?.checked,
+    push_enabled:document.getElementById('ns-push')?.checked,
+    dnd_mode:document.getElementById('ns-dnd')?.checked,
+    email_digest:document.getElementById('ns-email')?.value,
+  };
+  try {
+    await fetch('/api/notifications/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(settings)});
+    closeModal('modal-notif-settings');
+    toast('Notification settings saved','success');
+  } catch(_){toast('Failed to save settings','error');}
+}
+
+/* ─── Agent Tabs ─────────────────────────────────────────────────────── */
+async function loadAgents(){
+  try {
+    const r=await fetch('/api/agents');
+    const d=await r.json();
+    STATE.agents=d.agents||[];
+    renderAgentTabs();
+  } catch(_){}
+}
+function renderAgentTabs(){
+  const agents=STATE.agents||[];
+  const container=document.getElementById('agent-tabs-dynamic');
+  if(!container) return;
+  const statusColor={'active':'bg-emerald-400','idle':'bg-yellow-400','error':'bg-rose-400','connected':'bg-emerald-400'};
+  container.innerHTML=agents.map(a=>{
+    const isActive=STATE.currentAgent===a.id;
+    const dotColor=statusColor[a.status]||'bg-slate-400';
+    const hasUnread=a.unread>0;
+    return `<button onclick="selectAgentTab('${jsStr(a.id)}')" oncontextmenu="agentTabContextMenu(event,'${jsStr(a.id)}')"
+      id="agtab-${jsStr(a.id)}" class="agent-tab ${isActive?'active':''}" title="${escHtml(a.nickname||a.id)}">
+      <span class="status-dot ${dotColor}"></span>
+      <span>${escHtml(a.nickname||a.id)}</span>
+      ${hasUnread?`<span class="badge">${a.unread}</span>`:''}
+      <button onclick="event.stopPropagation();removeAgent('${jsStr(a.id)}')" class="text-slate-500 hover:text-rose-400 ml-0.5 text-xs leading-none" title="Remove">✕</button>
+    </button>`;
+  }).join('');
+}
+function selectAgentTab(agentId){
+  STATE.currentAgent=agentId;
+  document.querySelectorAll('.agent-tab').forEach(t=>{
+    t.classList.toggle('active', t.id==='agtab-'+agentId);
+  });
+  toast('Viewing: '+(agentId==='all'?'All Agents':STATE.agents.find(a=>a.id===agentId)?.nickname||agentId));
+  doRefresh();
+}
+async function addAgent(){
+  const agentId=document.getElementById('new-agent-id')?.value.trim();
+  const nickname=document.getElementById('new-agent-nickname')?.value.trim();
+  if(!agentId){toast('Enter an agent ID','error');return;}
+  try {
+    const r=await fetch('/api/agents',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id:agentId,nickname:nickname||agentId})});
+    const d=await r.json();
+    if(d.ok){
+      closeModal('modal-add-agent');
+      toast('Agent connected: '+(nickname||agentId),'success');
+      await loadAgents();
+      selectAgentTab(agentId);
+    }
+  } catch(_){toast('Failed to add agent','error');}
+}
+async function removeAgent(agentId){
+  if(!confirm(`Remove agent '${agentId}'?`)) return;
+  try {
+    const r=await fetch('/api/agents/'+agentId,{method:'DELETE'});
+    if(r.ok){
+      toast('Agent removed','warning');
+      if(STATE.currentAgent===agentId) selectAgentTab('all');
+      await loadAgents();
+    }
+  } catch(_){}
+}
+function agentTabContextMenu(e,agentId){
+  e.preventDefault();
+  const agent=STATE.agents.find(a=>a.id===agentId)||{};
+  const menu=document.getElementById('ctx-menu');
+  menu.innerHTML=`
+    <button class="ctx-menu-item" onclick="renameAgent('${jsStr(agentId)}');hideCtxMenu()">✏️ Rename</button>
+    <button class="ctx-menu-item" onclick="removeAgent('${jsStr(agentId)}');hideCtxMenu()">🗑️ Remove</button>
+    <button class="ctx-menu-item" onclick="selectAgentTab('${jsStr(agentId)}');hideCtxMenu()">🔍 View</button>
+  `;
+  menu.style.left=e.clientX+'px';
+  menu.style.top=e.clientY+'px';
+  menu.classList.remove('hidden');
+  setTimeout(()=>document.addEventListener('click',hideCtxMenu,{once:true}),10);
+}
+function hideCtxMenu(){document.getElementById('ctx-menu').classList.add('hidden');}
+function renameAgent(agentId){
+  const name=prompt('New nickname:',STATE.agents.find(a=>a.id===agentId)?.nickname||agentId);
+  if(!name) return;
+  fetch('/api/agents/'+agentId+'/nickname',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({nickname:name})})
+    .then(()=>{loadAgents();toast('Renamed to: '+name);})
+    .catch(()=>toast('Rename failed','error'));
+}
+
+/* ─── Agent Runtime Controls ─────────────────────────────────────────── */
+async function agentControl(action){
+  const confirmMsg={'stop':'EMERGENCY STOP — halt all agent activity NOW?','lock':'Lock config (prevent changes)?','unlock':'Unlock config?'};
+  if(confirmMsg[action] && action!=='stop') {
+    if(!confirm(confirmMsg[action])) return;
+  }
+  try {
+    const r=await fetch('/api/agent/'+action,{method:'POST'});
+    const d=await r.json();
+    if(d.ok){
+      const msgs={'pause':'⏸️ Agent paused','resume':'▶️ Agent resumed','stop':'🛑 Emergency stop!','reset':'🔄 Session reset','lock':'🔒 Config locked','unlock':'🔓 Config unlocked'};
+      toast(msgs[action]||action,action==='stop'?'error':'success');
+      updateAgentStatusUI(d.status);
+    }
+  } catch(_){toast('Control failed','error');}
+}
+function confirmEmergencyStop(){
+  const btn=document.getElementById('ctrl-stop-btn');
+  if(btn){btn.classList.add('shake');setTimeout(()=>btn.classList.remove('shake'),500);}
+  openModal('modal-emergency-stop');
+}
+async function executeEmergencyStop(){
+  closeModal('modal-emergency-stop');
+  await agentControl('stop');
+}
+function updateAgentStatusUI(status){
+  if(!status||typeof status!=='object') return;
+  const statusStr=status.status||'running';
+  STATE.agentStatus=statusStr;
+  STATE.agentUptimeStart=Date.now()-(status.uptime_seconds||0)*1000;
+  const badge=document.getElementById('agent-status-badge');
+  const text=document.getElementById('agent-status-text');
+  const lockInd=document.getElementById('agent-lock-indicator');
+  const qaBtn=document.getElementById('qa-pause-btn');
+  if(text) text.textContent=statusStr.charAt(0).toUpperCase()+statusStr.slice(1);
+  if(badge){
+    badge.className='flex items-center gap-1.5 px-3 py-1 rounded-full border text-xs font-medium ';
+    const styles={running:'bg-emerald-950/50 border-emerald-700/40 text-emerald-300',paused:'bg-yellow-950/50 border-yellow-700/40 text-yellow-300',stopped:'bg-rose-950/50 border-rose-700/40 text-rose-300',error:'bg-orange-950/50 border-orange-700/40 text-orange-300'};
+    badge.className+=styles[statusStr]||styles.running;
+  }
+  if(lockInd){
+    if(status.locked){lockInd.classList.remove('hidden');lockInd.classList.add('flex');}
+    else{lockInd.classList.add('hidden');}
+  }
+  if(qaBtn) qaBtn.textContent=statusStr==='paused'?'▶️ Resume':'⏸️ Pause';
+  // Update pause button in controls panel too
+  const pauseBtn=document.getElementById('ctrl-pause-btn');
+  const resumeBtn=document.getElementById('ctrl-resume-btn');
+  if(pauseBtn) pauseBtn.style.opacity=statusStr==='paused'?'0.5':'1';
+  if(resumeBtn) resumeBtn.style.opacity=statusStr!=='paused'?'0.5':'1';
+}
+async function refreshAgentStatus(){
+  try {
+    const r=await fetch('/api/agent/status');
+    const d=await r.json();
+    updateAgentStatusUI(d);
+    const la=document.getElementById('agent-last-activity');
+    if(la && d.last_activity){
+      la.textContent=new Date(d.last_activity*1000).toLocaleTimeString();
+    }
+  } catch(_){}
+}
+
+/* ─── Approval Presets ───────────────────────────────────────────────── */
+async function setApprovalPreset(name){
+  ['permissive','balanced','strict','paranoid'].forEach(p=>{
+    const btn=document.getElementById('preset-'+p);
+    if(!btn) return;
+    if(p===name){btn.classList.add('btn-active');btn.classList.remove('btn-ghost');}
+    else{btn.classList.remove('btn-active');btn.classList.add('btn-ghost');}
+  });
+  try {
+    await fetch('/api/approvals/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({preset:name})});
+    toast('Approval preset: '+name,'success');
+  } catch(_){}
+}
+function saveApprovalSettings(){
+  const timeout=parseInt(document.getElementById('auto-reject-select')?.value||'60');
+  const sound=document.getElementById('approval-sound-toggle')?.checked!==false;
+  fetch('/api/approvals/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timeout_seconds:timeout,sound_enabled:sound})}).catch(()=>{});
+}
+async function saveApprovalSettingsModal(){
+  const timeout=parseInt(document.getElementById('modal-auto-reject')?.value||'60');
+  const sound=document.getElementById('modal-approval-sound')?.checked;
+  const push=document.getElementById('modal-approval-push')?.checked;
+  try {
+    await fetch('/api/approvals/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({timeout_seconds:timeout,sound_enabled:sound,push_notifications:push})});
+    closeModal('modal-approval-settings');
+    toast('Approval settings saved','success');
+  } catch(_){toast('Failed','error');}
+}
+
+/* ─── Budget Controls ────────────────────────────────────────────────── */
+function focusBudgetInput(){
+  const el=document.getElementById('daily-budget-input');
+  if(el){document.getElementById('section-budget')?.scrollIntoView({behavior:'smooth'});setTimeout(()=>el.focus(),300);}
+}
+function syncBudgetSlider(type,value){
+  const input=document.getElementById(type+'-budget-input');
+  if(input) input.value=value;
+  if(type==='daily') applyBudgetInput('daily',value);
+}
+async function applyBudgetInput(type,amount){
+  if(isNaN(amount)||amount<0) return;
+  // Update slider position
+  const slider=document.getElementById(type+'-budget-slider');
+  if(slider) slider.value=Math.min(parseFloat(slider.max),amount);
+  try {
+    const r=await fetch('/api/budget/'+type,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount})});
+    const d=await r.json();
+    if(d.ok) toast(`${type.charAt(0).toUpperCase()+type.slice(1)} budget set to $${amount.toFixed(2)}`,'success');
+    else toast(d.error||'Failed','error');
+  } catch(_){}
+}
+async function boostBudget(amount){
+  if(!amount||amount<=0){toast('Enter a valid amount','error');return;}
+  try {
+    const r=await fetch('/api/budget/boost',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({amount})});
+    const d=await r.json();
+    if(d.ok){
+      toast(`+$${amount.toFixed(2)} added to budget! 🎉`,'success');
+      triggerConfetti();
+      doRefresh();
+    } else toast(d.error||'Failed','error');
+  } catch(_){}
+}
+async function budgetControl(action){
+  try {
+    const r=await fetch('/api/budget/'+action,{method:'POST'});
+    const d=await r.json();
+    const lockInd=document.getElementById('budget-lock-indicator');
+    if(action==='lock'){
+      STATE.budgetLocked=true;
+      if(lockInd){lockInd.classList.remove('hidden');lockInd.classList.add('flex');}
+      toast('Budget locked 🔒');
+    } else {
+      STATE.budgetLocked=false;
+      if(lockInd) lockInd.classList.add('hidden');
+      toast('Budget unlocked 🔓');
+    }
+  } catch(_){}
+}
+async function saveThresholds(){
+  const thresholds=[50,75,90,95,100].filter(t=>document.getElementById('thresh-'+t)?.checked);
+  try {
+    await fetch('/api/budget/thresholds',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({thresholds})});
+    closeModal('modal-budget-thresholds');
+    toast('Thresholds saved','success');
+  } catch(_){}
+}
+async function loadBudgetForecast(){
+  try {
+    const r=await fetch('/api/budget/forecast');
+    const d=await r.json();
+    const msgEl=document.getElementById('budget-forecast-msg');
+    const dailyEl=document.getElementById('budget-forecast-daily');
+    if(msgEl){
+      if(d.exhausted_in_seconds!=null){
+        const h=Math.floor(d.exhausted_in_seconds/3600);
+        const m=Math.floor((d.exhausted_in_seconds%3600)/60);
+        msgEl.textContent=h>0?`exhausted in ~${h}h ${m}m`:`exhausted in ~${m}m`;
+      } else msgEl.textContent='budget will last beyond today';
+    }
+    if(dailyEl) dailyEl.textContent=d.projected_daily_total!=null?'$'+d.projected_daily_total.toFixed(4):'—';
+  } catch(_){}
+}
+function updateBudgetControls(data){
+  const spent=data.daily_spent||0, budget=data.daily_budget;
+  const hourlySpent=data.hourly_spent||0, hourlyBudget=data.hourly_budget;
+  // Daily gauge
+  const pct=budget>0?Math.min(100,Math.round((spent/budget)*100)):0;
+  const color=pct>=90?'#f87171':pct>=70?'#facc15':'#4ade80';
+  const el=document.getElementById('daily-gauge-pct');
+  if(el){el.textContent=pct+'%';el.style.color=color;}
+  const spEl=document.getElementById('daily-gauge-spent');
+  if(spEl) spEl.textContent=fmtCost(spent);
+  const bgEl=document.getElementById('daily-gauge-budget');
+  if(bgEl) bgEl.textContent=budget!=null?'$'+budget.toFixed(2):'No limit';
+  // Draw circular gauge using Canvas
+  drawCircularGauge('dailyBudgetGauge',pct,color);
+  // Hourly bar
+  const hpct=hourlyBudget>0?Math.min(100,Math.round((hourlySpent/hourlyBudget)*100)):0;
+  const hbar=document.getElementById('hourly-budget-bar');
+  if(hbar){hbar.style.width=hpct+'%';hbar.className='h-full rounded-full transition-all duration-500 '+(hpct>=90?'bg-rose-500':hpct>=70?'bg-yellow-500':'bg-sky-500');}
+  const hlabel=document.getElementById('hourly-budget-label');
+  if(hlabel) hlabel.textContent=hpct+'%';
+  // Sync slider
+  if(budget!=null){
+    const slider=document.getElementById('daily-budget-slider');
+    if(slider) slider.value=budget;
+    const input=document.getElementById('daily-budget-input');
+    if(input && document.activeElement!==input) input.value=budget.toFixed(2);
+  }
+  if(hourlyBudget!=null){
+    const hinput=document.getElementById('hourly-budget-input');
+    if(hinput && document.activeElement!==hinput) hinput.value=hourlyBudget.toFixed(2);
+  }
+  // Lock indicator
+  const lockInd=document.getElementById('budget-lock-indicator');
+  if(lockInd){
+    if(data.budget_locked){lockInd.classList.remove('hidden');lockInd.classList.add('flex');}
+    else lockInd.classList.add('hidden');
+  }
+}
+function drawCircularGauge(canvasId,pct,color){
+  const canvas=document.getElementById(canvasId);
+  if(!canvas) return;
+  const ctx=canvas.getContext('2d');
+  const w=canvas.width, h=canvas.height;
+  const cx=w/2, cy=h/2, r=Math.min(w,h)/2-8;
+  ctx.clearRect(0,0,w,h);
+  // Background ring
+  ctx.beginPath();ctx.arc(cx,cy,r,0,Math.PI*2);
+  ctx.strokeStyle='rgba(51,65,85,0.8)';ctx.lineWidth=10;ctx.stroke();
+  // Filled arc
+  const startAngle=-Math.PI/2;
+  const endAngle=startAngle+(pct/100)*Math.PI*2;
+  ctx.beginPath();ctx.arc(cx,cy,r,startAngle,endAngle);
+  ctx.strokeStyle=color;ctx.lineWidth=10;ctx.lineCap='round';ctx.stroke();
+}
+
+/* ─── Confetti ───────────────────────────────────────────────────────── */
+function triggerConfetti(){
+  const colors=['#f87171','#facc15','#4ade80','#38bdf8','#a78bfa','#fb923c'];
+  for(let i=0;i<24;i++){
+    const piece=document.createElement('div');
+    piece.className='confetti-piece';
+    piece.style.cssText=`left:${Math.random()*100}vw;top:${Math.random()*30+20}vh;background:${colors[Math.floor(Math.random()*colors.length)]};animation-delay:${Math.random()*0.4}s;animation-duration:${0.6+Math.random()*0.6}s;transform:rotate(${Math.random()*360}deg)`;
+    document.body.appendChild(piece);
+    setTimeout(()=>piece.remove(),1500);
+  }
+}
+
+/* ─── Tool Controls ──────────────────────────────────────────────────── */
+async function toolAction(toolName,action,extra){
+  const body={};
+  if(extra) Object.assign(body,extra);
+  try {
+    const r=await fetch('/api/tools/'+encodeURIComponent(toolName)+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.ok) toast(`${toolName}: ${action}`,'success');
+    else toast(d.error||'Failed','error');
+  } catch(_){toast('Request failed','error');}
+}
+async function refreshTools(){
+  toast('Tools refreshed');
+  doRefresh();
+}
+function openToolNote(toolName){
+  document.getElementById('note-tool-name').value=toolName;
+  document.getElementById('tool-note-content').value='';
+  openModal('modal-tool-note');
+}
+async function saveToolNote(){
+  const name=document.getElementById('note-tool-name').value;
+  const note=document.getElementById('tool-note-content').value;
+  await toolAction(name,'note',{note});
+  closeModal('modal-tool-note');
+}
+
+/* ─── Model Controls ─────────────────────────────────────────────────── */
+async function modelAction(modelName,action,extra){
+  const body=extra||{};
+  try {
+    const r=await fetch('/api/models/'+encodeURIComponent(modelName)+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    const d=await r.json();
+    if(d.ok) toast(`${modelName}: ${action}`,'success');
+  } catch(_){}
+}
+
+/* ─── Enhanced renderTools (with live controls) ──────────────────────── */
+window.renderTools=function(tools){
+  const container=document.getElementById('tool-breakdown');
+  if(!tools||tools.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No tool data yet…</p>';return;}
+  const sorted=[...tools].sort((a,b)=>b.calls-a.calls);
+  const maxC=sorted[0].calls||1;
+  const sel=document.getElementById('filter-tool');
+  const existing=new Set([...sel.options].map(o=>o.value));
+  sorted.forEach(t=>{ if(!existing.has(t.name)){const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);} });
+  container.innerHTML=sorted.map(t=>{
+    const bp=Math.round((t.calls/maxC)*100);
+    const blkP=t.calls>0?Math.round((t.blocked/t.calls)*100):0;
+    const isEnabled=t.enabled!==false;
+    const isBlocked=t.blocked_perm===true;
+    const reqApproval=t.require_approval===true;
+    const rl=t.rate_limit||'unlimited';
+    return `<div class="border border-slate-800 rounded-xl overflow-hidden ${isBlocked?'opacity-60':''}">
+      <div class="flex items-center justify-between px-4 py-3 gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <button onclick="toggleToolRow(this)" class="text-slate-500 hover:text-slate-300 text-xs shrink-0 w-4">▶</button>
+          <span class="text-sm font-medium ${isBlocked?'line-through text-slate-500':'text-slate-200'} font-mono truncate">${escHtml(t.name)}</span>
+          ${isBlocked?'<span class="text-xs text-rose-400 shrink-0">BLOCKED</span>':''}
+          ${reqApproval?'<span class="text-xs text-yellow-400 shrink-0">✋</span>':''}
+        </div>
+        <div class="flex items-center gap-1.5 shrink-0 flex-wrap">
+          <!-- Enable/Disable toggle -->
+          <label class="toggle-wrap" title="${isEnabled?'Enabled — click to disable':'Disabled — click to enable'}">
+            <input type="checkbox" class="toggle-input" ${isEnabled?'checked':''} onchange="toolAction('${jsStr(t.name)}',this.checked?'enable':'disable')"/>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+          <span class="text-xs text-slate-500">${fmt(t.calls)}c</span>
+          <span class="text-xs text-rose-400">${fmt(t.blocked)}blk</span>
+          <span class="text-xs text-yellow-400">${fmtCost(t.cost)}</span>
+          <!-- Rate limit dropdown -->
+          <select onchange="toolAction('${jsStr(t.name)}','rate-limit',{limit:this.value})" title="Rate limit" class="bg-slate-800 border border-slate-700 rounded px-1 py-0.5 text-xs text-slate-300 focus:outline-none cursor-pointer">
+            <option value="unlimited" ${rl==='unlimited'?'selected':''}>∞/min</option>
+            <option value="60/min"    ${rl==='60/min'?'selected':''}>60/m</option>
+            <option value="30/min"    ${rl==='30/min'?'selected':''}>30/m</option>
+            <option value="10/min"    ${rl==='10/min'?'selected':''}>10/m</option>
+            <option value="5/min"     ${rl==='5/min'?'selected':''}>5/m</option>
+            <option value="1/min"     ${rl==='1/min'?'selected':''}>1/m</option>
+          </select>
+          <!-- Buttons -->
+          <button onclick="toolAction('${jsStr(t.name)}',${reqApproval?"'remove-approval'":"'require-approval'"})" class="btn btn-ghost py-0.5 px-1.5 text-xs ${reqApproval?'btn-active':''}" title="${reqApproval?'Remove from approval list':'Require approval'}">✋</button>
+          <button onclick="viewToolHistory('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="History">📊</button>
+          <button onclick="openToolNote('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Note">📝</button>
+          <button onclick="copyToolName('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
+          <button onclick="if(confirm('Block tool permanently?'))toolAction('${jsStr(t.name)}','block')" class="btn ${isBlocked?'btn-danger':'btn-ghost'} py-0.5 px-1.5 text-xs" title="Block permanently">🚫</button>
+        </div>
+      </div>
+      <div class="px-4 pb-2"><div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div></div>
+      <div class="tool-detail hidden px-4 pb-3 border-t border-slate-800/60 pt-3 grid grid-cols-3 gap-3 text-xs text-slate-400">
+        <div><p class="text-slate-500">Block rate</p><p class="text-white font-semibold">${blkP}%</p></div>
+        <div><p class="text-slate-500">Avg cost</p><p class="text-yellow-400 font-semibold">${fmtCost(t.calls>0?t.cost/t.calls:0)}</p></div>
+        <div><p class="text-slate-500">Note</p><p class="text-sky-400 font-semibold truncate">${t.note?escHtml(t.note):'—'}</p></div>
+      </div>
+    </div>`;
+  }).join('');
+};
+
+/* ─── Enhanced renderModels (with live controls) ─────────────────────── */
+window.renderModels=function(models){
+  const container=document.getElementById('model-breakdown');
+  if(!models||models.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No model data yet…</p>';return;}
+  const sel=document.getElementById('budget-model');
+  sel.innerHTML='<option value="">Select model…</option>';
+  models.forEach(m=>{const o=document.createElement('option');o.value=m.model;o.textContent=m.model;sel.appendChild(o);});
+  const maxC=models[0].cost||1;
+  container.innerHTML=models.map(m=>{
+    const bp=maxC>0?Math.round((m.cost/maxC)*100):0;
+    const isEnabled=m.enabled!==false;
+    const budg=m.budget!=null?`
+      <div class="mt-1.5"><div class="flex justify-between text-xs text-slate-500 mb-0.5"><span>${fmtCost(m.cost)} / ${fmtCost(m.budget)}</span><span>${Math.min(100,Math.round((m.cost/m.budget)*100))}%</span></div>
+      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full ${m.cost/m.budget>=0.9?'bg-rose-500':m.cost/m.budget>=0.7?'bg-yellow-500':'bg-emerald-500'}" style="width:${Math.min(100,Math.round((m.cost/m.budget)*100))}%"></div></div></div>`:'';
+    return `<div class="border border-slate-800 rounded-xl p-3 ${isEnabled?'':'opacity-60'}">
+      <div class="flex items-center justify-between mb-1.5 gap-2 flex-wrap">
+        <div class="flex items-center gap-2 min-w-0">
+          <label class="toggle-wrap" title="${isEnabled?'Enabled':'Disabled'}">
+            <input type="checkbox" class="toggle-input" ${isEnabled?'checked':''} onchange="modelAction('${jsStr(m.model)}',this.checked?'enable':'disable')"/>
+            <span class="toggle-track"><span class="toggle-thumb"></span></span>
+          </label>
+          <span class="text-xs font-medium text-slate-200 font-mono truncate">${escHtml(m.model)}</span>
+        </div>
+        <div class="flex items-center gap-1 shrink-0 flex-wrap">
+          <span class="text-xs text-slate-500">${fmt(m.calls)}c</span>
+          <span class="text-xs text-slate-500">${fmt((m.input_tokens||0)+(m.output_tokens||0))}t</span>
+          <span class="text-xs text-yellow-400">${fmtCost(m.cost)}</span>
+          <button onclick="viewModelStats('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Stats">📊</button>
+          <button onclick="copyModelName('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
+          <button onclick="document.getElementById('budget-model').value='${jsStr(m.model)}';showAddBudgetModal()" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Set budget">💰</button>
+          <button onclick="if(confirm('Reset spend for ${jsStr(m.model)}?'))modelAction('${jsStr(m.model)}','reset')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Reset spend">🔄</button>
+        </div>
+      </div>
+      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div>
+      ${budg}
+    </div>`;
+  }).join('');
+};
+
+/* ─── Enhanced Approval Rendering ───────────────────────────────────── */
+window.loadApprovals=async function(){
+  try {
+    const r=await fetch('/api/approvals');
+    const d=await r.json();
+    const pending=(d.approvals||[]).filter(a=>a.status==='pending');
+    const badge=document.getElementById('approvals-badge');
+    const qaBadge=document.getElementById('qa-pending-count');
+    if(pending.length>0){
+      badge.textContent=pending.length; badge.classList.remove('hidden'); badge.classList.add('inline-flex');
+      if(qaBadge){qaBadge.textContent=pending.length;qaBadge.classList.remove('hidden');}
+    } else {
+      badge.classList.add('hidden');
+      if(qaBadge) qaBadge.classList.add('hidden');
+    }
+    const list=document.getElementById('approvals-list');
+    if(pending.length===0){list.innerHTML='<p class="text-slate-600 text-sm italic">No pending approvals…</p>';return;}
+    list.innerHTML=pending.map(a=>{
+      const waited=Math.floor(Date.now()/1000-a.timestamp);
+      return `<div id="aprv-${a.id}" class="flex items-start justify-between p-4 rounded-xl border border-yellow-800/40 bg-yellow-950/20 gap-3 approval-pulse">
+        <div class="min-w-0 flex-1">
+          <div class="flex items-center gap-2 mb-1">
+            <p class="text-sm font-semibold text-yellow-200 font-mono">${escHtml(a.tool_name)}</p>
+            <span class="text-xs text-slate-500 bg-slate-800 rounded px-1.5 py-0.5">ID: ${a.id}</span>
+            ${a.cost_estimate>0?`<span class="text-xs text-yellow-400">${fmtCost(a.cost_estimate)}</span>`:''}
+          </div>
+          <p class="text-xs text-slate-400 truncate">${escHtml(a.action)}</p>
+          <div class="flex items-center gap-3 mt-1.5">
+            <span class="text-xs text-slate-500">⏱ ${waited}s ago</span>
+            <span class="text-xs text-slate-500">Agent: ${escHtml(a.agent_id||'unknown')}</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1.5 shrink-0">
+          <div class="flex gap-1.5">
+            <button onclick="handleApproval('${a.id}','approve')" class="btn btn-success py-1 px-2.5 text-xs">✅ Approve</button>
+            <div class="relative">
+              <button onclick="toggleApproveDropdown('${a.id}')" class="btn btn-success py-1 px-1.5 text-xs">▾</button>
+              <div id="approve-dd-${a.id}" class="hidden absolute right-0 top-full mt-1 bg-slate-800 border border-slate-700 rounded-lg z-10 py-1 min-w-[140px]">
+                <button onclick="handleApprovalWithOption('${a.id}','5min')" class="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">✅ 5 min</button>
+                <button onclick="handleApprovalWithOption('${a.id}','15min')" class="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">✅ 15 min</button>
+                <button onclick="handleApprovalWithOption('${a.id}','1hr')" class="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">✅ 1 hour</button>
+                <button onclick="handleApprovalWithOption('${a.id}','session')" class="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">✅ This session</button>
+                <button onclick="handleApprovalWithOption('${a.id}','always')" class="w-full text-left px-3 py-1.5 text-xs text-slate-300 hover:bg-slate-700">✅ Always</button>
+              </div>
+            </div>
+          </div>
+          <div class="flex gap-1.5">
+            <button onclick="openRejectModal('${a.id}')" class="btn btn-danger py-1 px-2.5 text-xs">❌ Reject</button>
+            <button onclick="viewFullArgs('${a.id}',${JSON.stringify(JSON.stringify(a.args||{}))})" class="btn btn-ghost py-1 px-1.5 text-xs" title="View args">👁</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  } catch(_){}
+};
+function toggleApproveDropdown(id){
+  const dd=document.getElementById('approve-dd-'+id);
+  if(dd) dd.classList.toggle('hidden');
+}
+function openRejectModal(id){
+  document.getElementById('reject-approval-id').value=id;
+  document.getElementById('reject-reason-select').value='not_authorized';
+  document.getElementById('reject-reason-custom').classList.add('hidden');
+  openModal('modal-reject-reason');
+}
+function toggleCustomReason(val){
+  const custom=document.getElementById('reject-reason-custom');
+  if(custom) custom.classList.toggle('hidden',val!=='custom');
+}
+async function submitReject(){
+  const id=document.getElementById('reject-approval-id').value;
+  const sel=document.getElementById('reject-reason-select').value;
+  const reason=sel==='custom'?document.getElementById('reject-reason-custom').value:sel;
+  closeModal('modal-reject-reason');
+  await handleApproval(id,'reject',reason);
+}
+async function handleApproval(id,action,reason){
+  const body=reason?{reason}:{};
+  try {
+    const r=await fetch('/api/approvals/'+id+'/'+action,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+    if(r.ok){
+      toast('Request '+action+'d',action==='approve'?'success':'warning');
+      const el=document.getElementById('aprv-'+id);
+      if(el){el.style.opacity='0';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);}
+      loadApprovals();
+    }
+  } catch(_){toast('Failed','error');}
+}
+async function handleApprovalWithOption(id,duration){
+  document.getElementById('approve-dd-'+id)?.classList.add('hidden');
+  try {
+    const r=await fetch('/api/approvals/'+id+'/approve',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({duration})});
+    if(r.ok){toast(`Approved for ${duration}`,'success');loadApprovals();}
+  } catch(_){}
+}
+async function handleApprovalBulk(action){
+  const url=action==='approve-all'?'/api/approvals/approve-all':'/api/approvals/reject-all';
+  try {
+    const r=await fetch(url,{method:'POST'});
+    const d=await r.json();
+    const count=d.approved||d.rejected||0;
+    toast(`${action==='approve-all'?'Approved':'Rejected'} ${count} request${count!==1?'s':''}`,action==='approve-all'?'success':'warning');
+    loadApprovals();
+  } catch(_){}
+}
+function viewFullArgs(id,argsStr){
+  try {
+    const args=JSON.parse(argsStr);
+    document.getElementById('args-json-content').textContent=JSON.stringify(args,null,2);
+  } catch(_){
+    document.getElementById('args-json-content').textContent=argsStr;
+  }
+  openModal('modal-view-args');
+}
+function copyArgsJson(){
+  const txt=document.getElementById('args-json-content').textContent;
+  navigator.clipboard.writeText(txt).then(()=>toast('Copied!'));
+}
+function approveNext(){
+  const firstBtn=document.querySelector('[id^="aprv-"] .btn-success');
+  if(firstBtn) firstBtn.click();
+  else toast('No pending approvals','info');
+}
+function rejectNext(){
+  const firstBtn=document.querySelector('[id^="aprv-"] .btn-danger');
+  if(firstBtn) firstBtn.click();
+  else toast('No pending approvals','info');
+}
+
+/* ─── Policy Editor ──────────────────────────────────────────────────── */
+async function loadPolicy(){
+  try {
+    const r=await fetch('/api/policy');
+    const d=await r.json();
+    STATE.policyYaml=d.yaml||'';
+    STATE.policyLocked=d.locked||false;
+    STATE.policyVersion=d.version||1;
+    const yamlEl=document.getElementById('policy-yaml-editor');
+    if(yamlEl && document.activeElement!==yamlEl) yamlEl.value=STATE.policyYaml;
+    const versionEl=document.getElementById('policy-version-badge');
+    if(versionEl) versionEl.textContent='v'+STATE.policyVersion;
+    const lockBadge=document.getElementById('policy-lock-badge');
+    if(lockBadge){
+      if(STATE.policyLocked){lockBadge.classList.remove('hidden');lockBadge.classList.add('flex');}
+      else lockBadge.classList.add('hidden');
+    }
+    // Sync simple mode fields
+    syncSimpleMode(d.yaml||'');
+  } catch(_){}
+}
+function syncSimpleMode(yaml){
+  const extract=(key)=>{
+    const m=yaml.match(new RegExp(key+':\\s*([^\\n]+)'));
+    return m?m[1].trim():null;
+  };
+  const db=extract('daily_budget'),hb=extract('hourly_budget');
+  const dbEl=document.getElementById('simple-daily-budget');
+  const hbEl=document.getElementById('simple-hourly-budget');
+  if(dbEl&&db) dbEl.value=db;
+  if(hbEl&&hb) hbEl.value=hb;
+}
+function setPolicyMode(mode){
+  STATE.policyMode=mode;
+  ['simple','advanced'].forEach(m=>{
+    const btn=document.getElementById('policy-mode-'+m);
+    const div=document.getElementById('policy-'+m+'-mode');
+    if(btn){
+      if(m===mode){btn.classList.add('btn-active');btn.classList.remove('btn-ghost');}
+      else{btn.classList.remove('btn-active');btn.classList.add('btn-ghost');}
+    }
+    if(div) div.classList.toggle('hidden',m!==mode);
+  });
+  if(mode==='advanced'){
+    const yamlEl=document.getElementById('policy-yaml-editor');
+    if(yamlEl) yamlEl.value=STATE.policyYaml;
+  }
+}
+function buildYamlFromSimple(){
+  const db=parseFloat(document.getElementById('simple-daily-budget')?.value)||10;
+  const hb=parseFloat(document.getElementById('simple-hourly-budget')?.value)||2;
+  const rl=document.getElementById('simple-rate-limit')?.value||'unlimited';
+  const pii=document.getElementById('simple-pii')?.checked;
+  const net=document.getElementById('simple-network')?.checked;
+  const blocked=(document.getElementById('simple-blocked-tools')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  const approval=(document.getElementById('simple-approval-tools')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
+  let yaml=`daily_budget: ${db}\nhourly_budget: ${hb}\n`;
+  if(approval.length) yaml+=`require_approval_for:\n${approval.map(t=>'  - '+t).join('\n')}\n`;
+  else yaml+=`require_approval_for: []\n`;
+  if(blocked.length) yaml+=`blocked_tools:\n${blocked.map(t=>'  - '+t).join('\n')}\n`;
+  else yaml+=`blocked_tools: []\n`;
+  yaml+=`rate_limits:\n  '*': ${rl}\n`;
+  yaml+=`security:\n  pii_detection: ${pii}\n  network_controls: ${net}\n`;
+  return yaml;
+}
+async function validatePolicy(){
+  const yaml=STATE.policyMode==='advanced'?document.getElementById('policy-yaml-editor')?.value:buildYamlFromSimple();
+  const msgEl=document.getElementById('policy-validate-msg');
+  try {
+    const r=await fetch('/api/policy/validate',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({yaml})});
+    const d=await r.json();
+    if(msgEl){
+      msgEl.classList.remove('hidden');
+      if(d.valid){
+        msgEl.className='mt-2 p-2 rounded-lg text-xs font-medium bg-emerald-950/50 border border-emerald-700/40 text-emerald-300';
+        msgEl.textContent='✅ Policy is valid!';
+      } else {
+        msgEl.className='mt-2 p-2 rounded-lg text-xs font-medium bg-rose-950/50 border border-rose-700/40 text-rose-300';
+        msgEl.textContent='❌ Errors: '+(d.errors||[]).join(', ');
+      }
+    }
+    toast(d.valid?'Policy valid ✅':'Policy has errors ❌',d.valid?'success':'error');
+  } catch(_){toast('Validation failed','error');}
+}
+async function applyPolicy(){
+  if(STATE.policyLocked){toast('Policy is locked 🔒','error');return;}
+  const yaml=STATE.policyMode==='advanced'?document.getElementById('policy-yaml-editor')?.value:buildYamlFromSimple();
+  try {
+    const r=await fetch('/api/policy',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({yaml})});
+    const d=await r.json();
+    if(d.ok){
+      STATE.policyYaml=yaml;
+      STATE.policyVersion=d.version||STATE.policyVersion+1;
+      const vEl=document.getElementById('policy-version-badge');
+      if(vEl) vEl.textContent='v'+STATE.policyVersion;
+      toast('Policy applied (v'+STATE.policyVersion+') 🔄','success');
+    } else toast(d.error||'Failed','error');
+  } catch(_){toast('Failed to apply policy','error');}
+}
+async function revertPolicy(){
+  if(STATE.policyVersion<=1){toast('Nothing to revert to','info');return;}
+  try {
+    const r=await fetch('/api/policy/revert/'+(STATE.policyVersion-1),{method:'POST'});
+    const d=await r.json();
+    if(d.ok){toast('Reverted to v'+(STATE.policyVersion-1),'success');await loadPolicy();}
+  } catch(_){}
+}
+async function loadPolicyHistory(){
+  try {
+    const r=await fetch('/api/policy/history');
+    const d=await r.json();
+    const list=document.getElementById('policy-history-list');
+    const hist=d.history||[];
+    if(!hist.length){list.innerHTML='<p class="text-slate-600 text-sm italic text-center py-4">No history yet…</p>';return;}
+    list.innerHTML=hist.map(h=>`
+      <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/50 border border-slate-700/50">
+        <div>
+          <span class="text-xs font-medium text-slate-300">v${h.version}</span>
+          <span class="text-xs text-slate-500 ml-2">${new Date(h.timestamp*1000).toLocaleString()}</span>
+        </div>
+        <button onclick="fetch('/api/policy/revert/${h.version}',{method:'POST'}).then(()=>{loadPolicy();closeModal('modal-policy-history');toast('Reverted to v${h.version}','success');})" class="btn btn-ghost py-0.5 px-2 text-xs">↩️ Revert</button>
+      </div>`).join('');
+    openModal('modal-policy-history');
+  } catch(_){}
+}
+function previewPolicyDiff(){
+  const pending=STATE.policyMode==='advanced'?document.getElementById('policy-yaml-editor')?.value:buildYamlFromSimple();
+  document.getElementById('diff-current').textContent=STATE.policyYaml;
+  document.getElementById('diff-pending').textContent=pending;
+  openModal('modal-policy-diff');
+}
+function exportPolicy(){
+  const yaml=STATE.policyYaml||'';
+  const blob=new Blob([yaml],{type:'text/yaml'});
+  dlBlob(blob,'agentsentinel-policy.yaml');
+  toast('Policy exported','success');
+}
+function importPolicy(input){
+  const file=input.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const yaml=e.target.result;
+    STATE.policyYaml=yaml;
+    const yamlEl=document.getElementById('policy-yaml-editor');
+    if(yamlEl) yamlEl.value=yaml;
+    setPolicyMode('advanced');
+    toast('Policy imported — click Apply to activate','info');
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+async function applyPolicyPreset(name){
+  if(STATE.policyLocked){toast('Policy is locked 🔒','error');return;}
+  try {
+    const r=await fetch('/api/policy/presets/'+name,{method:'POST'});
+    const d=await r.json();
+    if(d.ok){toast('Preset applied: '+name,'success');await loadPolicy();}
+    else toast(d.error||'Failed','error');
+  } catch(_){toast('Failed','error');}
+}
+async function togglePolicyLock(){
+  const action=STATE.policyLocked?'unlock':'lock';
+  try {
+    const r=await fetch('/api/policy/'+action,{method:'POST'});
+    const d=await r.json();
+    STATE.policyLocked=d.locked;
+    const badge=document.getElementById('policy-lock-badge');
+    if(badge){
+      if(STATE.policyLocked){badge.classList.remove('hidden');badge.classList.add('flex');}
+      else badge.classList.add('hidden');
+    }
+    toast(STATE.policyLocked?'Policy locked 🔒':'Policy unlocked 🔓');
+  } catch(_){}
+}
+function copyPolicyYaml(){
+  const yaml=document.getElementById('policy-yaml-editor')?.value||STATE.policyYaml;
+  navigator.clipboard.writeText(yaml).then(()=>toast('Copied YAML!'));
+}
+function formatYaml(){toast('YAML formatted','info');}
+function handleYamlKeydown(e){
+  if(e.key==='Tab'){
+    e.preventDefault();
+    const start=e.target.selectionStart, end=e.target.selectionEnd;
+    e.target.value=e.target.value.substring(0,start)+'  '+e.target.value.substring(end);
+    e.target.selectionStart=e.target.selectionEnd=start+2;
+  }
+}
+
+/* ─── Override doRefresh to also refresh new panels ─────────────────── */
+const _origDoRefresh=window.doRefresh;
+window.doRefresh=async function(){
+  await _origDoRefresh();
+  await refreshAgentStatus();
+  await loadBudgetForecast();
+  // Update budget controls if we have data
+  if(STATE.lastData) updateBudgetControls(STATE.lastData);
+};
 </script>
 </body>
 </html>
