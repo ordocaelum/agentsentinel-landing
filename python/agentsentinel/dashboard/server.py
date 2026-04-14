@@ -27,6 +27,7 @@ Or in the background::
 
 from __future__ import annotations
 
+import fnmatch
 import http.server
 import json
 import os
@@ -46,6 +47,36 @@ _INF = float("inf")
 def _finite_or_none(value: float) -> "float | None":
     """Return *value* if finite, else ``None`` (for JSON serialisation)."""
     return value if value != _INF else None
+
+
+def _collect_model_costs(guard: Any) -> List[Dict[str, Any]]:
+    """Build a JSON-serialisable list of per-model cost stats from *guard*."""
+    try:
+        tracker = guard.cost_tracker
+        all_usage = tracker.get_all_usage()
+        budgets = tracker.config.model_budgets
+
+        result = []
+        for model_name, usage in all_usage.items():
+            # Find matching budget if any
+            budget = None
+            for pattern, bud in budgets.items():
+                if fnmatch.fnmatch(model_name.lower(), pattern.lower()):
+                    budget = bud
+                    break
+
+            result.append({
+                "model": model_name,
+                "calls": usage.call_count,
+                "input_tokens": usage.total_input_tokens,
+                "output_tokens": usage.total_output_tokens,
+                "cost": round(usage.total_cost, 6),
+                "budget": budget,
+            })
+
+        return sorted(result, key=lambda x: x["cost"], reverse=True)
+    except Exception:
+        return []
 
 
 # ---------------------------------------------------------------------------
@@ -107,6 +138,7 @@ def _collect_stats(guard: Any) -> Dict[str, Any]:
         "tools": list(tool_counts.values()),
         "recent_events": recent,
         "server_time": time.time(),
+        "model_costs": _collect_model_costs(guard),
     }
 
 

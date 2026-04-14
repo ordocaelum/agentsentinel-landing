@@ -90,3 +90,15 @@ class ContentInspectionError(AgentSentinelError):
         super().__init__(message)
         self.tool_name = tool_name
         self.reason = reason
+
+
+class ModelBudgetExceededError(AgentSentinelError):
+    """Raised when a model's per-model budget limit is exceeded."""
+
+    def __init__(self, model: str, spent: float, budget: float) -> None:
+        self.model = model
+        self.spent = spent
+        self.budget = budget
+        super().__init__(
+            f"Model '{model}' budget exceeded: ${spent:.4f} >= ${budget:.2f}"
+        )

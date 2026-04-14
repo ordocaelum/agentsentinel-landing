@@ -119,3 +119,18 @@ export class ContentInspectionError extends AgentSentinelError {
     this.reason = reason;
   }
 }
+
+/** Thrown when a model's per-model budget limit is exceeded. */
+export class ModelBudgetExceededError extends AgentSentinelError {
+  readonly model: string;
+  readonly spent: number;
+  readonly budget: number;
+
+  constructor(model: string, spent: number, budget: number) {
+    super(`Model '${model}' budget exceeded: $${spent.toFixed(4)} >= $${budget.toFixed(2)}`);
+    this.name = "ModelBudgetExceededError";
+    this.model = model;
+    this.spent = spent;
+    this.budget = budget;
+  }
+}
