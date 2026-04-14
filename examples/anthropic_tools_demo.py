@@ -34,13 +34,31 @@ def search_web(query: str) -> str:
 
 
 def calculate(expression: str) -> str:
-    """Safe calculator — evaluates simple arithmetic."""
+    """Safe calculator — evaluates simple arithmetic using ast."""
+    import ast
+    import operator
+
+    _ALLOWED_OPS = {
+        ast.Add: operator.add,
+        ast.Sub: operator.sub,
+        ast.Mult: operator.mul,
+        ast.Div: operator.truediv,
+        ast.Pow: operator.pow,
+        ast.USub: operator.neg,
+    }
+
+    def _eval(node: ast.AST) -> float:
+        if isinstance(node, ast.Constant) and isinstance(node.value, (int, float)):
+            return float(node.value)
+        if isinstance(node, ast.BinOp) and type(node.op) in _ALLOWED_OPS:
+            return _ALLOWED_OPS[type(node.op)](_eval(node.left), _eval(node.right))
+        if isinstance(node, ast.UnaryOp) and type(node.op) in _ALLOWED_OPS:
+            return _ALLOWED_OPS[type(node.op)](_eval(node.operand))
+        raise ValueError(f"Unsupported expression: {ast.dump(node)}")
+
     try:
-        # Only allow digits and basic operators for safety
-        allowed = set("0123456789+-*/(). ")
-        if not all(c in allowed for c in expression):
-            return "Error: unsupported characters in expression"
-        return str(eval(expression))  # noqa: S307
+        tree = ast.parse(expression, mode="eval")
+        return str(_eval(tree.body))
     except Exception as exc:
         return f"Error: {exc}"
 

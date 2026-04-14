@@ -215,11 +215,13 @@ class TestAnthropicToolsGuard:
         """Model budget check blocks once accumulated cost meets the budget cap."""
         from agentsentinel.errors import ModelBudgetExceededError
 
+        # Policy caps 'claude-3-opus' at $0.00 and guard uses that model by default.
         policy = AgentPolicy(model_budgets={"claude-3-opus": 0.0})
         guard, _ = _make_guard(policy)
         ag = AnthropicToolsGuard(guard=guard, default_model="claude-3-opus")
 
-        fn = ag.protect_handler(lambda: "ok", name="test_tool")
+        # Explicitly pass model= to make the test intention unambiguous.
+        fn = ag.protect_handler(lambda: "ok", name="test_tool", model="claude-3-opus")
 
         # First call always succeeds (no usage recorded yet).
         fn()
