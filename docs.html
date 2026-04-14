@@ -103,6 +103,14 @@
 
         <p class="text-xs font-bold uppercase tracking-widest text-slate-600 mb-3 mt-6 px-2">Roadmap</p>
         <a href="#roadmap" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">What's Next</a>
+
+        <p class="text-xs font-bold uppercase tracking-widest text-slate-600 mb-3 mt-6 px-2">Integrations</p>
+        <a href="#integration-langchain" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">LangChain</a>
+        <a href="#integration-autogen" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">AutoGen</a>
+        <a href="#integration-crewai" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">CrewAI</a>
+        <a href="#integration-llamaindex" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">LlamaIndex</a>
+        <a href="#integration-openai-assistants" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">OpenAI Assistants</a>
+        <a href="#integration-anthropic-tools" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">Anthropic Tools</a>
       </nav>
     </aside>
 
@@ -465,6 +473,185 @@ guard = <span class="token-fn">AgentGuard</span>(policy=policy, approval_handler
             <p><code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded">"*"</code> key — applies to all tools not matched by a more specific pattern</p>
           </div>
         </div>
+      </section>
+
+      <!-- ── FRAMEWORK INTEGRATIONS ──────────────────────────────── -->
+      <section id="integrations" class="doc-h2 mb-16 border-t border-slate-800/60 pt-10">
+        <h2 class="text-3xl font-black mb-2">Framework Integrations</h2>
+        <p class="text-slate-400 text-sm mb-8 leading-relaxed">
+          AgentSentinel ships first-class integrations for all major AI agent frameworks.
+          None of the integrations require the target framework to be installed at import time — the dependency is only needed when you actually call the integration.
+        </p>
+
+        <!-- LangChain -->
+        <section id="integration-langchain" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">LangChain</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Wraps every tool in a LangChain <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AgentExecutor</code> or a bare list of tools.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.langchain <span class="token-keyword">import</span> protect_langchain_agent
+
+policy = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">5.0</span>, require_approval=[<span class="token-string">"send_email"</span>])
+guard  = <span class="token-fn">AgentGuard</span>(policy=policy)
+
+executor = <span class="token-fn">protect_langchain_agent</span>(executor, guard)
+executor.<span class="token-fn">invoke</span>({<span class="token-string">"input"</span>: <span class="token-string">"..."</span>})</code></pre>
+        </section>
+
+        <!-- AutoGen -->
+        <section id="integration-autogen" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">AutoGen</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Wraps AutoGen <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">function_map</code> dicts and individual callables.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.autogen <span class="token-keyword">import</span> AutoGenGuard
+
+policy   = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">5.0</span>)
+ag_guard = <span class="token-fn">AutoGenGuard</span>(<span class="token-fn">AgentGuard</span>(policy))
+
+<span class="token-comment"># Protect a function_map</span>
+safe_map = ag_guard.<span class="token-fn">protect_function_map</span>({
+    <span class="token-string">"run_sql"</span>: run_sql,
+    <span class="token-string">"send_email"</span>: send_email,
+})</code></pre>
+        </section>
+
+        <!-- CrewAI -->
+        <section id="integration-crewai" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">CrewAI</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Protect an entire <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">Crew</code> or wrap individual tools with the <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">@crewai_guard.tool</code> decorator.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.crewai <span class="token-keyword">import</span> CrewAIGuard, protect_crew
+
+policy = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">5.0</span>, require_approval=[<span class="token-string">"send_email"</span>])
+guard  = <span class="token-fn">AgentGuard</span>(policy)
+crewai_guard = <span class="token-fn">CrewAIGuard</span>(guard)
+
+<span class="token-comment"># Option 1: decorator</span>
+<span class="token-decorator">@crewai_guard.tool</span>(cost=<span class="token-number">0.01</span>)
+<span class="token-keyword">def</span> <span class="token-fn">search_web</span>(query: str) -> str:
+    <span class="token-keyword">return</span> <span class="token-fn">search</span>(query)
+
+<span class="token-comment"># Option 2: protect a whole Crew</span>
+protected_crew = <span class="token-fn">protect_crew</span>(crew, guard=guard)
+result = protected_crew.<span class="token-fn">kickoff</span>()</code></pre>
+        </section>
+
+        <!-- LlamaIndex -->
+        <section id="integration-llamaindex" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">LlamaIndex</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Protect LlamaIndex agents, <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">FunctionTool</code> objects, and <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">QueryEngine</code> instances.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.llamaindex <span class="token-keyword">import</span> LlamaIndexGuard, protect_query_engine
+
+policy = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">10.0</span>, model_budgets={<span class="token-string">"gpt-4o"</span>: <span class="token-number">5.0</span>})
+guard  = <span class="token-fn">AgentGuard</span>(policy)
+llama_guard = <span class="token-fn">LlamaIndexGuard</span>(guard)
+
+<span class="token-decorator">@llama_guard.tool</span>(model=<span class="token-string">"gpt-4o"</span>, cost=<span class="token-number">0.02</span>)
+<span class="token-keyword">def</span> <span class="token-fn">query_knowledge_base</span>(query: str) -> str:
+    <span class="token-keyword">return</span> kb.<span class="token-fn">query</span>(query)
+
+<span class="token-comment"># Wrap a QueryEngine</span>
+protected_engine = <span class="token-fn">protect_query_engine</span>(engine, guard=guard)</code></pre>
+        </section>
+
+        <!-- OpenAI Assistants -->
+        <section id="integration-openai-assistants" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">OpenAI Assistants API</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Wrap function maps used in the OpenAI Assistants API run loop with full policy enforcement.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.openai_assistants <span class="token-keyword">import</span> protect_function_map
+
+policy = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">20.0</span>, require_approval=[<span class="token-string">"send_email"</span>])
+guard  = <span class="token-fn">AgentGuard</span>(policy)
+
+protected = <span class="token-fn">protect_function_map</span>(
+    {<span class="token-string">"get_weather"</span>: get_weather, <span class="token-string">"send_email"</span>: send_email},
+    guard=guard,
+    default_model=<span class="token-string">"gpt-4o"</span>,
+)
+
+<span class="token-comment"># In your run loop:</span>
+<span class="token-keyword">result</span> = protected[fn_name](**fn_args)</code></pre>
+        </section>
+
+        <!-- Anthropic Claude Tools -->
+        <section id="integration-anthropic-tools" class="doc-h3 mb-10">
+          <h3 class="text-xl font-bold mb-1 text-blue-300">Anthropic Claude Tools</h3>
+          <p class="text-slate-400 text-sm mb-4 leading-relaxed">
+            Protect <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">tool_use</code> handler maps for Anthropic's Claude model family.
+          </p>
+          <pre class="bg-slate-950 border border-slate-800 rounded-lg p-4 code-block text-xs mb-3"><code><span class="token-keyword">from</span> agentsentinel <span class="token-keyword">import</span> AgentGuard, AgentPolicy
+<span class="token-keyword">from</span> agentsentinel.integrations.anthropic_tools <span class="token-keyword">import</span> protect_tool_handlers
+
+policy = <span class="token-fn">AgentPolicy</span>(daily_budget=<span class="token-number">15.0</span>, model_budgets={<span class="token-string">"claude-3-5-sonnet"</span>: <span class="token-number">10.0</span>})
+guard  = <span class="token-fn">AgentGuard</span>(policy)
+
+handlers = <span class="token-fn">protect_tool_handlers</span>(
+    {<span class="token-string">"get_weather"</span>: get_weather, <span class="token-string">"search_web"</span>: search_web},
+    guard=guard,
+    model=<span class="token-string">"claude-3-5-sonnet"</span>,
+)
+
+<span class="token-comment"># In your message loop:</span>
+<span class="token-keyword">for</span> block <span class="token-keyword">in</span> response.content:
+    <span class="token-keyword">if</span> block.type == <span class="token-string">"tool_use"</span>:
+        result = handlers[block.name](**block.input)</code></pre>
+
+          <!-- Summary table -->
+          <div class="mt-6 overflow-x-auto">
+            <table class="w-full text-xs text-left border-collapse">
+              <thead>
+                <tr class="border-b border-slate-700">
+                  <th class="py-2 pr-4 text-slate-300 font-semibold">Framework</th>
+                  <th class="py-2 pr-4 text-slate-300 font-semibold">Guard class</th>
+                  <th class="py-2 text-slate-300 font-semibold">One-liner</th>
+                </tr>
+              </thead>
+              <tbody class="text-slate-400">
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 pr-4">LangChain</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">LangChainGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_langchain_agent(executor, guard)</code></td>
+                </tr>
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 pr-4">AutoGen</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">AutoGenGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_function_map(fn_map, guard)</code></td>
+                </tr>
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 pr-4">CrewAI</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">CrewAIGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_crew(crew, guard=guard)</code></td>
+                </tr>
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 pr-4">LlamaIndex</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">LlamaIndexGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_agent(agent, guard=guard)</code></td>
+                </tr>
+                <tr class="border-b border-slate-800">
+                  <td class="py-2 pr-4">OpenAI Assistants</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">OpenAIAssistantsGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_function_map(fns, guard=guard)</code></td>
+                </tr>
+                <tr>
+                  <td class="py-2 pr-4">Anthropic Tools</td>
+                  <td class="py-2 pr-4"><code class="text-blue-300">AnthropicToolsGuard</code></td>
+                  <td class="py-2"><code class="text-blue-300">protect_tool_handlers(handlers, guard=guard)</code></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
       </section>
 
       <!-- ── ROADMAP ──────────────────────────────────────────────── -->
