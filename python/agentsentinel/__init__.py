@@ -6,10 +6,16 @@ from .errors import (
     AgentSentinelError,
     ApprovalRequiredError,
     BudgetExceededError,
+    ContentInspectionError,
+    NetworkPolicyViolationError,
+    PIIDetectedError,
     RateLimitExceededError,
     ToolBlockedError,
 )
 from .guard import AgentGuard
+from .inspector import ContentInspector, InspectionReport, InspectionResult, InspectorConfig
+from .network import NetworkGuard, NetworkPolicy
+from .pii import PIIConfig, PIIMatch, PIIScanner, PIIType, luhn_check
 from .policy import AgentPolicy
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
@@ -27,6 +33,9 @@ __all__ = [
     "ApprovalRequiredError",
     "RateLimitExceededError",
     "ToolBlockedError",
+    "PIIDetectedError",
+    "NetworkPolicyViolationError",
+    "ContentInspectionError",
     # Audit
     "AuditEvent",
     "AuditLogger",
@@ -42,4 +51,18 @@ __all__ = [
     "SecurityConfig",
     "is_tool_blocked",
     "redact_sensitive",
+    # PII detection
+    "PIIConfig",
+    "PIIMatch",
+    "PIIScanner",
+    "PIIType",
+    "luhn_check",
+    # Network security
+    "NetworkPolicy",
+    "NetworkGuard",
+    # Content inspection
+    "InspectorConfig",
+    "ContentInspector",
+    "InspectionResult",
+    "InspectionReport",
 ]

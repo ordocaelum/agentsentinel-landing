@@ -1,5 +1,13 @@
 import { AuditEvent, AuditLogger, ConsoleAuditSink } from "./audit";
-import { ApprovalRequiredError, BudgetExceededError, ToolBlockedError } from "./errors";
+import {
+  ApprovalRequiredError,
+  BudgetExceededError,
+  ContentInspectionError,
+  PIIDetectedError,
+  ToolBlockedError,
+} from "./errors";
+import { ContentInspector, InspectionResult } from "./inspector";
+import { NetworkGuard } from "./network";
 import { AgentPolicy } from "./policy";
 import { RateLimiter } from "./rateLimit";
 import { ApprovalHandler, DenyAllApprover } from "./approval";
@@ -36,6 +44,8 @@ export class AgentGuard {
   private readonly approvalHandler: ApprovalHandler;
   private readonly auditLogger: AuditLogger;
   private readonly rateLimiter: RateLimiter;
+  private readonly contentInspector: ContentInspector;
+  private readonly networkGuard: NetworkGuard;
 
   private _dailySpent = 0;
   private _hourlySpent = 0;
@@ -61,6 +71,8 @@ export class AgentGuard {
     }
 
     this.rateLimiter = new RateLimiter(policy.rateLimits);
+    this.contentInspector = new ContentInspector(policy.inspectorConfig);
+    this.networkGuard = new NetworkGuard(policy.networkPolicy);
   }
 
   // -----------------------------------------------------------------------
@@ -134,6 +146,25 @@ export class AgentGuard {
         );
       }
 
+      // --- DLP: inspect tool arguments for PII ---
+      if (self.policy.dlpEnabled) {
+        const argReport = self.contentInspector.inspectArgs(resolvedName, args);
+        if (argReport.result === InspectionResult.BLOCK) {
+          const piiTypes = argReport.piiMatches.map(m => m.piiType);
+          self.auditLogger.record(
+            AuditEvent.now(resolvedName, "blocked", 0, "blocked_pii", {
+              reason: argReport.reason,
+            })
+          );
+          if (self.policy.dlpBlockOnViolation) {
+            throw new PIIDetectedError(
+              `PII detected in arguments for '${resolvedName}': ${argReport.reason}`,
+              { piiTypes, toolName: resolvedName }
+            );
+          }
+        }
+      }
+
       const invocationCost =
         cost !== 0 ? cost : (self.policy.costEstimator?.(resolvedName, args) ?? 0);
 
@@ -187,6 +218,25 @@ export class AgentGuard {
       try {
         const result = await Promise.resolve(fn(...args));
 
+        // --- DLP: inspect tool result for PII leakage ---
+        if (self.policy.dlpEnabled) {
+          const resultReport = self.contentInspector.inspectResult(resolvedName, result);
+          if (resultReport.result === InspectionResult.BLOCK) {
+            const piiTypes = resultReport.piiMatches.map(m => m.piiType);
+            self.auditLogger.record(
+              AuditEvent.now(resolvedName, "blocked", 0, "blocked_content", {
+                reason: resultReport.reason,
+              })
+            );
+            if (self.policy.dlpBlockOnViolation) {
+              throw new ContentInspectionError(
+                `PII detected in result of '${resolvedName}': ${resultReport.reason}`,
+                { toolName: resolvedName, reason: resultReport.reason }
+              );
+            }
+          }
+        }
+
         self._dailySpent += invocationCost;
         self._hourlySpent += invocationCost;
 
@@ -194,6 +244,13 @@ export class AgentGuard {
 
         return result as Awaited<ReturnType<T>>;
       } catch (err) {
+        // Re-throw our own DLP/content errors without wrapping them
+        if (
+          err instanceof PIIDetectedError ||
+          err instanceof ContentInspectionError
+        ) {
+          throw err;
+        }
         self.auditLogger.record(
           AuditEvent.now(resolvedName, "error", 0, "error", {
             error: self.safeErrorStr(err instanceof Error ? err.message : String(err)),

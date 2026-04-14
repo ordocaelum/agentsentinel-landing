@@ -3,6 +3,9 @@
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 
+from .inspector import InspectorConfig
+from .network import NetworkPolicy
+from .pii import PIIConfig
 from .security import SecurityConfig
 
 
@@ -60,3 +63,16 @@ class AgentPolicy:
 
     # Sandbox mode — extra restrictions for untrusted agents
     sandbox_mode: bool = False
+
+    # PII Protection
+    pii_config: PIIConfig = field(default_factory=PIIConfig)
+
+    # Network Security
+    network_policy: NetworkPolicy = field(default_factory=NetworkPolicy)
+
+    # Content Inspection
+    inspector_config: InspectorConfig = field(default_factory=InspectorConfig)
+
+    # Data Loss Prevention
+    dlp_enabled: bool = True
+    dlp_block_on_violation: bool = True

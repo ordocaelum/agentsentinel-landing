@@ -16,6 +16,9 @@ export {
   ApprovalRequiredError,
   RateLimitExceededError,
   ToolBlockedError,
+  PIIDetectedError,
+  NetworkPolicyViolationError,
+  ContentInspectionError,
 } from "./errors";
 
 export {
@@ -33,5 +36,22 @@ export { RateLimiter } from "./rateLimit";
 
 export { SecurityConfig, redactSensitive, isToolBlocked } from "./security";
 export type { SecurityConfigOptions } from "./security";
+
+export { PIIConfig, PIIScanner, PIIType, luhnCheck } from "./pii";
+export type { PIIConfigOptions, PIIMatch } from "./pii";
+
+export { NetworkPolicy, NetworkGuard } from "./network";
+export type { NetworkPolicyOptions } from "./network";
+
+export {
+  ContentInspector,
+  InspectorConfig,
+  InspectionResult,
+} from "./inspector";
+export type {
+  InspectorConfigOptions,
+  InspectionReport,
+  InspectorFn,
+} from "./inspector";
 
 export const VERSION = "0.1.0-preview";

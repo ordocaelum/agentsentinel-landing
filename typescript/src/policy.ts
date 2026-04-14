@@ -1,4 +1,7 @@
 import { SecurityConfig } from "./security";
+import { PIIConfig } from "./pii";
+import { NetworkPolicy } from "./network";
+import { InspectorConfig } from "./inspector";
 
 /** Configuration for agent safety controls. */
 export interface AgentPolicyOptions {
@@ -40,6 +43,16 @@ export interface AgentPolicyOptions {
    * list, and blocked-tool violations raise immediately.
    */
   sandboxMode?: boolean;
+  /** PII detection configuration. */
+  piiConfig?: PIIConfig;
+  /** Network security policy. */
+  networkPolicy?: NetworkPolicy;
+  /** Content inspection configuration. */
+  inspectorConfig?: InspectorConfig;
+  /** Enable Data Loss Prevention checks. Default: true. */
+  dlpEnabled?: boolean;
+  /** Block tool execution when a DLP violation is detected. Default: true. */
+  dlpBlockOnViolation?: boolean;
 }
 
 /** Immutable policy value object used by {@link AgentGuard}. */
@@ -53,6 +66,11 @@ export class AgentPolicy {
   readonly costEstimator: ((toolName: string, args: unknown[]) => number) | undefined;
   readonly security: SecurityConfig;
   readonly sandboxMode: boolean;
+  readonly piiConfig: PIIConfig;
+  readonly networkPolicy: NetworkPolicy;
+  readonly inspectorConfig: InspectorConfig;
+  readonly dlpEnabled: boolean;
+  readonly dlpBlockOnViolation: boolean;
 
   constructor(options: AgentPolicyOptions = {}) {
     this.dailyBudget = options.dailyBudget ?? Infinity;
@@ -64,5 +82,10 @@ export class AgentPolicy {
     this.costEstimator = options.costEstimator;
     this.security = options.security ?? new SecurityConfig();
     this.sandboxMode = options.sandboxMode ?? false;
+    this.piiConfig = options.piiConfig ?? new PIIConfig();
+    this.networkPolicy = options.networkPolicy ?? new NetworkPolicy();
+    this.inspectorConfig = options.inspectorConfig ?? new InspectorConfig();
+    this.dlpEnabled = options.dlpEnabled ?? true;
+    this.dlpBlockOnViolation = options.dlpBlockOnViolation ?? true;
   }
 }

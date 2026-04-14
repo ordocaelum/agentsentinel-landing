@@ -1,5 +1,9 @@
 """AgentSentinel exception hierarchy."""
 
+from __future__ import annotations
+
+from typing import List, Optional
+
 
 class AgentSentinelError(Exception):
     """Base class for all AgentSentinel errors."""
@@ -41,3 +45,48 @@ class ToolBlockedError(AgentSentinelError):
     def __init__(self, message: str = "Tool is blocked by security policy", *, tool_name: str = ""):
         super().__init__(message)
         self.tool_name = tool_name
+
+
+class PIIDetectedError(AgentSentinelError):
+    """Raised when PII is detected in outbound data and blocking is enabled."""
+
+    def __init__(
+        self,
+        message: str = "PII detected in data",
+        *,
+        pii_types: Optional[List[str]] = None,
+        tool_name: str = "",
+    ):
+        super().__init__(message)
+        self.pii_types = pii_types or []
+        self.tool_name = tool_name
+
+
+class NetworkPolicyViolationError(AgentSentinelError):
+    """Raised when an outbound request violates the network policy."""
+
+    def __init__(
+        self,
+        message: str = "Network policy violation",
+        *,
+        url: str = "",
+        reason: str = "",
+    ):
+        super().__init__(message)
+        self.url = url
+        self.reason = reason
+
+
+class ContentInspectionError(AgentSentinelError):
+    """Raised when content inspection fails or detects a policy violation."""
+
+    def __init__(
+        self,
+        message: str = "Content inspection failed",
+        *,
+        tool_name: str = "",
+        reason: str = "",
+    ):
+        super().__init__(message)
+        self.tool_name = tool_name
+        self.reason = reason

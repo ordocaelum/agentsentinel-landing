@@ -71,3 +71,51 @@ export class ToolBlockedError extends AgentSentinelError {
     this.toolName = toolName;
   }
 }
+
+/** Thrown when PII is detected in outbound data and blocking is enabled. */
+export class PIIDetectedError extends AgentSentinelError {
+  readonly piiTypes: readonly string[];
+  readonly toolName: string;
+
+  constructor(
+    message = "PII detected in data",
+    { piiTypes = [], toolName = "" }: { piiTypes?: string[]; toolName?: string } = {}
+  ) {
+    super(message);
+    this.name = "PIIDetectedError";
+    this.piiTypes = Object.freeze(piiTypes);
+    this.toolName = toolName;
+  }
+}
+
+/** Thrown when an outbound request violates the network policy. */
+export class NetworkPolicyViolationError extends AgentSentinelError {
+  readonly url: string;
+  readonly reason: string;
+
+  constructor(
+    message = "Network policy violation",
+    { url = "", reason = "" }: { url?: string; reason?: string } = {}
+  ) {
+    super(message);
+    this.name = "NetworkPolicyViolationError";
+    this.url = url;
+    this.reason = reason;
+  }
+}
+
+/** Thrown when content inspection fails or detects a policy violation. */
+export class ContentInspectionError extends AgentSentinelError {
+  readonly toolName: string;
+  readonly reason: string;
+
+  constructor(
+    message = "Content inspection failed",
+    { toolName = "", reason = "" }: { toolName?: string; reason?: string } = {}
+  ) {
+    super(message);
+    this.name = "ContentInspectionError";
+    this.toolName = toolName;
+    this.reason = reason;
+  }
+}
