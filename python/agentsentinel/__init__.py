@@ -31,7 +31,7 @@ from .pricing import (
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
-__version__ = "0.2.0-preview"
+__version__ = "1.0.0"
 
 __all__ = [
     # Policy

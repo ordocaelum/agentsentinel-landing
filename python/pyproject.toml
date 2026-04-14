@@ -1,36 +1,71 @@
 [build-system]
-requires = ["setuptools>=68", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
 
 [project]
 name = "agentsentinel"
-version = "0.1.0.dev0"
-description = "Safety controls, spend limits, and audit logging for AI agents."
+version = "1.0.0"
+description = "Safety controls for AI agents — budgets, approvals, rate limits, audit logs, and DLP"
 readme = "README.md"
-requires-python = ">=3.10"
-license = { text = "MIT" }
-keywords = ["ai", "agents", "safety", "guardrails", "llm"]
-classifiers = [
-  "Development Status :: 3 - Alpha",
-  "Intended Audience :: Developers",
-  "License :: OSI Approved :: MIT License",
-  "Programming Language :: Python :: 3",
-  "Programming Language :: Python :: 3.10",
-  "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12",
-  "Topic :: Software Development :: Libraries",
+license = {text = "MIT"}
+authors = [
+    {name = "AgentSentinel", email = "hello@agentsentinel.dev"}
 ]
+keywords = [
+    "ai", "agents", "safety", "guardrails", "llm", "openai", "anthropic",
+    "langchain", "autogen", "crewai", "llamaindex", "budget", "rate-limit",
+    "approval", "audit", "dlp", "pii"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Topic :: Scientific/Engineering :: Artificial Intelligence",
+]
+requires-python = ">=3.9"
 dependencies = []
 
 [project.optional-dependencies]
+tiktoken = ["tiktoken>=0.5.0"]
+langchain = ["langchain>=0.1.0"]
+slack = ["slack-sdk>=3.0.0"]
+all = ["tiktoken>=0.5.0", "langchain>=0.1.0", "slack-sdk>=3.0.0"]
 dev = [
-  "pytest>=8.0",
-  "pytest-cov>=5.0",
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+    "mypy>=1.0.0",
 ]
 
-[tool.setuptools.packages.find]
-where = ["."]
-include = ["agentsentinel*"]
+[project.urls]
+Homepage = "https://agentsentinel.dev"
+Documentation = "https://docs.agentsentinel.dev"
+Repository = "https://github.com/ordocaelum/agentsentinel-landing"
+Changelog = "https://github.com/ordocaelum/agentsentinel-landing/releases"
+
+[tool.hatch.build.targets.wheel]
+packages = ["agentsentinel"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39", "py310", "py311", "py312"]
+
+[tool.ruff]
+line-length = 100
+select = ["E", "F", "I", "W"]
+
+[tool.mypy]
+python_version = "3.9"
+warn_return_any = true
+warn_unused_configs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
