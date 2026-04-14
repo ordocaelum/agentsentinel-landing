@@ -67,39 +67,29 @@ def simulate_agent_activity(guard: AgentGuard, agent_name: str, num_events: int 
         status = "blocked" if tool in blocked_tools else "allowed"
         decision = "blocked" if status == "blocked" else "allowed"
 
-        # Try to call guard (will use policy checks)
+        # Log event through the public audit_logger interface
         try:
-            guard._audit_logger.log(
-                tool_name=tool,
-                status=status,
-                decision=decision,
-                cost=cost,
-                model=model,
-                input_tokens=random.randint(100, 2000),
-                output_tokens=random.randint(50, 800),
-                agent_id=agent_name,
-            )
-        except Exception:
-            # If audit_logger doesn't support direct log, use the sink directly
-            try:
-                for sink in guard.audit_logger._sinks:
+            if guard.audit_logger is not None and hasattr(guard.audit_logger, "_sinks"):
+                from agentsentinel.audit import AuditEvent
+                event = AuditEvent(
+                    tool_name=tool,
+                    status=status,
+                    decision=decision,
+                    cost=cost,
+                    timestamp=time.time(),
+                    metadata={
+                        "model": model,
+                        "input_tokens": random.randint(100, 2000),
+                        "output_tokens": random.randint(50, 800),
+                        "agent_id": agent_name,
+                    },
+                )
+                for sink in guard.audit_logger._sinks:  # type: ignore[attr-defined]
                     if hasattr(sink, "events"):
-                        from agentsentinel.audit import AuditEvent
-                        event = AuditEvent(
-                            tool_name=tool,
-                            status=status,
-                            decision=decision,
-                            cost=cost,
-                            model=model,
-                            input_tokens=random.randint(100, 2000),
-                            output_tokens=random.randint(50, 800),
-                            timestamp=time.time(),
-                            agent_id=agent_name,
-                        )
                         sink.events.append(event)
                         break
-            except Exception as e:
-                print(f"[{agent_name}] Could not log event: {e}")
+        except Exception as e:
+            print(f"[{agent_name}] Could not log event: {e}")
         time.sleep(0.05)  # slight delay between events
 
     print(f"[{agent_name}] Done simulating events.")

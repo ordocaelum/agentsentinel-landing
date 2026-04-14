@@ -549,9 +549,9 @@ def _seed_demo_approvals(guard: Any) -> None:
             return  # already seeded
 
         for tool, action, cost_est in [
-            ("delete_file", "rm /data/important.csv", 0.0),
+            ("delete_file", "delete: /data/report-archive.csv", 0.0),
             ("send_email", "Email: Board summary to all@company.com", 0.002),
-            ("execute_code", "subprocess.run(['rm', '-rf', '/tmp'])", 0.005),
+            ("execute_code", "run: data_analysis_script.py", 0.005),
         ]:
             aid = str(uuid.uuid4())[:8]
             _approvals[aid] = {
@@ -1391,13 +1391,32 @@ def _make_handler(guard: Any):  # type: ignore[return]
 
         def _handle_policy_validate(self, body: Dict[str, Any]) -> None:
             yaml_content = body.get("yaml", "")
-            errors = []
-            if "daily_budget:" in yaml_content:
+            errors: List[str] = []
+            # Prefer PyYAML for proper syntax checking
+            try:
+                import yaml  # type: ignore[import]
                 try:
-                    line = [l for l in yaml_content.split("\n") if "daily_budget:" in l][0]
-                    float(line.split(":")[1].strip())
-                except (ValueError, IndexError):
-                    errors.append("Invalid daily_budget value")
+                    yaml.safe_load(yaml_content)
+                except yaml.YAMLError as exc:
+                    errors.append(str(exc))
+            except ImportError:
+                # Fallback: basic structural checks without PyYAML
+                if yaml_content.strip() and not yaml_content.strip().startswith("#"):
+                    for line in yaml_content.splitlines():
+                        stripped = line.strip()
+                        if stripped and not stripped.startswith("#"):
+                            if ":" not in stripped and not stripped.startswith("-"):
+                                errors.append(f"Invalid YAML syntax near: {stripped[:40]!r}")
+                                break
+            # Type-check known numeric fields
+            if not errors:
+                for field in ("daily_budget", "hourly_budget"):
+                    for line in yaml_content.splitlines():
+                        if line.strip().startswith(f"{field}:"):
+                            try:
+                                float(line.split(":", 1)[1].strip())
+                            except (ValueError, IndexError):
+                                errors.append(f"Invalid numeric value for {field}")
             data = json.dumps({"valid": len(errors) == 0, "errors": errors}).encode()
             self._send_json(data)
 
@@ -1508,9 +1527,13 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 length = int(self.headers.get("Content-Length", 0))
                 if length > 0:
                     raw = self.rfile.read(length)
-                    return json.loads(raw.decode("utf-8"))
-            except Exception:
-                pass
+                    return json.loads(raw.decode("utf-8"))  # type: ignore[no-any-return]
+            except json.JSONDecodeError as exc:
+                import sys
+                print(f"[AgentSentinel] JSON parse error in request body: {exc}", file=sys.stderr)
+            except Exception as exc:
+                import sys
+                print(f"[AgentSentinel] Error reading request body: {exc}", file=sys.stderr)
             return {}
 
         def _send_json(self, data: bytes) -> None:

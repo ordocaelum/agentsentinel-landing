@@ -1961,14 +1961,14 @@ function manualRefresh(){ doRefresh(); toast('Dashboard refreshed','success'); }
 
 /* ─── Keyboard shortcuts ─────────────────────────────────────────────── */
 document.addEventListener('keydown',e=>{
-  const inInput=e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA';
+  const isEditableElement=e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA';
   // Allow Ctrl+S in textarea for policy save
   if(e.ctrlKey && e.key.toLowerCase()==='s'){
     e.preventDefault();
-    if(!inInput || e.target.id==='policy-yaml-editor') applyPolicy();
+    if(!isEditableElement || e.target.id==='policy-yaml-editor') applyPolicy();
     return;
   }
-  if(inInput) return;
+  if(isEditableElement) return;
   switch(e.key){
     case 'r': case 'R': manualRefresh(); break;
     case 'p': case 'P': togglePause(); break;
@@ -2634,11 +2634,16 @@ window.renderModels=function(models){
 };
 
 /* ─── Enhanced Approval Rendering ───────────────────────────────────── */
+/* ─── Approval args store (keyed by approval ID, avoids inline JSON in onclick) */
+const _approvalArgsMap = new Map();
+
 window.loadApprovals=async function(){
   try {
     const r=await fetch('/api/approvals');
     const d=await r.json();
     const pending=(d.approvals||[]).filter(a=>a.status==='pending');
+    // Store args by ID to avoid unsafe inline JSON in onclick handlers
+    pending.forEach(a=>_approvalArgsMap.set(a.id, a.args||{}));
     const badge=document.getElementById('approvals-badge');
     const qaBadge=document.getElementById('qa-pending-count');
     if(pending.length>0){
@@ -2681,7 +2686,7 @@ window.loadApprovals=async function(){
           </div>
           <div class="flex gap-1.5">
             <button onclick="openRejectModal('${a.id}')" class="btn btn-danger py-1 px-2.5 text-xs">❌ Reject</button>
-            <button onclick="viewFullArgs('${a.id}',${JSON.stringify(JSON.stringify(a.args||{}))})" class="btn btn-ghost py-1 px-1.5 text-xs" title="View args">👁</button>
+            <button onclick="viewFullArgs('${escHtml(a.id)}')" class="btn btn-ghost py-1 px-1.5 text-xs" title="View args">👁</button>
           </div>
         </div>
       </div>`;
@@ -2738,13 +2743,9 @@ async function handleApprovalBulk(action){
     loadApprovals();
   } catch(_){}
 }
-function viewFullArgs(id,argsStr){
-  try {
-    const args=JSON.parse(argsStr);
-    document.getElementById('args-json-content').textContent=JSON.stringify(args,null,2);
-  } catch(_){
-    document.getElementById('args-json-content').textContent=argsStr;
-  }
+function viewFullArgs(id){
+  const args=_approvalArgsMap.get(id)||{};
+  document.getElementById('args-json-content').textContent=JSON.stringify(args,null,2);
   openModal('modal-view-args');
 }
 function copyArgsJson(){
@@ -2811,14 +2812,20 @@ function setPolicyMode(mode){
   }
 }
 function buildYamlFromSimple(){
-  const db=parseFloat(document.getElementById('simple-daily-budget')?.value)||10;
-  const hb=parseFloat(document.getElementById('simple-hourly-budget')?.value)||2;
-  const rl=document.getElementById('simple-rate-limit')?.value||'unlimited';
-  const pii=document.getElementById('simple-pii')?.checked;
-  const net=document.getElementById('simple-network')?.checked;
-  const blocked=(document.getElementById('simple-blocked-tools')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  const approval=(document.getElementById('simple-approval-tools')?.value||'').split(',').map(s=>s.trim()).filter(Boolean);
-  let yaml=`daily_budget: ${db}\nhourly_budget: ${hb}\n`;
+  // Sanitize all values to prevent YAML injection
+  const db=Math.max(0,parseFloat(document.getElementById('simple-daily-budget')?.value)||10);
+  const hb=Math.max(0,parseFloat(document.getElementById('simple-hourly-budget')?.value)||2);
+  // rate_limit is from a closed <select> — only allow known values
+  const RL_ALLOWED=new Set(['unlimited','60/min','30/min','20/min','10/min','5/min','1/min']);
+  const rlRaw=document.getElementById('simple-rate-limit')?.value||'unlimited';
+  const rl=RL_ALLOWED.has(rlRaw)?rlRaw:'unlimited';
+  const pii=document.getElementById('simple-pii')?.checked===true;
+  const net=document.getElementById('simple-network')?.checked===true;
+  // Sanitize tool names: only allow alphanumeric, underscore, hyphen
+  const sanitizeName=(n)=>n.replace(/[^A-Za-z0-9_\-]/g,'');
+  const blocked=(document.getElementById('simple-blocked-tools')?.value||'').split(',').map(s=>sanitizeName(s.trim())).filter(Boolean);
+  const approval=(document.getElementById('simple-approval-tools')?.value||'').split(',').map(s=>sanitizeName(s.trim())).filter(Boolean);
+  let yaml=`daily_budget: ${db.toFixed(2)}\nhourly_budget: ${hb.toFixed(2)}\n`;
   if(approval.length) yaml+=`require_approval_for:\n${approval.map(t=>'  - '+t).join('\n')}\n`;
   else yaml+=`require_approval_for: []\n`;
   if(blocked.length) yaml+=`blocked_tools:\n${blocked.map(t=>'  - '+t).join('\n')}\n`;
