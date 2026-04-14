@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import fnmatch
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
@@ -87,8 +88,6 @@ class CostTracker:
 
     def check_model_budget(self, model_name: str) -> tuple[bool, Optional[str]]:
         """Check if model is within budget. Returns (allowed, reason)."""
-        import fnmatch
-
         for pattern, budget in self.config.model_budgets.items():
             if fnmatch.fnmatch(model_name.lower(), pattern.lower()):
                 usage = self._model_usage.get(model_name)

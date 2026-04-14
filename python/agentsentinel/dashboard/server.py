@@ -27,6 +27,7 @@ Or in the background::
 
 from __future__ import annotations
 
+import fnmatch
 import http.server
 import json
 import os
@@ -59,7 +60,6 @@ def _collect_model_costs(guard: Any) -> List[Dict[str, Any]]:
         for model_name, usage in all_usage.items():
             # Find matching budget if any
             budget = None
-            import fnmatch
             for pattern, bud in budgets.items():
                 if fnmatch.fnmatch(model_name.lower(), pattern.lower()):
                     budget = bud

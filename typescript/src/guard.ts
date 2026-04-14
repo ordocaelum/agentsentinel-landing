@@ -13,7 +13,7 @@ import { AgentPolicy } from "./policy";
 import { RateLimiter } from "./rateLimit";
 import { ApprovalHandler, DenyAllApprover } from "./approval";
 import { isToolBlocked, redactSensitive } from "./security";
-import { CostTracker } from "./costTracker";
+import { CostTracker, matchesGlob } from "./costTracker";
 
 export interface ProtectOptions {
   /** Override the tool name used for policy matching and audit logs. */
@@ -215,7 +215,7 @@ export class AgentGuard {
           const spentAmount = usage?.totalCost ?? 0;
           let budgetAmount = 0;
           for (const [pat, bud] of Object.entries(self.costTracker.config.modelBudgets)) {
-            if (_matchesGlob(resolvedModel.toLowerCase(), pat.toLowerCase())) {
+            if (matchesGlob(resolvedModel.toLowerCase(), pat.toLowerCase())) {
               budgetAmount = bud;
               break;
             }
@@ -315,13 +315,4 @@ export class AgentGuard {
     this._hourlyResetAt = Date.now();
     this.costTracker.reset();
   }
-}
-
-/** Simple glob pattern matcher supporting `*` wildcards. */
-function _matchesGlob(str: string, pattern: string): boolean {
-  if (!pattern.includes("*")) return str === pattern;
-  const re = new RegExp(
-    "^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$"
-  );
-  return re.test(str);
 }

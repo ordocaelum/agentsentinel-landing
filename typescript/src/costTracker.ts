@@ -114,7 +114,7 @@ export class CostTracker {
    */
   checkModelBudget(modelName: string): { allowed: boolean; reason?: string } {
     for (const [pattern, budget] of Object.entries(this.config.modelBudgets)) {
-      if (_matchesGlob(modelName.toLowerCase(), pattern.toLowerCase())) {
+      if (matchesGlob(modelName.toLowerCase(), pattern.toLowerCase())) {
         const usage = this._modelUsage.get(modelName);
         if (usage && usage.totalCost >= budget) {
           return {
@@ -194,7 +194,7 @@ export class CostTracker {
 }
 
 /** Simple glob pattern matcher supporting `*` wildcards. */
-function _matchesGlob(str: string, pattern: string): boolean {
+export function matchesGlob(str: string, pattern: string): boolean {
   if (!pattern.includes("*")) return str === pattern;
   const re = new RegExp(
     "^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$"

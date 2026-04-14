@@ -17,7 +17,6 @@ from .policy import AgentPolicy
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
-
 def _safe_error_str(message: str, sec: "SecurityConfig") -> str:
     """Return *message* with sensitive patterns redacted when logging errors."""
     if sec.log_full_params:
@@ -253,9 +252,8 @@ class AgentGuard:
                         usage = self.cost_tracker.get_model_usage(resolved_model)
                         spent_amount = usage.total_cost if usage else 0.0
                         budget_amount = 0.0
-                        import fnmatch as _fnmatch
                         for pat, bud in self.cost_tracker.config.model_budgets.items():
-                            if _fnmatch.fnmatch(resolved_model.lower(), pat.lower()):
+                            if fnmatch.fnmatch(resolved_model.lower(), pat.lower()):
                                 budget_amount = bud
                                 break
                         event = AuditEvent.now(
