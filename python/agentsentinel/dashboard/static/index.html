@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AgentSentinel Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
@@ -12,419 +13,1384 @@
         extend: {
           colors: {
             sentinel: {
-              50:  '#f0f9ff',
-              100: '#e0f2fe',
-              400: '#38bdf8',
-              500: '#0ea5e9',
-              600: '#0284c7',
-              700: '#0369a1',
-              900: '#0c4a6e',
+              50: '#f0f9ff', 100: '#e0f2fe',
+              400: '#38bdf8', 500: '#0ea5e9',
+              600: '#0284c7', 700: '#0369a1', 900: '#0c4a6e',
             },
-          },
-          animation: {
-            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
           },
         },
       },
     }
   </script>
   <style>
-    /* Glow effects */
-    .card-glow {
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.08),
-                  0 4px 24px rgba(14, 165, 233, 0.10);
-      transition: box-shadow 0.2s ease;
-    }
-    .card-glow:hover {
-      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.18),
-                  0 8px 40px rgba(14, 165, 233, 0.22);
-    }
-    .glow-green  { box-shadow: 0 0 18px rgba(34, 197, 94, 0.25); }
-    .glow-red    { box-shadow: 0 0 18px rgba(239, 68, 68, 0.25); }
-    .glow-blue   { box-shadow: 0 0 18px rgba(14, 165, 233, 0.25); }
-    .glow-yellow { box-shadow: 0 0 18px rgba(234, 179, 8, 0.25); }
-
-    /* Scrollbar styling */
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-
-    /* Blinking dot */
-    @keyframes blink { 0%, 100% { opacity: 1; } 50% { opacity: 0.2; } }
-    .blink { animation: blink 1.4s step-end infinite; }
-
-    /* Progress bar shine */
-    .bar-shine {
-      background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 60%, #7dd3fc 100%);
-    }
+    /* Glow */
+    .card-glow { box-shadow:0 0 0 1px rgba(56,189,248,.08),0 4px 24px rgba(14,165,233,.10); transition:box-shadow .2s,transform .2s; }
+    .card-glow:hover { box-shadow:0 0 0 1px rgba(56,189,248,.18),0 8px 40px rgba(14,165,233,.22); transform:translateY(-1px); }
+    .glow-green  { box-shadow:0 0 18px rgba(34,197,94,.25); }
+    .glow-red    { box-shadow:0 0 18px rgba(239,68,68,.25); }
+    .glow-blue   { box-shadow:0 0 18px rgba(14,165,233,.25); }
+    .glow-yellow { box-shadow:0 0 18px rgba(234,179,8,.25); }
+    /* Scrollbar */
+    ::-webkit-scrollbar { width:6px; } ::-webkit-scrollbar-track { background:#0f172a; } ::-webkit-scrollbar-thumb { background:#334155; border-radius:3px; }
+    /* Animations */
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.2} }
+    .blink { animation:blink 1.4s step-end infinite; }
+    @keyframes slideIn { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+    @keyframes slideUp { from{transform:translateY(20px);opacity:0} to{transform:translateY(0);opacity:1} }
+    .slide-up { animation:slideUp .3s ease-out; }
+    .toast { animation:slideIn .3s ease-out; }
+    /* Bar */
+    .bar-shine { background:linear-gradient(90deg,#0ea5e9 0%,#38bdf8 60%,#7dd3fc 100%); }
+    /* Buttons */
+    .btn { display:inline-flex; align-items:center; gap:6px; padding:6px 12px; border-radius:8px; font-size:.75rem; font-weight:500; transition:all .15s; cursor:pointer; user-select:none; }
+    .btn-primary { background:#0284c7; color:#fff; }
+    .btn-primary:hover { background:#0ea5e9; }
+    .btn-ghost { background:#1e293b; color:#cbd5e1; border:1px solid #334155; }
+    .btn-ghost:hover { background:#334155; }
+    .btn-danger { background:rgba(136,19,55,.4); color:#fca5a5; border:1px solid rgba(153,27,27,.5); }
+    .btn-danger:hover { background:rgba(153,27,27,.6); }
+    .btn-success { background:rgba(6,78,59,.4); color:#6ee7b7; border:1px solid rgba(6,95,70,.5); }
+    .btn-success:hover { background:rgba(6,95,70,.6); }
+    .btn-active { background:rgba(7,89,133,.4)!important; color:#7dd3fc!important; border:1px solid rgba(14,165,233,.4)!important; }
+    .btn:active { transform:scale(.95); }
+    /* Modal */
+    .modal-backdrop { position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;display:flex;align-items:center;justify-content:center;padding:1rem; }
+    .modal-box { max-height:90vh;overflow-y:auto;width:100%;max-width:900px; }
+    /* Ensure .hidden always works even without Tailwind CDN */
+    .hidden { display:none!important; }
+    /* Light theme */
+    html.light body { background:#f1f5f9; color:#1e293b; }
+    html.light .card-glow { background:#fff!important; border-color:#e2e8f0!important; }
+    html.light header { background:rgba(255,255,255,.9)!important; border-color:#e2e8f0!important; }
+    html.light .bg-slate-950 { background:#f1f5f9!important; }
+    html.light .bg-slate-900 { background:#fff!important; }
+    html.light .bg-slate-800 { background:#f8fafc!important; }
+    html.light .text-slate-200 { color:#1e293b!important; }
+    html.light .text-slate-400 { color:#64748b!important; }
+    html.light .text-slate-500 { color:#94a3b8!important; }
+    html.light .border-slate-800 { border-color:#e2e8f0!important; }
+    html.light .divide-slate-800\/60 > * { border-color:#e2e8f0!important; }
+    html.light ::-webkit-scrollbar-track { background:#f1f5f9; }
+    html.light ::-webkit-scrollbar-thumb { background:#cbd5e1; }
+    /* Section scroll */
+    section[id] { scroll-margin-top:80px; }
+    /* Quick stats bar */
+    #quick-stats-bar { transition:transform .3s ease; }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-200 min-h-screen font-sans antialiased">
 
-  <!-- ── Header ─────────────────────────────────────────────────────── -->
-  <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-3 flex items-center justify-between">
-      <div class="flex items-center gap-3">
-        <!-- Shield icon -->
-        <svg class="w-7 h-7 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-          <path stroke-linecap="round" stroke-linejoin="round"
-                d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6
-                   1.44 1.44 0 013 8.001v.005a8.954 8.954 0 006 8.497
-                   8.956 8.956 0 006-8.497v-.005a1.44 1.44 0 00-.598-1.997
-                   A11.96 11.96 0 0112 2.714z" />
-        </svg>
-        <span class="text-lg font-semibold tracking-tight text-white">
-          AgentSentinel
-          <span class="ml-1 text-sky-400 font-normal text-base">Dashboard</span>
-        </span>
-      </div>
+<!-- Toast container -->
+<div id="toast-container" class="fixed top-4 right-4 z-[200] flex flex-col gap-2 pointer-events-none max-w-xs w-full"></div>
 
-      <div class="flex items-center gap-4 text-sm">
-        <span class="flex items-center gap-1.5 text-slate-400">
+<!-- ═══════════════════════════════════════════════════════════ HEADER ════ -->
+<header class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-50">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6">
+    <!-- Row 1 -->
+    <div class="py-2.5 flex items-center justify-between gap-3 flex-wrap">
+      <div class="flex items-center gap-2.5">
+        <svg class="w-7 h-7 text-sky-400 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 1.44 1.44 0 013 8.001v.005a8.954 8.954 0 006 8.497 8.956 8.956 0 006-8.497v-.005a1.44 1.44 0 00-.598-1.997A11.96 11.96 0 0112 2.714z"/>
+        </svg>
+        <span class="text-base font-semibold tracking-tight text-white">
+          AgentSentinel <span class="text-sky-400 font-normal">Dashboard</span>
+        </span>
+        <span class="hidden sm:inline-flex items-center gap-1.5 text-xs text-slate-400">
           <span id="live-dot" class="blink inline-block w-2 h-2 rounded-full bg-emerald-400"></span>
           <span id="live-label">Live</span>
         </span>
-        <span class="text-slate-500">Auto-refresh 2s</span>
-        <span id="last-updated" class="text-slate-500">—</span>
+      </div>
+      <div class="flex items-center gap-2 flex-wrap">
+        <button onclick="manualRefresh()" class="btn btn-primary" title="Refresh (R)">🔄 <span class="hidden sm:inline">Refresh</span></button>
+        <button id="btn-pause" onclick="togglePause()" class="btn btn-ghost" title="Pause/Resume (P)">
+          <span id="pause-icon">⏸️</span><span id="pause-label" class="hidden sm:inline">Pause</span>
+        </button>
+        <select id="refresh-rate" onchange="setRefreshRate(+this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 cursor-pointer">
+          <option value="1000">🕐 1s</option>
+          <option value="2000" selected>🕐 2s</option>
+          <option value="5000">🕐 5s</option>
+          <option value="10000">🕐 10s</option>
+          <option value="30000">🕐 30s</option>
+        </select>
+        <div class="flex rounded-lg overflow-hidden border border-slate-700">
+          <button onclick="setViewMode('cards')"   id="vm-cards"   class="btn btn-ghost rounded-none border-0 px-2 py-1.5 btn-active" title="Cards">⊞</button>
+          <button onclick="setViewMode('compact')" id="vm-compact" class="btn btn-ghost rounded-none border-0 border-x border-slate-700 px-2 py-1.5" title="Compact">☰</button>
+          <button onclick="setViewMode('full')"    id="vm-full"    class="btn btn-ghost rounded-none border-0 px-2 py-1.5" title="Full">⊡</button>
+        </div>
+        <button id="btn-theme" onclick="toggleTheme()" class="btn btn-ghost" title="Toggle theme (D)">
+          <span id="theme-icon">🌙</span><span id="theme-label" class="hidden sm:inline">Dark</span>
+        </button>
+        <button onclick="showShortcutsModal()" class="btn btn-ghost" title="Shortcuts (?)">⌨️</button>
+        <span id="last-updated" class="text-xs text-slate-500 hidden md:inline">—</span>
       </div>
     </div>
-  </header>
-
-  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-
-    <!-- ── Stats Cards ──────────────────────────────────────────────── -->
-    <section>
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-
-        <!-- Total Events -->
-        <div class="card-glow glow-blue rounded-2xl bg-slate-900 border border-slate-800 p-5">
-          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Events</p>
-          <p id="stat-total" class="text-4xl font-bold text-white tabular-nums">—</p>
-          <p class="mt-1 text-xs text-slate-500">All tool invocations</p>
-        </div>
-
-        <!-- Allowed -->
-        <div class="card-glow glow-green rounded-2xl bg-slate-900 border border-slate-800 p-5">
-          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Allowed</p>
-          <p id="stat-allowed" class="text-4xl font-bold text-emerald-400 tabular-nums">—</p>
-          <p id="stat-allowed-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
-        </div>
-
-        <!-- Blocked -->
-        <div class="card-glow glow-red rounded-2xl bg-slate-900 border border-slate-800 p-5">
-          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Blocked</p>
-          <p id="stat-blocked" class="text-4xl font-bold text-rose-400 tabular-nums">—</p>
-          <p id="stat-blocked-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
-        </div>
-
-        <!-- Total Cost -->
-        <div class="card-glow glow-yellow rounded-2xl bg-slate-900 border border-slate-800 p-5">
-          <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Cost</p>
-          <p id="stat-cost" class="text-4xl font-bold text-yellow-400 tabular-nums">—</p>
-          <p id="stat-budget" class="mt-1 text-xs text-slate-500">No budget set</p>
-        </div>
-
+    <!-- Row 2: Time range + nav -->
+    <div class="pb-2.5 flex items-center gap-2 flex-wrap">
+      <span class="text-xs text-slate-500 shrink-0">Time:</span>
+      <div class="flex gap-1 flex-wrap">
+        <button onclick="setTimeRange('1h')"  id="tr-1h"  class="btn btn-ghost text-xs px-2 py-1">1h</button>
+        <button onclick="setTimeRange('6h')"  id="tr-6h"  class="btn btn-ghost text-xs px-2 py-1">6h</button>
+        <button onclick="setTimeRange('24h')" id="tr-24h" class="btn btn-ghost btn-active text-xs px-2 py-1">24h</button>
+        <button onclick="setTimeRange('7d')"  id="tr-7d"  class="btn btn-ghost text-xs px-2 py-1">7d</button>
+        <button onclick="setTimeRange('all')" id="tr-all" class="btn btn-ghost text-xs px-2 py-1">All</button>
       </div>
-    </section>
-
-    <!-- ── Per-Tool Breakdown ────────────────────────────────────────── -->
-    <section>
-      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Per-Tool Breakdown
-        </h2>
-        <div id="tool-breakdown" class="space-y-4">
-          <p class="text-slate-600 text-sm italic">No tool data yet…</p>
-        </div>
+      <span class="flex items-center gap-1 text-xs text-emerald-400 ml-2">
+        <span class="blink w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block"></span> LIVE
+      </span>
+      <div class="ml-auto flex gap-1 text-xs">
+        <a href="#section-stats"  class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">① Stats</a>
+        <a href="#section-charts" class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">② Charts</a>
+        <a href="#section-tools"  class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">③ Tools</a>
+        <a href="#section-events" class="btn btn-ghost py-1 px-2 hidden lg:inline-flex">④ Events</a>
       </div>
-    </section>
-
-    <!-- ── Cost By Model ────────────────────────────────────────────── -->
-    <section>
-      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
-        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">
-          Cost By Model
-        </h2>
-        <div id="model-breakdown" class="space-y-4">
-          <p class="text-slate-600 text-sm italic">No model data yet…</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── Recent Event Log ─────────────────────────────────────────── -->
-    <section>
-      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
-        <div class="flex items-center justify-between mb-4">
-          <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">
-            Recent Events
-          </h2>
-          <span class="text-xs text-slate-600">Last 50 events</span>
-        </div>
-
-        <div class="overflow-x-auto">
-          <table class="w-full text-sm">
-            <thead>
-              <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
-                <th class="text-left pb-2 pr-4 font-medium">Time</th>
-                <th class="text-left pb-2 pr-4 font-medium">Tool</th>
-                <th class="text-left pb-2 pr-4 font-medium">Decision</th>
-                <th class="text-left pb-2 pr-4 font-medium">Status</th>
-                <th class="text-right pb-2 font-medium">Cost</th>
-              </tr>
-            </thead>
-            <tbody id="event-log" class="divide-y divide-slate-800/60">
-              <tr>
-                <td colspan="5" class="py-6 text-center text-slate-600 italic text-sm">
-                  No events yet…
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- ── Footer ──────────────────────────────────────────────────────── -->
-  <footer class="border-t border-slate-800 mt-12 py-5">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-slate-600">
-      <span>AgentSentinel — Developer Preview</span>
-      <a href="https://github.com/ordocaelum/agentsentinel-landing"
-         target="_blank" rel="noopener"
-         class="hover:text-sky-400 transition-colors">GitHub ↗</a>
     </div>
-  </footer>
+  </div>
+</header>
 
-  <!-- ── JavaScript ──────────────────────────────────────────────────── -->
-  <script>
-    // -----------------------------------------------------------------------
-    // Helpers
-    // -----------------------------------------------------------------------
-    function fmt(n, decimals = 0) {
-      if (n == null || n === '') return '—';
-      return Number(n).toLocaleString(undefined, {
-        minimumFractionDigits: decimals,
-        maximumFractionDigits: decimals,
-      });
-    }
+<main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
 
-    function pct(part, total) {
-      if (!total) return '0%';
-      return Math.round((part / total) * 100) + '%';
-    }
+<!-- ═════════════════════════════════════════════════ ① STAT CARDS ═════ -->
+<section id="section-stats">
+  <div id="stats-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
-    function fmtCost(usd) {
-      if (usd == null) return '—';
-      if (usd < 0.01) return '$' + usd.toFixed(6);
-      return '$' + usd.toFixed(4);
-    }
+    <!-- Total -->
+    <div id="card-total" class="card-glow glow-blue rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('total')">
+      <div class="flex items-start justify-between">
+        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Events</p>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.stopPropagation();copyValue('stat-total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
+          <button onclick="event.stopPropagation();togglePin('total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Pin">📌</button>
+        </div>
+      </div>
+      <p id="stat-total" class="text-4xl font-bold text-white tabular-nums">—</p>
+      <p class="mt-1 text-xs text-slate-500">All tool invocations</p>
+      <canvas id="spark-total" class="mt-3 w-full" style="height:32px"></canvas>
+      <div id="expand-total" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-400 space-y-1 slide-up">
+        <p>Events/min: <span id="detail-events-min" class="text-white">—</span></p>
+        <p>Block rate: <span id="detail-block-rate" class="text-rose-400">—</span></p>
+      </div>
+    </div>
 
-    function fmtTime(ts) {
-      const d = new Date(ts * 1000);
-      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-    }
+    <!-- Allowed -->
+    <div id="card-allowed" class="card-glow glow-green rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('allowed')">
+      <div class="flex items-start justify-between">
+        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Allowed</p>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.stopPropagation();copyValue('stat-allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
+          <button onclick="event.stopPropagation();togglePin('allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+        </div>
+      </div>
+      <p id="stat-allowed" class="text-4xl font-bold text-emerald-400 tabular-nums">—</p>
+      <p id="stat-allowed-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+      <canvas id="spark-allowed" class="mt-3 w-full" style="height:32px"></canvas>
+    </div>
 
-    function decisionBadge(decision) {
-      const map = {
-        allowed:          'bg-emerald-950 text-emerald-300 ring-1 ring-emerald-700/40',
-        blocked_budget:   'bg-rose-950   text-rose-300   ring-1 ring-rose-700/40',
-        blocked_rate_limit:'bg-orange-950 text-orange-300 ring-1 ring-orange-700/40',
-        blocked_security: 'bg-red-950    text-red-300    ring-1 ring-red-700/40',
-        blocked_pii:      'bg-purple-950 text-purple-300 ring-1 ring-purple-700/40',
-        blocked_content:  'bg-pink-950   text-pink-300   ring-1 ring-pink-700/40',
-        approval_required:'bg-yellow-950 text-yellow-300 ring-1 ring-yellow-700/40',
-        approved:         'bg-teal-950   text-teal-300   ring-1 ring-teal-700/40',
-        error:            'bg-slate-800  text-slate-400  ring-1 ring-slate-600/40',
-      };
-      const cls = map[decision] || 'bg-slate-800 text-slate-400';
-      return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${cls}">${decision}</span>`;
-    }
+    <!-- Blocked -->
+    <div id="card-blocked" class="card-glow glow-red rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('blocked')">
+      <div class="flex items-start justify-between">
+        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Blocked</p>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.stopPropagation();copyValue('stat-blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
+          <button onclick="event.stopPropagation();togglePin('blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+        </div>
+      </div>
+      <p id="stat-blocked" class="text-4xl font-bold text-rose-400 tabular-nums">—</p>
+      <p id="stat-blocked-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+      <canvas id="spark-blocked" class="mt-3 w-full" style="height:32px"></canvas>
+    </div>
 
-    function statusDot(status) {
-      const map = {
-        success: 'bg-emerald-400',
-        blocked: 'bg-rose-400',
-        error:   'bg-orange-400',
-        approved:'bg-teal-400',
-      };
-      const cls = map[status] || 'bg-slate-400';
-      return `<span class="inline-block w-2 h-2 rounded-full ${cls} mr-1.5"></span>`;
-    }
+    <!-- Cost -->
+    <div id="card-cost" class="card-glow glow-yellow rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('cost')">
+      <div class="flex items-start justify-between">
+        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Cost</p>
+        <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <button onclick="event.stopPropagation();copyValue('stat-cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
+          <button onclick="event.stopPropagation();togglePin('cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+        </div>
+      </div>
+      <p id="stat-cost" class="text-4xl font-bold text-yellow-400 tabular-nums">—</p>
+      <p id="stat-budget" class="mt-1 text-xs text-slate-500">No budget set</p>
+      <canvas id="spark-cost" class="mt-3 w-full" style="height:32px"></canvas>
+      <div id="budget-gauge-row" class="hidden mt-3">
+        <div class="flex justify-between text-xs text-slate-500 mb-1">
+          <span>Budget Usage</span><span id="budget-pct-label">0%</span>
+        </div>
+        <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+          <div id="budget-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+        </div>
+      </div>
+      <div id="expand-cost" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-400 space-y-1 slide-up">
+        <p>Hourly: <span id="detail-hourly" class="text-sky-400">—</span></p>
+        <p>Cost change: <span id="detail-cost-chg" class="text-slate-200">—</span></p>
+      </div>
+    </div>
+  </div>
+  <div class="mt-2 flex justify-end">
+    <button onclick="showAddMetricModal()" class="btn btn-ghost text-xs">➕ Add Custom Metric</button>
+  </div>
+</section>
 
-    // -----------------------------------------------------------------------
-    // Stats rendering
-    // -----------------------------------------------------------------------
-    function renderStats(data) {
-      const total   = data.total   || 0;
-      const allowed = data.allowed || 0;
-      const blocked = data.blocked || 0;
+<!-- ═══════════════════════════════════════════════════ ALERTS PANEL ════ -->
+<section id="section-alerts">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" onclick="toggleSection('alerts-body')">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold uppercase tracking-widest text-slate-400">🔔 Alerts</span>
+        <span id="alerts-badge" class="hidden items-center justify-center w-5 h-5 rounded-full bg-rose-600 text-white text-xs font-bold">0</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button onclick="event.stopPropagation();muteAllAlerts()" class="btn btn-ghost text-xs py-1">🔕 Mute All</button>
+        <span id="alerts-chevron" class="text-slate-500 transition-transform duration-200">▼</span>
+      </div>
+    </div>
+    <div id="alerts-body" class="px-6 pb-5">
+      <div id="alerts-list" class="space-y-2">
+        <p class="text-slate-600 text-sm italic">No active alerts…</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-      document.getElementById('stat-total').textContent   = fmt(total);
-      document.getElementById('stat-allowed').textContent = fmt(allowed);
-      document.getElementById('stat-blocked').textContent = fmt(blocked);
-      document.getElementById('stat-cost').textContent    = fmtCost(data.total_cost);
+<!-- ═══════════════════════════════════════════════ APPROVAL QUEUE ════ -->
+<section id="section-approvals">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800">
+    <div class="flex items-center justify-between px-6 py-4 cursor-pointer select-none" onclick="toggleSection('approvals-body')">
+      <div class="flex items-center gap-2">
+        <span class="text-sm font-semibold uppercase tracking-widest text-slate-400">✅ Approval Queue</span>
+        <span id="approvals-badge" class="hidden items-center justify-center w-5 h-5 rounded-full bg-yellow-600 text-white text-xs font-bold">0</span>
+      </div>
+      <span id="approvals-chevron" class="text-slate-500 transition-transform duration-200">▼</span>
+    </div>
+    <div id="approvals-body" class="px-6 pb-5">
+      <div id="approvals-list" class="space-y-2">
+        <p class="text-slate-600 text-sm italic">No pending approvals…</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-      document.getElementById('stat-allowed-pct').textContent = pct(allowed, total) + ' of total';
-      document.getElementById('stat-blocked-pct').textContent = pct(blocked, total) + ' of total';
+<!-- ═══════════════════════════════════════════════════════ ② CHARTS ════ -->
+<section id="section-charts">
+  <!-- Cost + Events timeline -->
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-4">
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">💰 Cost Over Time</h2>
+        <div class="flex gap-1.5">
+          <button onclick="switchChartType('costChart','line')" class="btn btn-ghost py-1 px-2 text-xs" title="Line">📈</button>
+          <button onclick="switchChartType('costChart','bar')"  class="btn btn-ghost py-1 px-2 text-xs" title="Bar">📊</button>
+          <button onclick="downloadChart('costChart','cost-over-time')" class="btn btn-ghost py-1 px-2 text-xs" title="Download">📥</button>
+          <button onclick="openFullscreen('costChart','Cost Over Time')" class="btn btn-ghost py-1 px-2 text-xs" title="Fullscreen">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="costChart"></canvas></div>
+    </div>
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">📅 Events Timeline</h2>
+        <div class="flex gap-1.5">
+          <button onclick="switchChartType('eventsChart','bar')"  class="btn btn-ghost py-1 px-2 text-xs">📊</button>
+          <button onclick="switchChartType('eventsChart','line')" class="btn btn-ghost py-1 px-2 text-xs">📈</button>
+          <button onclick="downloadChart('eventsChart','events-timeline')" class="btn btn-ghost py-1 px-2 text-xs">📥</button>
+          <button onclick="openFullscreen('eventsChart','Events Timeline')" class="btn btn-ghost py-1 px-2 text-xs">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="eventsChart"></canvas></div>
+    </div>
+  </div>
+  <!-- 3 pie charts -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Decision Breakdown</h2>
+        <div class="flex gap-1">
+          <button onclick="downloadChart('decisionChart','decisions')" class="btn btn-ghost py-1 px-2 text-xs">📥</button>
+          <button onclick="openFullscreen('decisionChart','Decision Breakdown')" class="btn btn-ghost py-1 px-2 text-xs">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:190px"><canvas id="decisionChart"></canvas></div>
+    </div>
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Cost by Model</h2>
+        <div class="flex gap-1">
+          <button onclick="downloadChart('modelCostChart','model-cost')" class="btn btn-ghost py-1 px-2 text-xs">📥</button>
+          <button onclick="openFullscreen('modelCostChart','Cost by Model')" class="btn btn-ghost py-1 px-2 text-xs">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:190px"><canvas id="modelCostChart"></canvas></div>
+    </div>
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400">Events by Tool</h2>
+        <div class="flex gap-1">
+          <button onclick="downloadChart('toolPieChart','tool-pie')" class="btn btn-ghost py-1 px-2 text-xs">📥</button>
+          <button onclick="openFullscreen('toolPieChart','Events by Tool')" class="btn btn-ghost py-1 px-2 text-xs">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:190px"><canvas id="toolPieChart"></canvas></div>
+    </div>
+  </div>
+  <!-- Token usage + Budget gauge -->
+  <div class="grid grid-cols-1 xl:grid-cols-3 gap-4">
+    <div class="xl:col-span-2 card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🔤 Token Usage by Model</h2>
+        <div class="flex gap-1.5">
+          <button onclick="downloadChart('tokenChart','token-usage')" class="btn btn-ghost py-1 px-2 text-xs">📥</button>
+          <button onclick="openFullscreen('tokenChart','Token Usage')" class="btn btn-ghost py-1 px-2 text-xs">⬜</button>
+        </div>
+      </div>
+      <div style="position:relative;height:220px"><canvas id="tokenChart"></canvas></div>
+    </div>
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5 flex flex-col items-center justify-center">
+      <h2 class="text-xs font-semibold uppercase tracking-widest text-slate-400 mb-4 self-start">⚡ Daily Budget Gauge</h2>
+      <div style="position:relative;width:160px;height:90px">
+        <canvas id="budgetGaugeChart" width="160" height="80"></canvas>
+        <div style="position:absolute;bottom:0;left:50%;transform:translateX(-50%);text-align:center">
+          <p id="gauge-pct" class="text-2xl font-bold text-white tabular-nums">0%</p>
+        </div>
+      </div>
+      <div class="mt-4 text-center text-xs text-slate-500 space-y-1">
+        <p>Spent: <span id="gauge-spent" class="text-yellow-400 font-medium">$0.0000</span></p>
+        <p>Budget: <span id="gauge-budget" class="text-slate-300 font-medium">—</span></p>
+        <p>Hourly: <span id="gauge-hourly" class="text-sky-400 font-medium">$0.0000</span></p>
+      </div>
+      <button onclick="showAddBudgetModal()" class="btn btn-ghost text-xs mt-3">💰 Set Budget</button>
+    </div>
+  </div>
+</section>
 
-      // Budget line
-      const spent   = data.daily_spent || 0;
-      const budget  = data.daily_budget;
-      const budgetEl = document.getElementById('stat-budget');
-      if (budget != null) {
-        const spentPct = budget > 0 ? Math.round((spent / budget) * 100) : 0;
-        budgetEl.textContent = `$${spent.toFixed(4)} / $${budget.toFixed(2)} today (${spentPct}%)`;
-      } else {
-        budgetEl.textContent = 'No daily budget set';
-      }
-    }
+<!-- ═══════════════════════════════════════════════ ③ TOOL BREAKDOWN ════ -->
+<section id="section-tools">
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🔧 Per-Tool Breakdown</h2>
+        <button onclick="expandAllTools()" class="btn btn-ghost text-xs py-1">Expand All</button>
+      </div>
+      <div id="tool-breakdown" class="space-y-3">
+        <p class="text-slate-600 text-sm italic">No tool data yet…</p>
+      </div>
+    </div>
+    <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">🤖 Cost By Model</h2>
+        <button onclick="showAddBudgetModal()" class="btn btn-ghost text-xs py-1">💰 Set Budget</button>
+      </div>
+      <div id="model-breakdown" class="space-y-3">
+        <p class="text-slate-600 text-sm italic">No model data yet…</p>
+      </div>
+    </div>
+  </div>
+</section>
 
-    // -----------------------------------------------------------------------
-    // Per-tool breakdown
-    // -----------------------------------------------------------------------
-    function renderTools(tools) {
-      const container = document.getElementById('tool-breakdown');
-      if (!tools || tools.length === 0) {
-        container.innerHTML = '<p class="text-slate-600 text-sm italic">No tool data yet…</p>';
-        return;
-      }
+<!-- ═════════════════════════════════════════════════ ④ EVENT LOG ════ -->
+<section id="section-events">
+  <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+    <div class="flex flex-wrap items-center justify-between gap-3 mb-4">
+      <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400">📋 Event Log</h2>
+      <div class="flex gap-2 flex-wrap items-center">
+        <button onclick="exportEvents('csv')"  class="btn btn-ghost text-xs py-1">📥 CSV</button>
+        <button onclick="exportEvents('json')" class="btn btn-ghost text-xs py-1">📥 JSON</button>
+        <select id="page-size" onchange="setPageSize(+this.value)" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 text-xs cursor-pointer focus:outline-none focus:ring-1 focus:ring-sky-500">
+          <option value="25">25/page</option>
+          <option value="50" selected>50/page</option>
+          <option value="100">100/page</option>
+          <option value="200">200/page</option>
+        </select>
+        <button onclick="clearFilters()" class="btn btn-ghost text-xs py-1">🗑️ Clear</button>
+      </div>
+    </div>
+    <!-- Filters -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <div class="relative flex-1 min-w-[160px]">
+        <span class="absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-500 text-xs">🔍</span>
+        <input id="event-search" type="search" placeholder="Search events…" oninput="onSearchInput()"
+               class="w-full pl-7 pr-3 py-1.5 bg-slate-800 border border-slate-700 rounded-lg text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      </div>
+      <select id="filter-tool" onchange="loadEvents()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 min-w-[120px]">
+        <option value="">All Tools</option>
+      </select>
+      <select id="filter-decision" onchange="loadEvents()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 min-w-[130px]">
+        <option value="">All Decisions</option>
+        <option value="allowed">allowed</option>
+        <option value="blocked_budget">blocked_budget</option>
+        <option value="blocked_rate_limit">blocked_rate_limit</option>
+        <option value="blocked_security">blocked_security</option>
+        <option value="blocked_pii">blocked_pii</option>
+        <option value="approval_required">approval_required</option>
+        <option value="approved">approved</option>
+        <option value="error">error</option>
+      </select>
+      <select id="filter-status" onchange="loadEvents()" class="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1.5 text-slate-300 text-xs focus:outline-none focus:ring-1 focus:ring-sky-500 min-w-[110px]">
+        <option value="">All Status</option>
+        <option value="success">success</option>
+        <option value="blocked">blocked</option>
+        <option value="error">error</option>
+        <option value="approved">approved</option>
+      </select>
+    </div>
+    <!-- Sort bar -->
+    <div class="flex items-center gap-2 mb-3 text-xs text-slate-500 flex-wrap">
+      <span>Sort:</span>
+      <button onclick="setSortBy('time')" id="sort-time" class="btn btn-active py-0.5 px-2">Time ↓</button>
+      <button onclick="setSortBy('cost')" id="sort-cost" class="btn btn-ghost py-0.5 px-2">Cost ↓</button>
+      <button onclick="setSortBy('tool')" id="sort-tool" class="btn btn-ghost py-0.5 px-2">Tool A-Z</button>
+      <label class="ml-auto flex items-center gap-1.5 cursor-pointer">
+        <input type="checkbox" id="select-all" onchange="toggleSelectAll(this.checked)" class="accent-sky-500 w-3.5 h-3.5"/>
+        <span>Select All</span>
+      </label>
+    </div>
+    <!-- Table -->
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-xs text-slate-500 uppercase tracking-wider border-b border-slate-800">
+            <th class="pb-2 pr-2 w-6"><input type="checkbox" id="select-all-hdr" onchange="toggleSelectAll(this.checked)" class="accent-sky-500 w-3.5 h-3.5"/></th>
+            <th class="text-left pb-2 pr-4 font-medium">Time</th>
+            <th class="text-left pb-2 pr-4 font-medium">Tool</th>
+            <th class="text-left pb-2 pr-4 font-medium">Decision</th>
+            <th class="text-left pb-2 pr-4 font-medium">Status</th>
+            <th class="text-right pb-2 font-medium">Cost</th>
+          </tr>
+        </thead>
+        <tbody id="event-log" class="divide-y divide-slate-800/60">
+          <tr><td colspan="6" class="py-6 text-center text-slate-600 italic text-sm">No events yet…</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <!-- Pagination -->
+    <div class="flex items-center justify-between mt-4 flex-wrap gap-2">
+      <p id="pagination-info" class="text-xs text-slate-500">— events</p>
+      <div class="flex items-center gap-2">
+        <button onclick="goPage(currentPage-1)" id="btn-prev" class="btn btn-ghost py-1 px-3 text-xs">⬅ Prev</button>
+        <span id="page-indicator" class="text-xs text-slate-400">Page 1 of 1</span>
+        <button onclick="goPage(currentPage+1)" id="btn-next" class="btn btn-ghost py-1 px-3 text-xs">Next ➡</button>
+      </div>
+    </div>
+  </div>
+</section>
 
-      const sorted = [...tools].sort((a, b) => b.calls - a.calls);
-      const maxCalls = sorted[0].calls || 1;
+</main>
 
-      container.innerHTML = sorted.map(t => {
-        const barPct   = Math.round((t.calls / maxCalls) * 100);
-        const blockPct = t.calls > 0 ? Math.round((t.blocked / t.calls) * 100) : 0;
+<!-- ═══════════════════════════════════════════════ QUICK STATS BAR ════ -->
+<div id="quick-stats-bar" class="fixed bottom-4 left-1/2 -translate-x-1/2 z-40">
+  <div class="flex items-center gap-4 bg-slate-800/95 backdrop-blur border border-slate-700 rounded-2xl px-5 py-2.5 shadow-2xl text-xs">
+    <div class="flex items-center gap-1.5">
+      <span class="text-slate-500">Events/min</span>
+      <span id="qs-events-min" class="text-white font-bold tabular-nums">0.0</span>
+    </div>
+    <div class="w-px h-4 bg-slate-700"></div>
+    <div class="flex items-center gap-1.5">
+      <span class="text-slate-500">Cost/min</span>
+      <span id="qs-cost-min" class="text-yellow-400 font-bold tabular-nums">$0.000000</span>
+    </div>
+    <div class="w-px h-4 bg-slate-700"></div>
+    <div class="flex items-center gap-1.5">
+      <span class="text-slate-500">Block rate</span>
+      <span id="qs-block-rate" class="text-rose-400 font-bold tabular-nums">0.0%</span>
+    </div>
+    <div class="w-px h-4 bg-slate-700"></div>
+    <span id="qs-last-update" class="text-slate-400">—</span>
+    <button onclick="document.getElementById('quick-stats-bar').classList.toggle('translate-y-24')" class="text-slate-500 hover:text-slate-300 transition-colors" title="Hide">✕</button>
+  </div>
+</div>
 
-        return `
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-slate-200 font-mono">${escHtml(t.name)}</span>
-              <div class="flex items-center gap-3 text-xs text-slate-500">
-                <span>${fmt(t.calls)} calls</span>
-                <span class="text-rose-400">${fmt(t.blocked)} blocked (${blockPct}%)</span>
-                <span class="text-yellow-400">${fmtCost(t.cost)}</span>
-              </div>
-            </div>
-            <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
-              <div class="h-full bar-shine rounded-full" style="width: ${barPct}%"></div>
-            </div>
-          </div>`;
-      }).join('');
-    }
+<!-- ═══════════════════════════════════════════════════════ FOOTER ════ -->
+<footer class="border-t border-slate-800 mt-16 py-5 pb-20">
+  <div class="max-w-[1600px] mx-auto px-4 sm:px-6 flex items-center justify-between text-xs text-slate-600">
+    <span>AgentSentinel — Developer Preview</span>
+    <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-sky-400 transition-colors">GitHub ↗</a>
+  </div>
+</footer>
 
-    // -----------------------------------------------------------------------
-    // Per-model cost breakdown
-    // -----------------------------------------------------------------------
-    function renderModels(models) {
-      const container = document.getElementById('model-breakdown');
-      if (!models || models.length === 0) {
-        container.innerHTML = '<p class="text-slate-600 text-sm italic">No model data yet…</p>';
-        return;
-      }
+<!-- ═══════════════════════════════════════════════════════ MODALS ════ -->
 
-      const maxCost = models[0].cost || 1;
+<!-- Keyboard Shortcuts -->
+<div id="modal-shortcuts" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-shortcuts')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:480px">
+    <div class="flex items-center justify-between mb-5">
+      <h3 class="text-base font-semibold text-white">⌨️ Keyboard Shortcuts</h3>
+      <button onclick="closeModal('modal-shortcuts')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="grid grid-cols-2 gap-3 text-sm">
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">R</kbd><span class="text-slate-400">Refresh</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">P</kbd><span class="text-slate-400">Pause / Resume</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">D</kbd><span class="text-slate-400">Toggle theme</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">F</kbd><span class="text-slate-400">Focus search</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">1</kbd><span class="text-slate-400">Jump to Stats</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">2</kbd><span class="text-slate-400">Jump to Charts</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">3</kbd><span class="text-slate-400">Jump to Tools</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">4</kbd><span class="text-slate-400">Jump to Events</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">?</kbd><span class="text-slate-400">This dialog</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Esc</kbd><span class="text-slate-400">Close modal</span></div>
+    </div>
+  </div>
+</div>
 
-      container.innerHTML = models.map(m => {
-        const barPct = maxCost > 0 ? Math.round((m.cost / maxCost) * 100) : 0;
-        const budgetHtml = m.budget != null
-          ? (() => {
-              const usedPct = m.budget > 0 ? Math.min(100, Math.round((m.cost / m.budget) * 100)) : 0;
-              const barColor = usedPct >= 90 ? 'bg-rose-500' : usedPct >= 70 ? 'bg-yellow-500' : 'bg-emerald-500';
-              return `
-                <div class="mt-1">
-                  <div class="flex justify-between text-xs text-slate-500 mb-0.5">
-                    <span>Budget: ${fmtCost(m.cost)} / ${fmtCost(m.budget)}</span>
-                    <span>${usedPct}%</span>
-                  </div>
-                  <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
-                    <div class="h-full ${barColor} rounded-full" style="width: ${usedPct}%"></div>
-                  </div>
-                </div>`;
-            })()
-          : '';
+<!-- Fullscreen Chart -->
+<div id="modal-fullscreen" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-fullscreen')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="modal-chart-title" class="text-base font-semibold text-white">Chart</h3>
+      <button onclick="closeModal('modal-fullscreen')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div style="position:relative;height:60vh"><canvas id="fullscreen-canvas"></canvas></div>
+  </div>
+</div>
 
-        return `
-          <div>
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-sm font-medium text-slate-200 font-mono">${escHtml(m.model)}</span>
-              <div class="flex items-center gap-3 text-xs text-slate-500">
-                <span>${fmt(m.calls)} calls</span>
-                <span>${fmt(m.input_tokens + m.output_tokens)} tokens</span>
-                <span class="text-yellow-400">${fmtCost(m.cost)}</span>
-              </div>
-            </div>
-            <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
-              <div class="h-full bar-shine rounded-full" style="width: ${barPct}%"></div>
-            </div>
-            ${budgetHtml}
-          </div>`;
-      }).join('');
-    }
+<!-- Tool History -->
+<div id="modal-tool-history" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-tool-history')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="tool-history-title" class="text-base font-semibold text-white">Tool History</h3>
+      <button onclick="closeModal('modal-tool-history')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div style="position:relative;height:200px"><canvas id="tool-history-chart"></canvas></div>
+    <div id="tool-history-stats" class="grid grid-cols-3 gap-4 mt-4 text-center text-sm"></div>
+  </div>
+</div>
 
-    // -----------------------------------------------------------------------
-    // Event log
-    // -----------------------------------------------------------------------
-    function renderEvents(events) {
-      const tbody = document.getElementById('event-log');
-      if (!events || events.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" class="py-6 text-center text-slate-600 italic text-sm">No events yet…</td></tr>`;
-        return;
-      }
+<!-- Model Stats -->
+<div id="modal-model-stats" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-model-stats')">
+  <div class="modal-box card-glow bg-slate-900 border border-slate-700 rounded-2xl p-6">
+    <div class="flex items-center justify-between mb-4">
+      <h3 id="model-stats-title" class="text-base font-semibold text-white">Model Stats</h3>
+      <button onclick="closeModal('modal-model-stats')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div id="model-stats-content" class="space-y-4"></div>
+  </div>
+</div>
 
-      tbody.innerHTML = events.map(e => `
-        <tr class="hover:bg-slate-800/40 transition-colors">
-          <td class="py-2 pr-4 text-xs text-slate-500 tabular-nums whitespace-nowrap">${fmtTime(e.timestamp)}</td>
-          <td class="py-2 pr-4 text-sm font-mono text-slate-200 max-w-[180px] truncate" title="${escHtml(e.tool_name)}">${escHtml(e.tool_name)}</td>
-          <td class="py-2 pr-4">${decisionBadge(e.decision)}</td>
-          <td class="py-2 pr-4 text-sm">
-            ${statusDot(e.status)}<span class="text-slate-400">${escHtml(e.status)}</span>
-          </td>
-          <td class="py-2 text-right text-xs text-yellow-400 tabular-nums">${fmtCost(e.cost)}</td>
-        </tr>`).join('');
-    }
+<!-- Add Custom Metric -->
+<div id="modal-add-metric" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-add-metric')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">➕ Add Custom Metric</h3>
+      <button onclick="closeModal('modal-add-metric')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <div class="space-y-3">
+      <input id="metric-name" type="text" placeholder="Metric name (e.g. P99 Latency)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      <input id="metric-value" type="text" placeholder="Value or formula (e.g. 42)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      <button onclick="addCustomMetric()" class="btn btn-primary w-full" style="justify-content:center">Add Metric</button>
+    </div>
+  </div>
+</div>
 
-    // -----------------------------------------------------------------------
-    // XSS helper
-    // -----------------------------------------------------------------------
-    function escHtml(str) {
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
-    }
+<!-- Set Budget -->
+<div id="modal-set-budget" class="modal-backdrop hidden" onclick="if(event.target===this)closeModal('modal-set-budget')">
+  <div class="modal-box bg-slate-900 border border-slate-700 rounded-2xl p-6" style="max-width:420px">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-base font-semibold text-white">💰 Set Model Budget</h3>
+      <button onclick="closeModal('modal-set-budget')" class="btn btn-ghost py-1 px-2">✕</button>
+    </div>
+    <p class="text-sm text-slate-400 mb-4">Update AgentPolicy configuration to persist budget changes.</p>
+    <div class="space-y-3">
+      <select id="budget-model" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 focus:outline-none focus:ring-1 focus:ring-sky-500">
+        <option value="">Select model…</option>
+      </select>
+      <input id="budget-amount" type="number" step="0.01" min="0" placeholder="Budget (USD)" class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:ring-1 focus:ring-sky-500"/>
+      <button onclick="saveBudget()" class="btn btn-primary w-full" style="justify-content:center">Save (shows config hint)</button>
+      <div id="budget-hint" class="hidden p-3 bg-slate-800 rounded-lg text-xs text-emerald-400 font-mono"></div>
+    </div>
+  </div>
+</div>
 
-    // -----------------------------------------------------------------------
-    // Fetch loop
-    // -----------------------------------------------------------------------
-    async function refresh() {
-      try {
-        const res = await fetch('/api/stats');
-        if (!res.ok) throw new Error('HTTP ' + res.status);
-        const data = await res.json();
+<!-- ═══════════════════════════════════════════════════ JAVASCRIPT ════ -->
+<script>
+'use strict';
 
-        renderStats(data);
-        renderTools(data.tools);
-        renderModels(data.model_costs || []);
-        renderEvents(data.recent_events);
+/* ─── State ─────────────────────────────────────────────────────────── */
+const STATE = {
+  paused: false, refreshRate: 2000, timeRange: '24h',
+  viewMode: 'cards', theme: 'dark',
+  sortBy: 'time', sortDir: 'desc',
+  pageSize: 50, totalPages: 1,
+  searchDebounce: null, refreshTimer: null,
+  pinnedCards: new Set(), lastData: null,
+};
+const CHARTS = {};
+let currentPage = 1;
+let selectedEvents = new Set();
 
-        const now = new Date();
-        document.getElementById('last-updated').textContent =
-          'Updated ' + now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+/* ─── Formatting ─────────────────────────────────────────────────────── */
+function fmt(n,dec=0){
+  if(n==null||n==='') return '—';
+  return Number(n).toLocaleString(undefined,{minimumFractionDigits:dec,maximumFractionDigits:dec});
+}
+function pct(part,total){ return (!total)?'0%':Math.round((part/total)*100)+'%'; }
+function fmtCost(usd){
+  if(usd==null) return '—';
+  if(Math.abs(usd)<0.0001) return '$'+usd.toFixed(8);
+  if(Math.abs(usd)<0.01)   return '$'+usd.toFixed(6);
+  return '$'+usd.toFixed(4);
+}
+function fmtTime(ts){
+  return new Date(ts*1000).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+}
+function fmtDateTime(ts){
+  return new Date(ts*1000).toLocaleString([],{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+}
+function escHtml(str){
+  return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+// Safely embed a string in a single-quoted JS context inside an HTML attribute
+function jsStr(str){ return String(str).replace(/\\/g,'\\\\').replace(/'/g,"\\'"); }
+function decisionBadge(d){
+  const map={
+    allowed:'bg-emerald-950 text-emerald-300 ring-1 ring-emerald-700/40',
+    blocked_budget:'bg-rose-950 text-rose-300 ring-1 ring-rose-700/40',
+    blocked_rate_limit:'bg-orange-950 text-orange-300 ring-1 ring-orange-700/40',
+    blocked_security:'bg-red-950 text-red-300 ring-1 ring-red-700/40',
+    blocked_pii:'bg-purple-950 text-purple-300 ring-1 ring-purple-700/40',
+    blocked_content:'bg-pink-950 text-pink-300 ring-1 ring-pink-700/40',
+    approval_required:'bg-yellow-950 text-yellow-300 ring-1 ring-yellow-700/40',
+    approved:'bg-teal-950 text-teal-300 ring-1 ring-teal-700/40',
+    error:'bg-slate-800 text-slate-400 ring-1 ring-slate-600/40',
+  };
+  const cls=map[d]||'bg-slate-800 text-slate-400';
+  return `<span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium ${cls}">${d}</span>`;
+}
+function statusDot(s){
+  const map={success:'bg-emerald-400',blocked:'bg-rose-400',error:'bg-orange-400',approved:'bg-teal-400'};
+  return `<span class="inline-block w-2 h-2 rounded-full ${map[s]||'bg-slate-400'} mr-1.5"></span>`;
+}
 
-        document.getElementById('live-dot').style.background = '#4ade80';
-        document.getElementById('live-label').textContent = 'Live';
-      } catch (err) {
-        document.getElementById('live-dot').style.background = '#f87171';
-        document.getElementById('live-label').textContent = 'Offline';
-      }
-    }
+/* ─── Theme ──────────────────────────────────────────────────────────── */
+function applyTheme(t){
+  STATE.theme=t;
+  document.documentElement.classList.toggle('dark',t==='dark');
+  document.documentElement.classList.toggle('light',t==='light');
+  document.getElementById('theme-icon').textContent=t==='dark'?'🌙':'☀️';
+  document.getElementById('theme-label').textContent=t==='dark'?'Dark':'Light';
+  localStorage.setItem('as_theme',t);
+}
+function toggleTheme(){ applyTheme(STATE.theme==='dark'?'light':'dark'); toast('Theme: '+(STATE.theme==='dark'?'Dark':'Light'),'info'); }
 
-    // Initial load + 2-second poll
-    refresh();
-    setInterval(refresh, 2000);
-  </script>
+/* ─── Pause / Refresh ───────────────────────────────────────────────── */
+function togglePause(){
+  STATE.paused=!STATE.paused;
+  document.getElementById('pause-icon').textContent=STATE.paused?'▶️':'⏸️';
+  document.getElementById('pause-label').textContent=STATE.paused?'Resume':'Pause';
+  document.getElementById('live-dot').style.background=STATE.paused?'#94a3b8':'#4ade80';
+  document.getElementById('live-label').textContent=STATE.paused?'Paused':'Live';
+  toast(STATE.paused?'Auto-refresh paused':'Auto-refresh resumed');
+}
+function setRefreshRate(ms){
+  STATE.refreshRate=ms; localStorage.setItem('as_refresh_rate',ms); resetTimer();
+}
+function resetTimer(){
+  if(STATE.refreshTimer) clearInterval(STATE.refreshTimer);
+  STATE.refreshTimer=setInterval(()=>{ if(!STATE.paused) doRefresh(); },STATE.refreshRate);
+}
+
+/* ─── View Mode ─────────────────────────────────────────────────────── */
+function setViewMode(m){
+  STATE.viewMode=m; localStorage.setItem('as_view_mode',m);
+  ['cards','compact','full'].forEach(v=>{
+    const el=document.getElementById('vm-'+v);
+    if(!el) return;
+    if(v===m){ el.classList.add('btn-active'); el.classList.remove('btn-ghost'); }
+    else { el.classList.remove('btn-active'); el.classList.add('btn-ghost'); }
+  });
+}
+
+/* ─── Time Range ────────────────────────────────────────────────────── */
+function setTimeRange(r){
+  STATE.timeRange=r;
+  ['1h','6h','24h','7d','all'].forEach(v=>{
+    const el=document.getElementById('tr-'+v);
+    if(!el) return;
+    if(v===r){ el.classList.add('btn-active'); el.classList.remove('btn-ghost'); }
+    else { el.classList.remove('btn-active'); el.classList.add('btn-ghost'); }
+  });
+  doRefresh();
+}
+
+/* ─── Card interactions ─────────────────────────────────────────────── */
+function expandCard(id){
+  const el=document.getElementById('expand-'+id);
+  if(el) el.classList.toggle('hidden');
+}
+function togglePin(id){
+  const card=document.getElementById('card-'+id);
+  if(STATE.pinnedCards.has(id)){
+    STATE.pinnedCards.delete(id);
+    if(card){ card.style.outline=''; }
+    toast('Unpinned');
+  } else {
+    STATE.pinnedCards.add(id);
+    if(card){ card.style.outline='2px solid #38bdf8'; card.style.outlineOffset='2px'; }
+    toast('Card pinned');
+  }
+  localStorage.setItem('as_pinned',JSON.stringify([...STATE.pinnedCards]));
+}
+function copyValue(id){
+  const el=document.getElementById(id);
+  if(!el) return;
+  navigator.clipboard.writeText(el.textContent).then(()=>toast('Copied: '+el.textContent));
+}
+
+/* ─── Section collapse ──────────────────────────────────────────────── */
+function toggleSection(bodyId){
+  const body=document.getElementById(bodyId);
+  const chevron=document.getElementById(bodyId.replace('-body','-chevron'));
+  const hidden=body.classList.toggle('hidden');
+  if(chevron) chevron.textContent=hidden?'▶':'▼';
+}
+
+/* ─── Toast ─────────────────────────────────────────────────────────── */
+function toast(msg, type='info', duration=3000){
+  const container=document.getElementById('toast-container');
+  const colors={
+    info:'bg-slate-800 border-slate-700 text-slate-200',
+    success:'bg-emerald-900 border-emerald-700 text-emerald-200',
+    warning:'bg-yellow-900 border-yellow-700 text-yellow-200',
+    error:'bg-rose-900 border-rose-700 text-rose-200',
+  };
+  const icons={info:'ℹ️',success:'✅',warning:'⚠️',error:'❌'};
+  const el=document.createElement('div');
+  el.className='toast pointer-events-auto flex items-start gap-2.5 px-4 py-3 rounded-xl border shadow-xl text-xs '+( colors[type]||colors.info);
+  el.innerHTML=`<span class="shrink-0">${icons[type]||'ℹ️'}</span><span>${escHtml(msg)}</span>`;
+  container.appendChild(el);
+  setTimeout(()=>{ el.style.opacity='0'; el.style.transition='opacity .3s'; setTimeout(()=>el.remove(),300); },duration);
+}
+
+/* ─── Modals ─────────────────────────────────────────────────────────── */
+function openModal(id){ document.getElementById(id).classList.remove('hidden'); }
+function closeModal(id){ document.getElementById(id).classList.add('hidden'); }
+function showShortcutsModal(){ openModal('modal-shortcuts'); }
+function showAddMetricModal(){ openModal('modal-add-metric'); }
+function showAddBudgetModal(){ openModal('modal-set-budget'); }
+
+function openFullscreen(chartId, title){
+  document.getElementById('modal-chart-title').textContent=title;
+  openModal('modal-fullscreen');
+  const src=CHARTS[chartId];
+  if(!src) return;
+  if(CHARTS['_fullscreen']){ CHARTS['_fullscreen'].destroy(); delete CHARTS['_fullscreen']; }
+  const ctx=document.getElementById('fullscreen-canvas').getContext('2d');
+  CHARTS['_fullscreen']=new Chart(ctx,{
+    type: src.config.type,
+    data: JSON.parse(JSON.stringify(src.config.data)),
+    options: Object.assign({},src.config.options,{responsive:true,maintainAspectRatio:false}),
+  });
+}
+function downloadChart(chartId, name){
+  const c=CHARTS[chartId];
+  if(!c) return;
+  const a=document.createElement('a');
+  a.download=name+'.png'; a.href=c.canvas.toDataURL('image/png'); a.click();
+  toast('Downloaded: '+name+'.png','success');
+}
+function switchChartType(id, type){
+  if(!CHARTS[id]) return;
+  CHARTS[id].config.type=type;
+  CHARTS[id].update();
+}
+
+/* ─── Chart defaults ─────────────────────────────────────────────────── */
+function cDef(){
+  return {
+    responsive:true, maintainAspectRatio:false,
+    plugins:{
+      legend:{labels:{color:'#94a3b8',font:{size:11},boxWidth:12}},
+      tooltip:{backgroundColor:'rgba(15,23,42,.95)',titleColor:'#e2e8f0',bodyColor:'#94a3b8',borderColor:'rgba(56,189,248,.3)',borderWidth:1},
+    },
+    scales:{
+      x:{ticks:{color:'rgba(148,163,184,.6)',font:{size:10}},grid:{color:'rgba(148,163,184,.07)'}},
+      y:{ticks:{color:'rgba(148,163,184,.6)',font:{size:10}},grid:{color:'rgba(148,163,184,.07)'}},
+    },
+  };
+}
+function makeOrUpdate(id, config){
+  if(CHARTS[id]){ CHARTS[id].data=config.data; CHARTS[id].update('none'); }
+  else {
+    const el=document.getElementById(id);
+    if(!el) return;
+    CHARTS[id]=new Chart(el.getContext('2d'),config);
+  }
+}
+
+/* ─── Sparklines ─────────────────────────────────────────────────────── */
+function updateSparkline(id, data, color){
+  const el=document.getElementById('spark-'+id);
+  if(!el) return;
+  if(CHARTS['spark-'+id]) CHARTS['spark-'+id].destroy();
+  const hex=color.replace('#','');
+  const r=parseInt(hex.slice(0,2),16), g=parseInt(hex.slice(2,4),16), b=parseInt(hex.slice(4,6),16);
+  CHARTS['spark-'+id]=new Chart(el.getContext('2d'),{
+    type:'line',
+    data:{labels:data.map((_,i)=>i),datasets:[{data,borderColor:color,borderWidth:1.5,pointRadius:0,fill:true,backgroundColor:`rgba(${r},${g},${b},0.1)`,tension:0.4}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{enabled:false}},scales:{x:{display:false},y:{display:false}},animation:{duration:200}},
+  });
+}
+
+/* ─── Budget gauge ───────────────────────────────────────────────────── */
+function updateBudgetGauge(spent, budget){
+  const p=budget>0?Math.min(100,Math.round((spent/budget)*100)):0;
+  const color=p>=90?'#f87171':p>=70?'#facc15':'#4ade80';
+  const gEl=document.getElementById('gauge-pct');
+  if(gEl){ gEl.textContent=p+'%'; gEl.style.color=color; }
+  if(CHARTS['budgetGaugeChart']){
+    CHARTS['budgetGaugeChart'].data.datasets[0].data=[p,100-p];
+    CHARTS['budgetGaugeChart'].data.datasets[0].backgroundColor=[color,'rgba(30,41,59,.8)'];
+    CHARTS['budgetGaugeChart'].update('none');
+  } else {
+    const el=document.getElementById('budgetGaugeChart');
+    if(!el) return;
+    CHARTS['budgetGaugeChart']=new Chart(el.getContext('2d'),{
+      type:'doughnut',
+      data:{datasets:[{data:[p,100-p],backgroundColor:[color,'rgba(30,41,59,.8)'],borderWidth:0,circumference:180,rotation:-90}]},
+      options:{responsive:true,maintainAspectRatio:false,cutout:'75%',plugins:{legend:{display:false},tooltip:{enabled:false}},animation:{duration:600}},
+    });
+  }
+}
+
+/* ─── Render all charts ─────────────────────────────────────────────── */
+function renderAllCharts(data){
+  const hist=data.history||{};
+  const labels=(hist.timestamps||[]).map(t=>{
+    const d=new Date(t*1000);
+    return d.getHours().toString().padStart(2,'0')+':'+d.getMinutes().toString().padStart(2,'0');
+  });
+
+  // Cost line
+  makeOrUpdate('costChart',{
+    type:'line',
+    data:{labels,datasets:[{
+      label:'Cost ($)',data:hist.costs||[],
+      borderColor:'#facc15',backgroundColor:'rgba(250,204,21,.1)',
+      borderWidth:2,pointRadius:0,fill:true,tension:0.4,
+    }]},
+    options:Object.assign(cDef(),{plugins:Object.assign(cDef().plugins,{tooltip:{...cDef().plugins.tooltip,callbacks:{label:c=>'$'+c.parsed.y.toFixed(6)}}})}),
+  });
+
+  // Events stacked bar
+  const evOpts=cDef();
+  evOpts.scales.x.stacked=true; evOpts.scales.y.stacked=true;
+  makeOrUpdate('eventsChart',{
+    type:'bar',
+    data:{labels,datasets:[
+      {label:'Allowed',data:hist.allowed_counts||[],backgroundColor:'rgba(52,211,153,.7)',borderColor:'#34d399',borderWidth:1},
+      {label:'Blocked',data:hist.blocked_counts||[],backgroundColor:'rgba(248,113,113,.7)',borderColor:'#f87171',borderWidth:1},
+    ]},
+    options:evOpts,
+  });
+
+  // Decision donut
+  const dec=data.decision_breakdown||{};
+  const decL=Object.keys(dec), decV=decL.map(k=>dec[k]);
+  const dColors=['#4ade80','#f87171','#fb923c','#ef4444','#a78bfa','#f472b6','#facc15','#2dd4bf','#94a3b8'];
+  makeOrUpdate('decisionChart',{
+    type:'doughnut',
+    data:{labels:decL,datasets:[{data:decV,backgroundColor:dColors.slice(0,decL.length),borderWidth:2,borderColor:'#0f172a'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},boxWidth:10}},tooltip:{backgroundColor:'rgba(15,23,42,.95)',titleColor:'#e2e8f0',bodyColor:'#94a3b8'}}},
+  });
+
+  // Model cost donut
+  const models=(data.model_costs||[]).slice(0,5);
+  const otherC=(data.model_costs||[]).slice(5).reduce((a,m)=>a+m.cost,0);
+  const mL=models.map(m=>m.model.length>18?m.model.slice(0,16)+'…':m.model);
+  const mV=models.map(m=>m.cost);
+  if(otherC>0){mL.push('Other');mV.push(otherC);}
+  const mColors=['#38bdf8','#818cf8','#34d399','#facc15','#f472b6','#94a3b8'];
+  makeOrUpdate('modelCostChart',{
+    type:'doughnut',
+    data:{labels:mL,datasets:[{data:mV,backgroundColor:mColors.slice(0,mL.length),borderWidth:2,borderColor:'#0f172a'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},boxWidth:10}},tooltip:{backgroundColor:'rgba(15,23,42,.95)',titleColor:'#e2e8f0',bodyColor:'#94a3b8',callbacks:{label:c=>c.label+': $'+c.parsed.toFixed(6)}}}},
+  });
+
+  // Tool pie
+  const tools=(data.tools||[]).slice(0,5);
+  const otherT=(data.tools||[]).slice(5).reduce((a,t)=>a+t.calls,0);
+  const tL=tools.map(t=>t.name.length>15?t.name.slice(0,13)+'…':t.name);
+  const tV=tools.map(t=>t.calls);
+  if(otherT>0){tL.push('Other');tV.push(otherT);}
+  const tColors=['#38bdf8','#4ade80','#fb923c','#a78bfa','#f472b6','#94a3b8'];
+  makeOrUpdate('toolPieChart',{
+    type:'doughnut',
+    data:{labels:tL,datasets:[{data:tV,backgroundColor:tColors.slice(0,tL.length),borderWidth:2,borderColor:'#0f172a'}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'60%',plugins:{legend:{position:'right',labels:{color:'#94a3b8',font:{size:10},boxWidth:10}},tooltip:{backgroundColor:'rgba(15,23,42,.95)',titleColor:'#e2e8f0',bodyColor:'#94a3b8'}}},
+  });
+
+  // Token usage bar
+  const tokM=hist.token_models||{};
+  const tmNames=Object.keys(tokM);
+  const tkColors=['#38bdf8','#818cf8','#34d399','#facc15','#f472b6'];
+  const tokDatasets=tmNames.flatMap((m,i)=>[
+    {label:m+' in',data:[tokM[m].input||0],backgroundColor:tkColors[i%tkColors.length]+'99',stack:'in',borderWidth:0},
+    {label:m+' out',data:[tokM[m].output||0],backgroundColor:tkColors[i%tkColors.length],stack:'out',borderWidth:0},
+  ]);
+  const tokOpts=cDef();
+  tokOpts.scales.x.stacked=true; tokOpts.scales.y.stacked=true;
+  tokOpts.scales.y.ticks={...tokOpts.scales.y.ticks,callback:v=>v>=1000?Math.round(v/1000)+'K':v};
+  makeOrUpdate('tokenChart',{
+    type:'bar',
+    data:{labels:tmNames.length?['Total']:['No data'],datasets:tokDatasets.length?tokDatasets:[{label:'Tokens',data:[0],backgroundColor:'#334155'}]},
+    options:tokOpts,
+  });
+}
+
+/* ─── Render stats cards ────────────────────────────────────────────── */
+function animateNum(id,target){
+  const el=document.getElementById(id);
+  if(!el) return;
+  const start=parseFloat(el.textContent.replace(/[^0-9.]/g,''))||0;
+  if(start===target){return;}
+  const dur=300, step=16;
+  let elapsed=0;
+  const t=setInterval(()=>{
+    elapsed+=step;
+    const p=Math.min(1,elapsed/dur);
+    const v=start+(target-start)*(1-Math.pow(1-p,3));
+    el.textContent=Math.round(v).toLocaleString();
+    if(p>=1) clearInterval(t);
+  },step);
+}
+
+function renderStats(data){
+  const total=data.total||0, allowed=data.allowed||0, blocked=data.blocked||0;
+  animateNum('stat-total',total);
+  animateNum('stat-allowed',allowed);
+  animateNum('stat-blocked',blocked);
+  document.getElementById('stat-cost').textContent=fmtCost(data.total_cost);
+  document.getElementById('stat-allowed-pct').textContent=pct(allowed,total)+' of total';
+  document.getElementById('stat-blocked-pct').textContent=pct(blocked,total)+' of total';
+
+  // Budget
+  const spent=data.daily_spent||0, budget=data.daily_budget;
+  const budgetEl=document.getElementById('stat-budget');
+  if(budget!=null){
+    const sp=budget>0?Math.round((spent/budget)*100):0;
+    budgetEl.textContent=`$${spent.toFixed(4)} / $${budget.toFixed(2)} today (${sp}%)`;
+    document.getElementById('budget-gauge-row').classList.remove('hidden');
+    const bar=document.getElementById('budget-bar');
+    bar.style.width=Math.min(100,sp)+'%';
+    bar.className='h-full rounded-full transition-all duration-500 '+(sp>=90?'bg-rose-500':sp>=70?'bg-yellow-500':'bg-emerald-500');
+    document.getElementById('budget-pct-label').textContent=sp+'%';
+  } else { budgetEl.textContent='No daily budget set'; }
+
+  // Gauge
+  document.getElementById('gauge-spent').textContent=fmtCost(spent);
+  document.getElementById('gauge-budget').textContent=budget!=null?'$'+budget.toFixed(2):'—';
+  document.getElementById('gauge-hourly').textContent=fmtCost(data.hourly_spent||0);
+
+  // Expanded
+  const tr=data.trends||{};
+  const dem=document.getElementById('detail-events-min');
+  const dbr=document.getElementById('detail-block-rate');
+  const dh=document.getElementById('detail-hourly');
+  const dcc=document.getElementById('detail-cost-chg');
+  if(dem) dem.textContent=fmt(tr.event_rate_per_min||0,1)+'/min';
+  if(dbr) dbr.textContent=fmt(tr.block_rate_pct||0,1)+'%';
+  if(dh)  dh.textContent=fmtCost(data.hourly_spent||0);
+  if(dcc){ const cp=tr.cost_change_pct||0; dcc.textContent=(cp>=0?'↑':'↓')+Math.abs(cp)+'%'; dcc.className=(cp>=0?'text-rose-400':'text-emerald-400'); }
+
+  // Quick stats bar
+  document.getElementById('qs-events-min').textContent=fmt(tr.event_rate_per_min||0,1);
+  document.getElementById('qs-cost-min').textContent=fmtCost(tr.cost_per_min||0);
+  document.getElementById('qs-block-rate').textContent=(tr.block_rate_pct||0).toFixed(1)+'%';
+
+  // Sparklines (gracefully skip if Chart.js not loaded)
+  try {
+    const hist=data.history||{};
+    const costs=hist.costs||[], alw=hist.allowed_counts||[], blk=hist.blocked_counts||[];
+    const tots=alw.map((v,i)=>v+(blk[i]||0));
+    updateSparkline('total',tots,'#38bdf8');
+    updateSparkline('allowed',alw,'#34d399');
+    updateSparkline('blocked',blk,'#f87171');
+    updateSparkline('cost',costs,'#facc15');
+  } catch(_){}
+  // Budget gauge (gracefully skip if Chart.js not loaded)
+  try { updateBudgetGauge(spent,budget||0); } catch(_){}
+}
+
+/* ─── Tool breakdown ─────────────────────────────────────────────────── */
+function renderTools(tools){
+  const container=document.getElementById('tool-breakdown');
+  if(!tools||tools.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No tool data yet…</p>';return;}
+  const sorted=[...tools].sort((a,b)=>b.calls-a.calls);
+  const maxC=sorted[0].calls||1;
+  // Update filter dropdown
+  const sel=document.getElementById('filter-tool');
+  const existing=new Set([...sel.options].map(o=>o.value));
+  sorted.forEach(t=>{ if(!existing.has(t.name)){const o=document.createElement('option');o.value=t.name;o.textContent=t.name;sel.appendChild(o);} });
+  container.innerHTML=sorted.map(t=>{
+    const bp=Math.round((t.calls/maxC)*100);
+    const blkP=t.calls>0?Math.round((t.blocked/t.calls)*100):0;
+    return `<div class="border border-slate-800 rounded-xl overflow-hidden">
+      <div class="flex items-center justify-between px-4 py-3 gap-2">
+        <div class="flex items-center gap-2 min-w-0">
+          <button onclick="toggleToolRow(this)" class="text-slate-500 hover:text-slate-300 text-xs shrink-0 w-4">▶</button>
+          <span class="text-sm font-medium text-slate-200 font-mono truncate">${escHtml(t.name)}</span>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="text-xs text-slate-500">${fmt(t.calls)}c</span>
+          <span class="text-xs text-rose-400">${fmt(t.blocked)}blk</span>
+          <span class="text-xs text-yellow-400">${fmtCost(t.cost)}</span>
+          <div class="flex gap-1">
+            <button onclick="viewToolHistory('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="History">📊</button>
+            <button onclick="copyToolName('${jsStr(t.name)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">🔗</button>
+            <button onclick="quickAction('${jsStr(t.name)}','pause')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Pause">⏸</button>
+            <button onclick="quickAction('${jsStr(t.name)}','rl')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Rate Limit">⚙️</button>
+          </div>
+        </div>
+      </div>
+      <div class="px-4 pb-2"><div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div></div>
+      <div class="tool-detail hidden px-4 pb-3 border-t border-slate-800/60 pt-3 grid grid-cols-3 gap-3 text-xs text-slate-400">
+        <div><p class="text-slate-500">Block rate</p><p class="text-white font-semibold">${blkP}%</p></div>
+        <div><p class="text-slate-500">Avg cost</p><p class="text-yellow-400 font-semibold">${fmtCost(t.calls>0?t.cost/t.calls:0)}</p></div>
+        <div><p class="text-slate-500">Total cost</p><p class="text-yellow-400 font-semibold">${fmtCost(t.cost)}</p></div>
+      </div>
+    </div>`;
+  }).join('');
+}
+function toggleToolRow(btn){
+  const d=btn.closest('.border').querySelector('.tool-detail');
+  if(!d) return;
+  d.classList.toggle('hidden');
+  btn.textContent=d.classList.contains('hidden')?'▶':'▼';
+}
+function expandAllTools(){
+  document.querySelectorAll('.tool-detail').forEach(d=>{
+    d.classList.remove('hidden');
+    const btn=d.closest('.border')?.querySelector('button');
+    if(btn) btn.textContent='▼';
+  });
+}
+function copyToolName(n){ navigator.clipboard.writeText(n).then(()=>toast('Copied: '+n)); }
+function quickAction(n,a){
+  if(a==='pause') toast('Hint: add "'+n+'" to blocked_tools in AgentPolicy','warning');
+  else toast('Hint: rate_limits={"'+n+'":"20/min"} in AgentPolicy','info');
+}
+function viewToolHistory(name){
+  document.getElementById('tool-history-title').textContent='Tool: '+name;
+  const hist=STATE.lastData?.history||{};
+  const labels=(hist.timestamps||[]).map(t=>new Date(t*1000).getHours().toString().padStart(2,'0')+':00');
+  const ctx=document.getElementById('tool-history-chart').getContext('2d');
+  if(CHARTS['_th']) CHARTS['_th'].destroy();
+  CHARTS['_th']=new Chart(ctx,{
+    type:'line',
+    data:{labels,datasets:[{label:name,data:hist.allowed_counts||[],borderColor:'#38bdf8',fill:true,backgroundColor:'rgba(56,189,248,.1)',tension:0.4,pointRadius:0}]},
+    options:Object.assign(cDef(),{responsive:true,maintainAspectRatio:false}),
+  });
+  const tool=STATE.lastData?.tools?.find(t=>t.name===name)||{};
+  document.getElementById('tool-history-stats').innerHTML=`
+    <div class="bg-slate-800 rounded-xl p-3"><p class="text-slate-500 text-xs">Calls</p><p class="text-white font-bold text-lg">${fmt(tool.calls||0)}</p></div>
+    <div class="bg-slate-800 rounded-xl p-3"><p class="text-slate-500 text-xs">Blocked</p><p class="text-rose-400 font-bold text-lg">${fmt(tool.blocked||0)}</p></div>
+    <div class="bg-slate-800 rounded-xl p-3"><p class="text-slate-500 text-xs">Cost</p><p class="text-yellow-400 font-bold text-lg">${fmtCost(tool.cost||0)}</p></div>
+  `;
+  openModal('modal-tool-history');
+}
+
+/* ─── Model breakdown ───────────────────────────────────────────────── */
+function renderModels(models){
+  const container=document.getElementById('model-breakdown');
+  if(!models||models.length===0){container.innerHTML='<p class="text-slate-600 text-sm italic">No model data yet…</p>';return;}
+  const sel=document.getElementById('budget-model');
+  sel.innerHTML='<option value="">Select model…</option>';
+  models.forEach(m=>{const o=document.createElement('option');o.value=m.model;o.textContent=m.model;sel.appendChild(o);});
+  const maxC=models[0].cost||1;
+  container.innerHTML=models.map(m=>{
+    const bp=maxC>0?Math.round((m.cost/maxC)*100):0;
+    const budg=m.budget!=null?`
+      <div class="mt-1.5"><div class="flex justify-between text-xs text-slate-500 mb-0.5"><span>${fmtCost(m.cost)} / ${fmtCost(m.budget)}</span><span>${Math.min(100,Math.round((m.cost/m.budget)*100))}%</span></div>
+      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full rounded-full ${m.cost/m.budget>=0.9?'bg-rose-500':m.cost/m.budget>=0.7?'bg-yellow-500':'bg-emerald-500'}" style="width:${Math.min(100,Math.round((m.cost/m.budget)*100))}%"></div></div></div>`:'';
+    return `<div class="border border-slate-800 rounded-xl p-4">
+      <div class="flex items-center justify-between mb-2 gap-2">
+        <span class="text-sm font-medium text-slate-200 font-mono truncate">${escHtml(m.model)}</span>
+        <div class="flex items-center gap-1.5 shrink-0">
+          <span class="text-xs text-slate-500">${fmt(m.calls)}c</span>
+          <span class="text-xs text-slate-500">${fmt((m.input_tokens||0)+(m.output_tokens||0))}t</span>
+          <span class="text-xs text-yellow-400">${fmtCost(m.cost)}</span>
+          <button onclick="viewModelStats('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Stats">📊</button>
+          <button onclick="copyModelName('${jsStr(m.model)}')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
+          <button onclick="document.getElementById('budget-model').value='${jsStr(m.model)}';showAddBudgetModal()" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Budget">💰</button>
+        </div>
+      </div>
+      <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden"><div class="h-full bar-shine rounded-full" style="width:${bp}%"></div></div>
+      ${budg}
+    </div>`;
+  }).join('');
+}
+function copyModelName(n){ navigator.clipboard.writeText(n).then(()=>toast('Copied: '+n)); }
+function viewModelStats(name){
+  document.getElementById('model-stats-title').textContent='Model: '+name;
+  const m=STATE.lastData?.model_costs?.find(x=>x.model===name)||{};
+  document.getElementById('model-stats-content').innerHTML=`
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div class="bg-slate-800 rounded-xl p-3 text-center"><p class="text-slate-500 text-xs">Calls</p><p class="text-white font-bold text-xl">${fmt(m.calls||0)}</p></div>
+      <div class="bg-slate-800 rounded-xl p-3 text-center"><p class="text-slate-500 text-xs">Input Tokens</p><p class="text-sky-400 font-bold text-xl">${fmt(m.input_tokens||0)}</p></div>
+      <div class="bg-slate-800 rounded-xl p-3 text-center"><p class="text-slate-500 text-xs">Output Tokens</p><p class="text-emerald-400 font-bold text-xl">${fmt(m.output_tokens||0)}</p></div>
+      <div class="bg-slate-800 rounded-xl p-3 text-center"><p class="text-slate-500 text-xs">Total Cost</p><p class="text-yellow-400 font-bold text-xl">${fmtCost(m.cost||0)}</p></div>
+    </div>
+    <div class="mt-3 text-xs text-slate-500 space-y-1">
+      <p>Avg cost/call: <span class="text-yellow-300">${fmtCost(m.calls&&m.cost?m.cost/m.calls:0)}</span></p>
+      <p>Tokens/call: <span class="text-sky-300">${fmt(m.calls?((m.input_tokens||0)+(m.output_tokens||0))/m.calls:0,1)}</span></p>
+    </div>
+  `;
+  openModal('modal-model-stats');
+}
+
+/* ─── Event log ─────────────────────────────────────────────────────── */
+// Store current page events in a Map keyed by row index to avoid embedding JSON in DOM
+const _eventsMap = new Map();
+
+async function loadEvents(){
+  const search=document.getElementById('event-search')?.value||'';
+  const tool=document.getElementById('filter-tool')?.value||'';
+  const decision=document.getElementById('filter-decision')?.value||'';
+  const status=document.getElementById('filter-status')?.value||'';
+  const params=new URLSearchParams({page:currentPage,page_size:STATE.pageSize,search,tool,decision,status,sort_by:STATE.sortBy,sort_dir:STATE.sortDir});
+  try {
+    const res=await fetch('/api/events?'+params);
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const d=await res.json();
+    renderEventTable(d.events||[]);
+    STATE.totalPages=d.total_pages||1;
+    document.getElementById('page-indicator').textContent=`Page ${d.page} of ${d.total_pages}`;
+    document.getElementById('pagination-info').textContent=`${d.total} events`;
+    document.getElementById('btn-prev').disabled=d.page<=1;
+    document.getElementById('btn-next').disabled=d.page>=d.total_pages;
+  } catch(_){
+    if(STATE.lastData){ renderEventTable(STATE.lastData.recent_events||[]); document.getElementById('pagination-info').textContent='Cached'; }
+  }
+}
+function renderEventTable(events){
+  const tbody=document.getElementById('event-log');
+  _eventsMap.clear();
+  if(!events||events.length===0){ tbody.innerHTML='<tr><td colspan="6" class="py-6 text-center text-slate-600 italic text-sm">No events…</td></tr>'; return; }
+  tbody.innerHTML=events.map((e,i)=>{
+    _eventsMap.set(i, e);
+    return `<tr class="hover:bg-slate-800/40 transition-colors" data-idx="${i}">
+    <td class="py-2 pr-2"><input type="checkbox" class="event-checkbox accent-sky-500 w-3.5 h-3.5" onchange="toggleEventSel(this)"/></td>
+    <td class="py-2 pr-4 text-xs text-slate-500 tabular-nums whitespace-nowrap">${fmtTime(e.timestamp)}</td>
+    <td class="py-2 pr-4 text-sm font-mono text-slate-200 max-w-[160px] truncate" title="${escHtml(e.tool_name)}">${escHtml(e.tool_name)}</td>
+    <td class="py-2 pr-4">${decisionBadge(e.decision)}</td>
+    <td class="py-2 pr-4 text-sm">${statusDot(e.status)}<span class="text-slate-400">${escHtml(e.status)}</span></td>
+    <td class="py-2 text-right text-xs text-yellow-400 tabular-nums">${fmtCost(e.cost)}</td>
+  </tr>`;
+  }).join('');
+}
+function toggleEventSel(cb){
+  const row=cb.closest('tr');
+  const idx=parseInt(row?.dataset?.idx??'-1',10);
+  const evt=_eventsMap.get(idx);
+  if(!evt) return;
+  if(cb.checked) selectedEvents.add(JSON.stringify(evt));
+  else selectedEvents.delete(JSON.stringify(evt));
+}
+function toggleSelectAll(checked){
+  document.querySelectorAll('.event-checkbox').forEach(cb=>{
+    cb.checked=checked;
+    const row=cb.closest('tr');
+    const idx=parseInt(row?.dataset?.idx??'-1',10);
+    const evt=_eventsMap.get(idx);
+    if(!evt) return;
+    if(checked) selectedEvents.add(JSON.stringify(evt));
+    else selectedEvents.clear();
+  });
+  ['select-all','select-all-hdr'].forEach(id=>{ const e=document.getElementById(id); if(e) e.checked=checked; });
+}
+function goPage(p){
+  currentPage=Math.max(1,Math.min(STATE.totalPages,p));
+  loadEvents();
+}
+function setPageSize(n){ STATE.pageSize=n; currentPage=1; loadEvents(); }
+function setSortBy(field){
+  if(STATE.sortBy===field) STATE.sortDir=STATE.sortDir==='desc'?'asc':'desc';
+  else { STATE.sortBy=field; STATE.sortDir=field==='tool'?'asc':'desc'; }
+  ['time','cost','tool'].forEach(f=>{
+    const el=document.getElementById('sort-'+f);
+    if(!el) return;
+    if(f===STATE.sortBy){ el.classList.add('btn-active'); el.classList.remove('btn-ghost'); }
+    else { el.classList.remove('btn-active'); el.classList.add('btn-ghost'); }
+  });
+  const btn=document.getElementById('sort-'+STATE.sortBy);
+  if(btn) btn.textContent={time:'Time',cost:'Cost',tool:'Tool A-Z'}[STATE.sortBy]+(STATE.sortBy==='tool'?'':STATE.sortDir==='desc'?' ↓':' ↑');
+  loadEvents();
+}
+function clearFilters(){
+  ['event-search'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  ['filter-tool','filter-decision','filter-status'].forEach(id=>{ const e=document.getElementById(id); if(e) e.value=''; });
+  currentPage=1; loadEvents(); toast('Filters cleared');
+}
+function onSearchInput(){ clearTimeout(STATE.searchDebounce); STATE.searchDebounce=setTimeout(()=>{currentPage=1;loadEvents();},300); }
+function exportEvents(format){
+  const src=STATE.lastData?.recent_events||[];
+  if(format==='json'){
+    const blob=new Blob([JSON.stringify(src,null,2)],{type:'application/json'});
+    dlBlob(blob,'events.json'); toast('Exported '+src.length+' events as JSON','success');
+  } else {
+    const rows=[['timestamp','tool_name','status','decision','cost'],...src.map(e=>[e.timestamp,e.tool_name,e.status,e.decision,e.cost])];
+    const blob=new Blob([rows.map(r=>r.join(',')).join('\n')],{type:'text/csv'});
+    dlBlob(blob,'events.csv'); toast('Exported '+src.length+' events as CSV','success');
+  }
+}
+function dlBlob(blob,name){ const a=document.createElement('a'); a.download=name; a.href=URL.createObjectURL(blob); a.click(); }
+
+/* ─── Approvals ─────────────────────────────────────────────────────── */
+async function loadApprovals(){
+  try {
+    const r=await fetch('/api/approvals');
+    const d=await r.json();
+    const pending=(d.approvals||[]).filter(a=>a.status==='pending');
+    const badge=document.getElementById('approvals-badge');
+    if(pending.length>0){ badge.textContent=pending.length; badge.classList.remove('hidden'); badge.classList.add('inline-flex'); }
+    else badge.classList.add('hidden');
+    const list=document.getElementById('approvals-list');
+    if(pending.length===0){ list.innerHTML='<p class="text-slate-600 text-sm italic">No pending approvals…</p>'; return; }
+    list.innerHTML=pending.map(a=>`<div class="flex items-start justify-between p-3 rounded-xl border border-yellow-800/40 bg-yellow-950/20 gap-3">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-yellow-200 font-mono truncate">${escHtml(a.tool_name)}</p>
+        <p class="text-xs text-slate-400 truncate">${escHtml(a.action)}</p>
+        <p class="text-xs text-slate-500">${fmtDateTime(a.timestamp)}</p>
+      </div>
+      <div class="flex gap-2 shrink-0">
+        <button onclick="handleApproval('${a.id}','approve')" class="btn btn-success py-1 px-3">✅ Approve</button>
+        <button onclick="handleApproval('${a.id}','reject')"  class="btn btn-danger  py-1 px-3">❌ Reject</button>
+      </div>
+    </div>`).join('');
+  } catch(_){}
+}
+async function handleApproval(id,action){
+  try {
+    const r=await fetch('/api/approvals/'+id+'/'+action,{method:'POST'});
+    if(r.ok){ toast('Request '+action+'d',action==='approve'?'success':'warning'); loadApprovals(); }
+  } catch(_){ toast('Failed to '+action+' request','error'); }
+}
+
+/* ─── Alerts ─────────────────────────────────────────────────────────── */
+async function loadAlerts(){
+  try {
+    const r=await fetch('/api/alerts');
+    const d=await r.json();
+    const active=(d.alerts||[]).filter(a=>!a.dismissed);
+    const badge=document.getElementById('alerts-badge');
+    if(active.length>0){ badge.textContent=active.length; badge.classList.remove('hidden'); badge.classList.add('inline-flex'); }
+    else badge.classList.add('hidden');
+    const list=document.getElementById('alerts-list');
+    if(active.length===0){ list.innerHTML='<p class="text-slate-600 text-sm italic">No active alerts…</p>'; return; }
+    const sev={high:'border-rose-700/50 bg-rose-950/30',medium:'border-yellow-700/50 bg-yellow-950/20',low:'border-slate-700 bg-slate-800/40'};
+    list.innerHTML=active.map(a=>`<div id="alert-${a.id}" class="flex items-start justify-between p-3 rounded-xl border gap-3 ${sev[a.severity]||sev.low}">
+      <div class="min-w-0">
+        <p class="text-sm font-medium text-white">${escHtml(a.title)}</p>
+        <p class="text-xs text-slate-400">${escHtml(a.message)}</p>
+        <p class="text-xs text-slate-500 mt-0.5">${fmtDateTime(a.timestamp)}</p>
+      </div>
+      <div class="flex gap-1.5 shrink-0">
+        <button onclick="snoozeAlert('${a.id}')" class="btn btn-ghost py-0.5 px-2 text-xs">💤</button>
+        <button onclick="dismissAlert('${a.id}')" class="btn btn-ghost py-0.5 px-2 text-xs">🔕 Dismiss</button>
+      </div>
+    </div>`).join('');
+  } catch(_){}
+}
+async function dismissAlert(id){
+  try {
+    const r=await fetch('/api/alerts/'+id+'/dismiss',{method:'POST'});
+    if(r.ok){ const el=document.getElementById('alert-'+id); if(el){el.style.opacity='0';el.style.transition='all .3s';setTimeout(()=>el.remove(),300);} toast('Dismissed','success'); loadAlerts(); }
+  } catch(_){}
+}
+function snoozeAlert(id){
+  const el=document.getElementById('alert-'+id);
+  if(el){el.style.opacity='.35';el.style.pointerEvents='none';}
+  toast('Snoozed for 5 min');
+  setTimeout(()=>{ if(el){el.style.opacity='1';el.style.pointerEvents='';} },300000);
+}
+function muteAllAlerts(){
+  document.querySelectorAll('[id^="alert-"]').forEach(el=>{ el.style.opacity='0'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),300); });
+  setTimeout(()=>{ document.getElementById('alerts-list').innerHTML='<p class="text-slate-600 text-sm italic">All alerts muted…</p>'; document.getElementById('alerts-badge').classList.add('hidden'); },350);
+  toast('All alerts muted','warning');
+}
+
+/* ─── Budget modal ───────────────────────────────────────────────────── */
+function saveBudget(){
+  const model=document.getElementById('budget-model').value;
+  const amount=parseFloat(document.getElementById('budget-amount').value);
+  if(!model||isNaN(amount)){ toast('Select a model and enter an amount','error'); return; }
+  const hint='model_budgets={"'+model+'": '+amount+'}';
+  const hintEl=document.getElementById('budget-hint');
+  hintEl.textContent='Add to AgentPolicy: '+hint; hintEl.classList.remove('hidden');
+  toast('Config hint shown — update AgentPolicy to persist','info');
+}
+
+/* ─── Custom metric ──────────────────────────────────────────────────── */
+function addCustomMetric(){
+  const name=document.getElementById('metric-name').value.trim();
+  const val=document.getElementById('metric-value').value.trim();
+  if(!name){ toast('Enter a metric name','error'); return; }
+  closeModal('modal-add-metric');
+  toast('Custom metric "'+name+'" added','success');
+  const grid=document.getElementById('stats-grid');
+  const card=document.createElement('div');
+  card.className='card-glow rounded-2xl bg-slate-900 border border-slate-800 p-5';
+  card.innerHTML=`<p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">${escHtml(name)}</p><p class="text-4xl font-bold text-sky-400 tabular-nums">${escHtml(val)}</p><p class="mt-1 text-xs text-slate-500">Custom metric</p>`;
+  grid.appendChild(card);
+}
+
+/* ─── Main refresh ───────────────────────────────────────────────────── */
+async function doRefresh(){
+  try {
+    const res=await fetch('/api/stats');
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    const data=await res.json();
+    STATE.lastData=data;
+    renderStats(data);
+    renderTools(data.tools||[]);
+    renderModels(data.model_costs||[]);
+    try { renderAllCharts(data); } catch(_){}
+    loadEvents();
+    loadApprovals();
+    loadAlerts();
+    const ts=new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+    document.getElementById('last-updated').textContent='Updated '+ts;
+    document.getElementById('qs-last-update').textContent=ts;
+    document.getElementById('live-dot').style.background='#4ade80';
+    document.getElementById('live-label').textContent='Live';
+  } catch(_){
+    document.getElementById('live-dot').style.background='#f87171';
+    document.getElementById('live-label').textContent='Offline';
+  }
+}
+function manualRefresh(){ doRefresh(); toast('Dashboard refreshed','success'); }
+
+/* ─── Keyboard shortcuts ─────────────────────────────────────────────── */
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='SELECT'||e.target.tagName==='TEXTAREA') return;
+  switch(e.key.toLowerCase()){
+    case 'r': manualRefresh(); break;
+    case 'p': togglePause(); break;
+    case 'd': toggleTheme(); break;
+    case 'f': e.preventDefault(); document.getElementById('event-search')?.focus(); break;
+    case '1': document.getElementById('section-stats')?.scrollIntoView({behavior:'smooth'}); break;
+    case '2': document.getElementById('section-charts')?.scrollIntoView({behavior:'smooth'}); break;
+    case '3': document.getElementById('section-tools')?.scrollIntoView({behavior:'smooth'}); break;
+    case '4': document.getElementById('section-events')?.scrollIntoView({behavior:'smooth'}); break;
+    case '?': showShortcutsModal(); break;
+    case 'escape': ['modal-shortcuts','modal-fullscreen','modal-tool-history','modal-model-stats','modal-add-metric','modal-set-budget'].forEach(closeModal); break;
+  }
+});
+
+/* ─── Restore prefs ──────────────────────────────────────────────────── */
+function restorePrefs(){
+  applyTheme(localStorage.getItem('as_theme')||'dark');
+  const rr=parseInt(localStorage.getItem('as_refresh_rate')||'2000');
+  STATE.refreshRate=rr;
+  const sel=document.getElementById('refresh-rate');
+  if(sel) sel.value=rr;
+  setViewMode(localStorage.getItem('as_view_mode')||'cards');
+  try {
+    const pinned=JSON.parse(localStorage.getItem('as_pinned')||'[]');
+    pinned.forEach(id=>{ STATE.pinnedCards.add(id); const c=document.getElementById('card-'+id); if(c){c.style.outline='2px solid #38bdf8';c.style.outlineOffset='2px';} });
+  } catch(_){}
+}
+
+/* ─── Boot ───────────────────────────────────────────────────────────── */
+restorePrefs();
+doRefresh();
+resetTimer();
+</script>
 </body>
 </html>
