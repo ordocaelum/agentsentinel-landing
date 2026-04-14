@@ -9,7 +9,9 @@ from typing import Any, Callable, Dict, List, Optional
 
 from .approval import ApprovalHandler, DenyAllApprover
 from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
-from .errors import BudgetExceededError
+from .errors import BudgetExceededError, ContentInspectionError, PIIDetectedError
+from .inspector import ContentInspector, InspectionResult
+from .network import NetworkGuard
 from .policy import AgentPolicy
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
@@ -65,6 +67,10 @@ class AgentGuard:
             self.audit_logger = AuditLogger(sinks=[sink] if policy.audit_log else [])
 
         self._rate_limiter = RateLimiter(policy.rate_limits)
+
+        # PII / content inspection
+        self._content_inspector = ContentInspector(policy.inspector_config)
+        self._network_guard = NetworkGuard(policy.network_policy)
 
         # Cost accumulators — reset on each new day/hour in a real system;
         # here we reset at construction time for simplicity.
@@ -153,6 +159,26 @@ class AgentGuard:
                         f"Tool '{resolved_name}' is permanently blocked by security policy.",
                         tool_name=resolved_name,
                     )
+
+                # --- DLP: inspect tool arguments for PII ---
+                if self.policy.dlp_enabled:
+                    report = self._content_inspector.inspect_args(resolved_name, args, kwargs)
+                    if report.result == InspectionResult.BLOCK:
+                        pii_types = [m.pii_type.value for m in report.pii_matches]
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=0.0,
+                            decision="blocked_pii",
+                            reason=report.reason,
+                        )
+                        self.audit_logger.record(event)
+                        if self.policy.dlp_block_on_violation:
+                            raise PIIDetectedError(
+                                f"PII detected in arguments for '{resolved_name}': {report.reason}",
+                                pii_types=pii_types,
+                                tool_name=resolved_name,
+                            )
 
                 # --- Cost estimation ---
                 invocation_cost = cost if cost is not None else self._estimate_cost(resolved_name, kwargs)
@@ -249,6 +275,26 @@ class AgentGuard:
                     )
                     self.audit_logger.record(event)
                     raise
+
+                # --- DLP: inspect tool result for PII leakage ---
+                if self.policy.dlp_enabled:
+                    result_report = self._content_inspector.inspect_result(resolved_name, result)
+                    if result_report.result == InspectionResult.BLOCK:
+                        pii_types = [m.pii_type.value for m in result_report.pii_matches]
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=0.0,
+                            decision="blocked_content",
+                            reason=result_report.reason,
+                        )
+                        self.audit_logger.record(event)
+                        if self.policy.dlp_block_on_violation:
+                            raise ContentInspectionError(
+                                f"PII detected in result of '{resolved_name}': {result_report.reason}",
+                                tool_name=resolved_name,
+                                reason=result_report.reason,
+                            )
 
                 # --- Post-execution: record cost + audit event ---
                 self._daily_spent += invocation_cost
