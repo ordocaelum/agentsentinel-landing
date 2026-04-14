@@ -1,8 +1,23 @@
 # 🛡️ AgentSentinel
 
+[![PyPI version](https://badge.fury.io/py/agentsentinel.svg)](https://pypi.org/project/agentsentinel/)
+[![npm version](https://badge.fury.io/js/@agentsentinel%2Fsdk.svg)](https://www.npmjs.com/package/@agentsentinel/sdk)
+[![CI](https://github.com/ordocaelum/agentsentinel-landing/actions/workflows/ci.yml/badge.svg)](https://github.com/ordocaelum/agentsentinel-landing/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Safety controls, spend limits, and audit logging for AI agents.
 
-> **Developer Preview** — The SDK is functional scaffolding. APIs are stable enough to experiment with; production hardening is in progress.
+## Installation
+
+**Python:**
+```bash
+pip install agentsentinel
+```
+
+**TypeScript/JavaScript:**
+```bash
+npm install @agentsentinel/sdk
+```
 
 ---
 

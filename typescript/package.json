@@ -1,25 +1,80 @@
 {
   "name": "@agentsentinel/sdk",
-  "version": "0.1.0-preview",
-  "description": "Safety controls, spend limits, and audit logging for AI agents.",
+  "version": "1.0.0",
+  "description": "Safety controls for AI agents — budgets, approvals, rate limits, audit logs, and DLP",
   "main": "dist/index.js",
+  "module": "dist/index.mjs",
   "types": "dist/index.d.ts",
-  "files": ["dist"],
-  "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
-    "test": "node --experimental-vm-modules node_modules/.bin/jest",
-    "lint": "eslint src --ext .ts"
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    },
+    "./integrations/langchain": {
+      "import": "./dist/integrations/langchain.mjs",
+      "require": "./dist/integrations/langchain.js",
+      "types": "./dist/integrations/langchain.d.ts"
+    },
+    "./integrations/crewai": {
+      "import": "./dist/integrations/crewai.mjs",
+      "require": "./dist/integrations/crewai.js",
+      "types": "./dist/integrations/crewai.d.ts"
+    },
+    "./integrations/llamaindex": {
+      "import": "./dist/integrations/llamaindex.mjs",
+      "require": "./dist/integrations/llamaindex.js",
+      "types": "./dist/integrations/llamaindex.d.ts"
+    },
+    "./integrations/openai-assistants": {
+      "import": "./dist/integrations/openaiAssistants.mjs",
+      "require": "./dist/integrations/openaiAssistants.js",
+      "types": "./dist/integrations/openaiAssistants.d.ts"
+    },
+    "./integrations/anthropic-tools": {
+      "import": "./dist/integrations/anthropicTools.mjs",
+      "require": "./dist/integrations/anthropicTools.js",
+      "types": "./dist/integrations/anthropicTools.d.ts"
+    }
   },
-  "keywords": ["ai", "agents", "safety", "guardrails", "llm"],
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "lint": "eslint src --ext .ts",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "ai", "agents", "safety", "guardrails", "llm", "openai", "anthropic",
+    "langchain", "autogen", "crewai", "llamaindex", "budget", "rate-limit",
+    "approval", "audit", "dlp", "pii", "typescript"
+  ],
+  "author": "AgentSentinel <hello@agentsentinel.dev>",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/ordocaelum/agentsentinel-landing"
+    "url": "https://github.com/ordocaelum/agentsentinel-landing.git"
+  },
+  "homepage": "https://agentsentinel.dev",
+  "bugs": {
+    "url": "https://github.com/ordocaelum/agentsentinel-landing/issues"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   },
   "devDependencies": {
-    "typescript": "^5.4.0",
-    "@types/node": "^20.0.0"
-  },
-  "dependencies": {}
+    "@types/node": "^20.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.0.0",
+    "vitest": "^1.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  }
 }
