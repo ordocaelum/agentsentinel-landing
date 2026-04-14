@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AgentSentinel – Stop Runaway AI Agent Costs</title>
-  <meta name="description" content="AgentSentinel adds spend limits, approval gates, and safety controls to any AI agent in under 60 seconds — without changing your infrastructure." />
+  <title>AgentSentinel – Safety Controls for AI Agents</title>
+  <meta name="description" content="AgentSentinel adds spend limits, approval gates, and audit logging to any AI agent — an open-source SDK with zero infrastructure changes required." />
 
   <!-- Google Fonts: Inter -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -138,11 +138,12 @@
         <a href="#how-it-works" class="hover:text-white transition-colors">SDK</a>
         <a href="#pricing"     class="hover:text-white transition-colors">Pricing</a>
         <a href="#faq"         class="hover:text-white transition-colors">FAQ</a>
+        <a href="docs.html"    class="hover:text-white transition-colors">Docs</a>
       </div>
       <div class="flex items-center gap-3">
-        <a href="mailto:hello@agentsentinel.dev?subject=Early%20Access%20Request" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">Sign in</a>
+        <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">GitHub</a>
         <a href="#how-it-works" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
-          Get Started Free
+          Get Started
         </a>
         <!-- Mobile hamburger -->
         <button id="nav-menu-btn" aria-label="Toggle menu" class="md:hidden flex items-center justify-center w-9 h-9 text-slate-400 hover:text-white transition-colors rounded-lg border border-slate-700/60">
@@ -157,9 +158,10 @@
         <a href="#how-it-works" onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">SDK / Quick Start</a>
         <a href="#pricing"      onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Pricing</a>
         <a href="#faq"          onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">FAQ</a>
+        <a href="docs.html"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Docs</a>
         <div class="border-t border-slate-800/60 pt-4 flex flex-col gap-3">
-          <a href="mailto:hello@agentsentinel.dev?subject=Early%20Access%20Request" class="hover:text-white transition-colors py-1">Sign in</a>
-          <a href="#how-it-works" onclick="closeMobileMenu()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-center">Get Started Free</a>
+          <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors py-1">GitHub</a>
+          <a href="#how-it-works" onclick="closeMobileMenu()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-center">Get Started</a>
         </div>
       </div>
     </div>
@@ -173,8 +175,8 @@
 
       <!-- Badge -->
       <div class="inline-flex items-center gap-2 border border-blue-700/60 bg-blue-950/50 text-blue-300 text-xs font-semibold px-4 py-2 rounded-full mb-8 tracking-wide">
-        <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse"></span>
-        Trusted by 200+ engineering teams in production
+        <span class="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse"></span>
+        Developer Preview — Open Source SDK
       </div>
 
       <!-- Headline -->
@@ -195,11 +197,11 @@
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-12">
         <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-          Install the SDK — it's free
+          Install the SDK
         </a>
-        <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5.25 5.653c0-.856.917-1.398 1.667-.986l11.54 6.347a1.125 1.125 0 010 1.972l-11.54 6.347a1.125 1.125 0 01-1.667-.985V5.653z"/></svg>
-          See a live example
+        <a href="docs.html" class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/></svg>
+          Read the Docs
         </a>
       </div>
 
@@ -207,31 +209,31 @@
       <div class="flex flex-wrap gap-x-8 gap-y-2 justify-center text-slate-500 text-sm font-medium">
         <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> No infrastructure changes</span>
         <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> OpenAI · Anthropic · Any LLM</span>
-        <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Free plan, no credit card</span>
-        <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> SOC 2 Type II</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Open source — MIT license</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Zero external dependencies</span>
       </div>
     </div>
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       STATS BAR
+       PRODUCT PRINCIPLES BAR
   ════════════════════════════════════════════════════════════════ -->
   <div class="border-y border-slate-800 bg-slate-900/80" style="background-color:#070f1e">
     <div class="max-w-4xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
       <div>
-        <p class="text-4xl font-black text-blue-400 mb-1">$847K</p>
-        <p class="text-slate-300 font-medium">in runaway costs prevented</p>
-        <p class="text-slate-600 text-xs mt-1">across all production deployments</p>
+        <p class="text-4xl mb-3">📦</p>
+        <p class="text-slate-200 font-semibold">Open Source SDK</p>
+        <p class="text-slate-500 text-sm mt-1">MIT license — read, fork, and contribute</p>
       </div>
       <div>
-        <p class="text-4xl font-black text-cyan-400 mb-1">2,341</p>
-        <p class="text-slate-300 font-medium">dangerous actions blocked</p>
-        <p class="text-slate-600 text-xs mt-1">before they reached users</p>
+        <p class="text-4xl mb-3">🔌</p>
+        <p class="text-slate-200 font-semibold">Framework Agnostic</p>
+        <p class="text-slate-500 text-sm mt-1">Wraps any Python or TypeScript function</p>
       </div>
       <div>
-        <p class="text-4xl font-black text-emerald-400 mb-1">99.2%</p>
-        <p class="text-slate-300 font-medium">SDK uptime in production</p>
-        <p class="text-slate-600 text-xs mt-1">zero-downtime enforcement</p>
+        <p class="text-4xl mb-3">🚀</p>
+        <p class="text-slate-200 font-semibold">Zero Infrastructure</p>
+        <p class="text-slate-500 text-sm mt-1">Pure SDK — no proxies, sidecars, or cloud required</p>
       </div>
     </div>
   </div>
@@ -319,7 +321,7 @@
             <span class="token-fn">policy</span> = <span class="token-fn">AgentPolicy</span>(<br />
             &nbsp;&nbsp;<span class="token-var">daily_budget</span>=<span class="token-num">10.00</span>,&nbsp;&nbsp;<span class="token-comment"># max $10/day</span><br />
             &nbsp;&nbsp;<span class="token-var">hourly_budget</span>=<span class="token-num">2.00</span>,&nbsp;<span class="token-comment"># max $2/hour</span><br />
-            &nbsp;&nbsp;<span class="token-var">on_exceed</span>=<span class="token-string">"pause_and_alert"</span><br />
+            &nbsp;&nbsp;<span class="token-var">audit_log</span>=<span class="token-keyword">True</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="token-comment"># log all calls</span><br />
             )
           </div>
         </div>
@@ -357,10 +359,11 @@
           </p>
           <div class="bg-slate-950 rounded-xl p-4 code-block text-xs border border-slate-800">
             <span class="token-fn">policy</span> = <span class="token-fn">AgentPolicy</span>(<br />
-            &nbsp;&nbsp;<span class="token-var">audit_log</span>=<span class="token-string">"full"</span>,<br />
-            &nbsp;&nbsp;<span class="token-var">alert_on</span>=<span class="token-string">"anomaly"</span>,<br />
-            &nbsp;&nbsp;<span class="token-var">export_to</span>=<span class="token-string">"s3://my-logs"</span><br />
-            )
+            &nbsp;&nbsp;<span class="token-var">audit_log</span>=<span class="token-keyword">True</span>,<br />
+            &nbsp;&nbsp;<span class="token-var">alert_channel</span>=<span class="token-string">"console"</span><br />
+            )<br />
+            <span class="token-comment"># Extend: add your own AuditSink</span><br />
+            <span class="token-fn">guard</span>.<span class="token-fn">audit_logger</span>.<span class="token-fn">add_sink</span>(my_sink)
           </div>
         </div>
 
@@ -429,27 +432,27 @@
             <ul class="space-y-2.5 text-slate-400 text-sm">
               <li class="flex items-start gap-2.5">
                 <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Real-time cost dashboard
+                Daily &amp; hourly budget enforcement
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Slack &amp; email alerts
+                Human-in-the-loop approval gates
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Per-agent spend breakdown
+                Per-tool rate limiting (sliding window)
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Approval request queue
+                Structured audit log (console + in-memory)
               </li>
               <li class="flex items-start gap-2.5">
                 <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Exportable audit logs (CSV / JSON)
+                Wildcard tool-name pattern matching
               </li>
               <li class="flex items-start gap-2.5">
-                <span class="text-emerald-400 mt-0.5 shrink-0">✓</span>
-                Anomaly detection alerts
+                <span class="text-slate-600 mt-0.5 shrink-0">◎</span>
+                <span class="text-slate-600">Slack / webhook alerts <em>(roadmap)</em></span>
               </li>
             </ul>
           </div>
@@ -487,18 +490,18 @@
         <span class="token-string">"send_email"</span>,          <span class="token-comment"># outbound comms</span>
         <span class="token-string">"execute_sql"</span>,         <span class="token-comment"># database writes</span>
     ],
-    alert_channel=<span class="token-string">"slack"</span>,
+    rate_limits={<span class="token-string">"search_web"</span>: <span class="token-string">"10/min"</span>},
+    audit_log=<span class="token-keyword">True</span>,
 )
 
 <span class="token-comment"># 2. Create a guard from your policy</span>
 <span class="token-fn">guard</span> = <span class="token-fn">AgentGuard</span>(policy=policy)
 
 <span class="token-comment"># 3. Decorate any tool that needs protection</span>
-<span class="token-keyword">@guard</span>.protect
+<span class="token-keyword">@guard</span>.protect(tool_name=<span class="token-string">"send_email"</span>)
 <span class="token-keyword">def</span> <span class="token-fn">send_email</span>(to, subject, body):
-    <span class="token-comment"># ⏸ AgentSentinel pauses here,</span>
-    <span class="token-comment"># sends a Slack approval request,</span>
-    <span class="token-comment"># then proceeds only if approved.</span>
+    <span class="token-comment"># ⏸ Raises ApprovalRequiredError —</span>
+    <span class="token-comment"># swap in InMemoryApprover for tests.</span>
     email_client.send(to, subject, body)
 </code></pre>
           </div>
@@ -515,19 +518,22 @@
     <span class="token-string">'send_email'</span>,            <span class="token-comment">// outbound comms</span>
     <span class="token-string">'execute_sql'</span>,           <span class="token-comment">// database writes</span>
   ],
-  alertChannel: <span class="token-string">'slack'</span>,
+  rateLimits: { <span class="token-string">'search_web'</span>: <span class="token-string">'10/min'</span> },
+  auditLog: <span class="token-keyword">true</span>,
 });
 
 <span class="token-comment">// 2. Create a guard from your policy</span>
 <span class="token-keyword">const</span> <span class="token-fn">guard</span> = <span class="token-keyword">new</span> <span class="token-fn">AgentGuard</span>({ policy });
 
 <span class="token-comment">// 3. Wrap any tool that needs protection</span>
-<span class="token-keyword">const</span> <span class="token-fn">sendEmail</span> = guard.protect(<span class="token-keyword">async</span> (to, subject, body) =&gt; {
-  <span class="token-comment">// ⏸ AgentSentinel pauses here,</span>
-  <span class="token-comment">// sends a Slack approval request,</span>
-  <span class="token-comment">// then proceeds only if approved.</span>
-  <span class="token-keyword">await</span> emailClient.send(to, subject, body);
-});
+<span class="token-keyword">const</span> <span class="token-fn">sendEmail</span> = guard.protect(
+  <span class="token-keyword">async</span> (to, subject, body) =&gt; {
+    <span class="token-comment">// ⏸ Raises ApprovalRequiredError —</span>
+    <span class="token-comment">// swap in InMemoryApprover for tests.</span>
+    <span class="token-keyword">await</span> emailClient.send(to, subject, body);
+  },
+  { toolName: <span class="token-string">'send_email'</span> }
+);
 </code></pre>
           </div>
         </div>
@@ -537,90 +543,73 @@
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       SOCIAL PROOF
+       WHY AGENTSENTINEL
   ════════════════════════════════════════════════════════════════ -->
   <section class="section-alt py-24 px-6">
     <div class="max-w-5xl mx-auto">
-      <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">What Teams Are Saying</p>
-      <h2 class="text-4xl font-black text-center mb-14 tracking-tight">Teams that sleep soundly at night</h2>
+      <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Why AgentSentinel?</p>
+      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Built for the problems you'll hit in production</h2>
+      <p class="text-slate-500 text-center max-w-lg mx-auto mb-14">
+        Every team running AI agents in production eventually discovers these problems the hard way.
+        AgentSentinel is designed to prevent them.
+      </p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
 
-        <!-- Testimonial 1 -->
         <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-7 flex flex-col">
-          <p class="stars text-base mb-4">★★★★★</p>
-          <p class="text-slate-300 text-sm leading-relaxed mb-6 flex-1">
-            "We had a runaway agent rack up $3,200 in API costs overnight.
-            After adding AgentSentinel we've prevented over
-            <strong class="text-white">$40K in potential overruns</strong> in the first three months."
+          <div class="w-10 h-10 rounded-xl bg-blue-900/50 border border-blue-800/50 flex items-center justify-center text-lg mb-5">💸</div>
+          <h3 class="text-lg font-bold mb-3">Budget enforcement that actually works</h3>
+          <p class="text-slate-400 text-sm leading-relaxed flex-1">
+            Set daily and hourly limits as dataclass fields. When a limit is hit the SDK raises
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">BudgetExceededError</code>
+            and stops execution cleanly — before the invoice arrives.
           </p>
-          <div class="flex items-center gap-3 pt-4 border-t border-slate-800">
-            <div class="w-10 h-10 rounded-full bg-blue-700 flex items-center justify-center text-sm font-bold shrink-0">JC</div>
-            <div>
-              <p class="font-semibold text-white text-sm">James Chen</p>
-              <p class="text-slate-500 text-xs">CTO · Nexus AI</p>
-            </div>
+          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span>✓</span> Implemented in v0.1.0-preview
           </div>
         </div>
 
-        <!-- Testimonial 2 -->
         <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-7 flex flex-col">
-          <p class="stars text-base mb-4">★★★★★</p>
-          <p class="text-slate-300 text-sm leading-relaxed mb-6 flex-1">
-            "Our customer-service bot went rogue and spammed our CEO at 3am.
-            With approval gates, <strong class="text-white">that will literally never happen again</strong>.
-            Setup took about 10 minutes."
+          <div class="w-10 h-10 rounded-xl bg-cyan-900/50 border border-cyan-800/50 flex items-center justify-center text-lg mb-5">🔐</div>
+          <h3 class="text-lg font-bold mb-3">Pluggable approval handlers</h3>
+          <p class="text-slate-400 text-sm leading-relaxed flex-1">
+            Declare which tool names require human sign-off using exact names or
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">delete_*</code> wildcards.
+            Ships with <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">DenyAllApprover</code> and
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">InMemoryApprover</code>.
+            Extend the interface for Slack / email in future releases.
           </p>
-          <div class="flex items-center gap-3 pt-4 border-t border-slate-800">
-            <div class="w-10 h-10 rounded-full bg-violet-700 flex items-center justify-center text-sm font-bold shrink-0">SK</div>
-            <div>
-              <p class="font-semibold text-white text-sm">Sarah Kim</p>
-              <p class="text-slate-500 text-xs">Head of Engineering · FlowStack</p>
-            </div>
+          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span>✓</span> Implemented in v0.1.0-preview
           </div>
         </div>
 
-        <!-- Testimonial 3 -->
         <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-7 flex flex-col">
-          <p class="stars text-base mb-4">★★★★★</p>
-          <p class="text-slate-300 text-sm leading-relaxed mb-6 flex-1">
-            "The audit logs alone are worth it. During our SOC 2 review we had a complete,
-            timestamped trail of every agent action.
-            <strong class="text-white">Saved us weeks of compliance work.</strong>"
+          <div class="w-10 h-10 rounded-xl bg-emerald-900/50 border border-emerald-800/50 flex items-center justify-center text-lg mb-5">📋</div>
+          <h3 class="text-lg font-bold mb-3">Structured audit trail from day one</h3>
+          <p class="text-slate-400 text-sm leading-relaxed flex-1">
+            Every invocation produces a typed
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditEvent</code>
+            (timestamp, tool name, decision, cost, status).
+            Ships with <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">ConsoleAuditSink</code>
+            and <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">InMemoryAuditSink</code>.
+            Add your own sink for persistence.
           </p>
-          <div class="flex items-center gap-3 pt-4 border-t border-slate-800">
-            <div class="w-10 h-10 rounded-full bg-emerald-700 flex items-center justify-center text-sm font-bold shrink-0">MR</div>
-            <div>
-              <p class="font-semibold text-white text-sm">Mike Rodriguez</p>
-              <p class="text-slate-500 text-xs">Principal Engineer · DataPilot</p>
-            </div>
+          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+            <span>✓</span> Implemented in v0.1.0-preview
           </div>
         </div>
 
       </div>
 
-      <!-- Trust indicators -->
-      <div class="mt-14 pt-10 border-t border-slate-800/60 flex flex-wrap gap-8 justify-center items-center text-slate-600 text-sm font-medium">
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
-          SOC 2 Type II Certified
-        </span>
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
-          End-to-end encrypted
-        </span>
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5"/></svg>
-          Open-source SDK
-        </span>
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 21a9.004 9.004 0 008.716-6.747M12 21a9.004 9.004 0 01-8.716-6.747M12 21c2.485 0 4.5-4.03 4.5-9S14.485 3 12 3m0 18c-2.485 0-4.5-4.03-4.5-9S9.515 3 12 3m0 0a8.997 8.997 0 017.843 4.582M12 3a8.997 8.997 0 00-7.843 4.582m15.686 0A11.953 11.953 0 0112 10.5c-2.998 0-5.74-1.1-7.843-2.918m15.686 0A8.959 8.959 0 0121 12c0 .778-.099 1.533-.284 2.253m0 0A17.919 17.919 0 0112 16.5c-3.162 0-6.133-.815-8.716-2.247m0 0A9.015 9.015 0 013 12c0-1.605.42-3.113 1.157-4.418"/></svg>
-          Used in 25+ countries
-        </span>
-        <span class="flex items-center gap-2">
-          <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.59 14.37a6 6 0 01-5.84 7.38v-4.8m5.84-2.58a14.98 14.98 0 006.16-12.12A14.98 14.98 0 009.631 8.41m5.96 5.96a14.926 14.926 0 01-5.841 2.58m-.119-8.54a6 6 0 00-7.381 5.84h4.8m2.581-5.84a14.927 14.927 0 00-2.58 5.84m2.699 2.7c-.103.021-.207.041-.311.06a15.09 15.09 0 01-2.448-2.448 14.9 14.9 0 01.06-.312m-2.24 2.39a4.493 4.493 0 00-1.757 4.306 4.493 4.493 0 004.306-1.758M16.5 9a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/></svg>
-          200+ teams in production
-        </span>
+      <!-- Preview notice -->
+      <div class="mt-12 rounded-2xl border border-amber-800/50 p-6 text-center" style="background-color:#1a1200">
+        <p class="text-amber-300 font-semibold mb-2">🚧 Developer Preview</p>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          AgentSentinel is functional scaffolding — real code you can install and use today.
+          Slack/email alerts, LangChain adapters, and a dashboard are on the roadmap.
+          <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 underline">Follow the repo</a> for updates.
+        </p>
       </div>
 
     </div>
@@ -632,76 +621,73 @@
   <section id="pricing" class="py-24 px-6">
     <div class="max-w-5xl mx-auto">
       <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Pricing</p>
-      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Simple, transparent pricing</h2>
+      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Simple, honest pricing</h2>
       <p class="text-slate-500 text-center max-w-lg mx-auto mb-16">
-        Start free. No credit card required. Upgrade only when you need to.
+        AgentSentinel is in developer preview. The open-source SDK is free to use.
+        Paid tiers are for teams that want dedicated support and design-partner access.
       </p>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
 
-        <!-- Solo -->
+        <!-- Developer Preview -->
         <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col">
-          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Solo</p>
+          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Developer Preview</p>
           <div class="mb-6">
-            <span class="text-5xl font-black">$0</span>
-            <span class="text-slate-500 text-sm ml-1">/ month</span>
+            <span class="text-5xl font-black">Free</span>
           </div>
-          <p class="text-slate-500 text-sm mb-6">Perfect for side projects and solo experimentation.</p>
+          <p class="text-slate-500 text-sm mb-6">Install and use the SDK today. No sign-up, no credit card, no limits.</p>
           <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Up to 3 agents</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 10K actions / month</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Spend limits</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 7-day audit log</li>
-            <li class="flex items-start gap-2.5 text-slate-600"><span class="shrink-0 mt-0.5">✗</span> Human approval gates</li>
-            <li class="flex items-start gap-2.5 text-slate-600"><span class="shrink-0 mt-0.5">✗</span> Slack / email alerts</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Full SDK — Python &amp; TypeScript</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Budget enforcement</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Approval gates (in-memory)</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Rate limiting</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Console &amp; in-memory audit sinks</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> MIT license — open source</li>
           </ul>
-          <a href="#how-it-works" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
-            Get Started Free
+          <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+            View on GitHub →
           </a>
         </div>
 
-        <!-- Team — Featured -->
+        <!-- Team Pilot — Featured -->
         <div class="plan-featured rounded-2xl p-8 flex flex-col relative">
           <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-full tracking-wide shadow-lg shadow-blue-900/50">
-            RECOMMENDED
+            EARLY ADOPTER
           </div>
-          <p class="text-blue-300 text-sm font-semibold uppercase tracking-wider mb-4">Team</p>
+          <p class="text-blue-300 text-sm font-semibold uppercase tracking-wider mb-4">Team Pilot</p>
           <div class="mb-2">
-            <span class="text-5xl font-black">$49</span>
-            <span class="text-blue-400 text-sm ml-1">/ month</span>
+            <span class="text-5xl font-black">Contact</span>
           </div>
-          <p class="text-blue-400/70 text-xs mb-6">per workspace · billed monthly</p>
-          <p class="text-slate-400 text-sm mb-6">For teams shipping agents to real users.</p>
+          <p class="text-blue-400/70 text-xs mb-6">for early-adopter teams</p>
+          <p class="text-slate-400 text-sm mb-6">For teams who want to shape the roadmap and get priority support.</p>
           <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Unlimited agents</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 500K actions / month</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Spend limits &amp; rate limiting</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 90-day audit log</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Human approval gates</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Slack &amp; email alerts</li>
+            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Everything in Developer Preview</li>
+            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Direct Slack channel with the team</li>
+            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Priority feature requests</li>
+            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Early access to Slack/webhook adapters</li>
+            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Co-design sessions</li>
           </ul>
-          <a href="mailto:hello@agentsentinel.dev?subject=Team%20Plan%20-%2014-Day%20Trial&body=Hi%2C%20I%E2%80%99d%20like%20to%20start%20a%2014-day%20free%20trial%20of%20the%20AgentSentinel%20Team%20plan." class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
-            Start 14-Day Free Trial →
+          <a href="mailto:hello@agentsentinel.dev?subject=Team%20Pilot%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20discuss%20the%20Team%20Pilot%20programme." class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
+            Get in Touch →
           </a>
         </div>
 
-        <!-- Enterprise -->
+        <!-- Enterprise Partner -->
         <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col">
-          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Enterprise</p>
+          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Enterprise Partner</p>
           <div class="mb-6">
-            <span class="text-4xl font-black">Custom</span>
+            <span class="text-4xl font-black">Contact</span>
           </div>
-          <p class="text-slate-500 text-sm mb-6">For organizations with compliance, scale, or security requirements.</p>
+          <p class="text-slate-500 text-sm mb-6">For organizations with compliance, scale, or bespoke integration requirements.</p>
           <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Unlimited everything</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> SSO / SAML</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Self-hosted option</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 1-year audit log</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Everything in Team Pilot</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Design-partner roadmap influence</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Custom integrations &amp; adapters</li>
             <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> SLA &amp; dedicated support</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Custom integrations</li>
+            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> On-premise / self-hosted (roadmap)</li>
           </ul>
-          <a href="mailto:sales@agentsentinel.dev?subject=Enterprise%20Inquiry%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20learn%20more%20about%20AgentSentinel%E2%80%99s%20Enterprise%20plan." class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
-            Contact Sales
+          <a href="mailto:sales@agentsentinel.dev?subject=Enterprise%20Partner%20Inquiry%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20learn%20more%20about%20the%20Enterprise%20Partner%20programme." class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+            Contact Us
           </a>
         </div>
 
@@ -737,9 +723,10 @@
             <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
           </summary>
           <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-            Yes. AgentSentinel wraps at the <em>tool / function</em> level, making it framework-agnostic.
-            We ship first-class adapters for LangChain tools, AutoGen function calls, and CrewAI tasks,
-            plus a generic <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">@guard.protect</code> decorator for everything else.
+            AgentSentinel wraps at the <em>tool / function</em> level, making it framework-agnostic.
+            Use the <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">@guard.protect</code> decorator
+            with any Python callable or the TypeScript <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">guard.protect(fn)</code> wrapper.
+            First-class LangChain, AutoGen, and CrewAI adapters are on the roadmap.
           </div>
         </details>
 
@@ -749,9 +736,10 @@
             <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
           </summary>
           <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-            Very accurate. We intercept token counts from model API responses and apply provider pricing tables
-            that are updated daily. Tested against real OpenAI invoices, we're consistently within 1–2% —
-            accurate enough to trust for budget enforcement and compliance reporting.
+            In v0.1.0-preview, cost is tracked by the explicit <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">cost=</code> parameter
+            you pass to <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">@guard.protect</code>, or by a
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">cost_estimator</code> function you provide.
+            Automatic token-count-based estimation (reading from OpenAI / Anthropic API responses) is on the roadmap.
           </div>
         </details>
 
@@ -774,9 +762,10 @@
             <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
           </summary>
           <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-            Yes, on the Enterprise plan. We provide a Docker Compose stack and a Helm chart for Kubernetes.
-            The SDK is configured to send events to your self-hosted instance instead of our cloud —
-            nothing leaves your network. The SDK itself is open source so you can audit exactly what's collected.
+            The SDK itself runs entirely in-process — no cloud component is needed.
+            A self-hosted dashboard for reviewing audit events is on the roadmap for Enterprise partners.
+            In the meantime, direct events to your own storage by implementing the
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditSink</code> interface.
           </div>
         </details>
 
@@ -786,10 +775,11 @@
             <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
           </summary>
           <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
-            By default we log metadata only: timestamps, token counts, tool names, and cost estimates.
-            Prompt content and tool arguments are never logged unless you explicitly opt in to full logging
-            for debugging purposes. All data is encrypted in transit and at rest.
-            We are SOC 2 Type II certified.
+            By default we log metadata only: timestamps, tool names, and cost estimates.
+            Prompt content and tool arguments are never logged unless you explicitly opt in via the
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">metadata</code> field on an
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditEvent</code>.
+            The SDK is open source — you can read exactly what is collected.
           </div>
         </details>
 
@@ -802,28 +792,30 @@
   ════════════════════════════════════════════════════════════════ -->
   <section class="cta-bg py-28 px-6 text-center">
     <div class="max-w-2xl mx-auto">
+      <div class="inline-flex items-center gap-2 border border-amber-700/50 bg-amber-950/30 text-amber-300 text-xs font-semibold px-4 py-2 rounded-full mb-8 tracking-wide">
+        🚧 Developer Preview — real code, actively developed
+      </div>
       <h2 class="text-4xl md:text-5xl font-black mb-5 tracking-tight leading-tight">
         Stop losing money to<br />runaway agents.
       </h2>
       <p class="text-slate-400 text-lg mb-10 leading-relaxed">
-        Join 200+ teams who ship AI agents confidently —<br class="hidden sm:block" />
-        with guardrails that actually work.
+        Install the SDK, wrap your tools, and sleep a little better at night.
       </p>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
         <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-slate-100 transition-colors shadow-2xl">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
-          Install Free — takes 60 seconds
+          Install the SDK — free &amp; open source
         </a>
-        <a href="mailto:hello@agentsentinel.dev?subject=Demo%20Request%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20book%20a%20demo%20of%20AgentSentinel." class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
-          Book a Demo
+        <a href="docs.html" class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">
+          Read the Docs
         </a>
       </div>
 
       <div class="flex flex-wrap gap-x-8 gap-y-2 justify-center text-slate-600 text-sm font-medium">
-        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> No credit card required</span>
-        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> Set up in under 5 minutes</span>
-        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> Cancel anytime</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> No sign-up required</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> MIT license</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-500">✓</span> Zero external dependencies</span>
       </div>
     </div>
   </section>
@@ -872,10 +864,10 @@
       <div>
         <h4 class="text-white text-sm font-semibold mb-5">Resources</h4>
         <ul class="space-y-3 text-slate-500 text-sm">
-          <li><a href="#how-it-works" class="hover:text-white transition-colors">Documentation</a></li>
-          <li><a href="#how-it-works" class="hover:text-white transition-colors">API Reference</a></li>
+          <li><a href="docs.html" class="hover:text-white transition-colors">Documentation</a></li>
+          <li><a href="docs.html#api-reference" class="hover:text-white transition-colors">API Reference</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a></li>
-          <li><a href="mailto:hello@agentsentinel.dev?subject=Newsletter%20Signup" class="hover:text-white transition-colors">Blog</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing/tree/main/examples" target="_blank" rel="noopener" class="hover:text-white transition-colors">Examples</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing/discussions" target="_blank" rel="noopener" class="hover:text-white transition-colors">Community</a></li>
         </ul>
       </div>
@@ -884,7 +876,7 @@
       <div>
         <h4 class="text-white text-sm font-semibold mb-5">Company</h4>
         <ul class="space-y-3 text-slate-500 text-sm">
-          <li><a href="#features" class="hover:text-white transition-colors">About</a></li>
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing#readme" target="_blank" rel="noopener" class="hover:text-white transition-colors">About</a></li>
           <li><a href="mailto:hello@agentsentinel.dev?subject=Careers%20at%20AgentSentinel" class="hover:text-white transition-colors">Careers</a></li>
           <li><a href="mailto:security@agentsentinel.dev?subject=Security%20Inquiry" class="hover:text-white transition-colors">Security</a></li>
           <li><a href="mailto:privacy@agentsentinel.dev?subject=Privacy%20Policy%20Inquiry" class="hover:text-white transition-colors">Privacy Policy</a></li>
