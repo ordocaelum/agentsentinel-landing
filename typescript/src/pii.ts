@@ -148,7 +148,7 @@ export class PIIScanner {
 
     // Custom patterns
     const customEntries: Array<[RegExp, number]> = [];
-    for (const [, pattern] of Object.entries(this.config.customPatterns)) {
+    for (const [_patternName, pattern] of Object.entries(this.config.customPatterns)) {
       customEntries.push([new RegExp(pattern, "gi"), 0.9]);
     }
     if (customEntries.length > 0) {

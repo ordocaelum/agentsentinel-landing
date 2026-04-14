@@ -162,20 +162,20 @@ class AgentGuard:
 
                 # --- DLP: inspect tool arguments for PII ---
                 if self.policy.dlp_enabled:
-                    report = self._content_inspector.inspect_args(resolved_name, args, kwargs)
-                    if report.result == InspectionResult.BLOCK:
-                        pii_types = [m.pii_type.value for m in report.pii_matches]
+                    arg_report = self._content_inspector.inspect_args(resolved_name, args, kwargs)
+                    if arg_report.result == InspectionResult.BLOCK:
+                        pii_types = [m.pii_type.value for m in arg_report.pii_matches]
                         event = AuditEvent.now(
                             tool_name=resolved_name,
                             status="blocked",
                             cost=0.0,
                             decision="blocked_pii",
-                            reason=report.reason,
+                            reason=arg_report.reason,
                         )
                         self.audit_logger.record(event)
                         if self.policy.dlp_block_on_violation:
                             raise PIIDetectedError(
-                                f"PII detected in arguments for '{resolved_name}': {report.reason}",
+                                f"PII detected in arguments for '{resolved_name}': {arg_report.reason}",
                                 pii_types=pii_types,
                                 tool_name=resolved_name,
                             )
