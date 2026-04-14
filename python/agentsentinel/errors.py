@@ -29,3 +29,15 @@ class RateLimitExceededError(AgentSentinelError):
         super().__init__(message)
         self.tool_name = tool_name
         self.limit = limit
+
+
+class ToolBlockedError(AgentSentinelError):
+    """Raised when a tool is permanently blocked by the security policy.
+
+    This differs from :class:`ApprovalRequiredError` in that there is no
+    approval pathway — the tool is hard-blocked and will never execute.
+    """
+
+    def __init__(self, message: str = "Tool is blocked by security policy", *, tool_name: str = ""):
+        super().__init__(message)
+        self.tool_name = tool_name

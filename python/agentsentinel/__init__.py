@@ -7,10 +7,12 @@ from .errors import (
     ApprovalRequiredError,
     BudgetExceededError,
     RateLimitExceededError,
+    ToolBlockedError,
 )
 from .guard import AgentGuard
 from .policy import AgentPolicy
 from .rate_limit import RateLimiter
+from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
 __version__ = "0.1.0-preview"
 
@@ -24,6 +26,7 @@ __all__ = [
     "BudgetExceededError",
     "ApprovalRequiredError",
     "RateLimitExceededError",
+    "ToolBlockedError",
     # Audit
     "AuditEvent",
     "AuditLogger",
@@ -35,4 +38,8 @@ __all__ = [
     "InMemoryApprover",
     # Rate limiting
     "RateLimiter",
+    # Security
+    "SecurityConfig",
+    "is_tool_blocked",
+    "redact_sensitive",
 ]

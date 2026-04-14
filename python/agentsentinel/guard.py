@@ -12,7 +12,14 @@ from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
 from .errors import BudgetExceededError
 from .policy import AgentPolicy
 from .rate_limit import RateLimiter
+from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
+
+def _safe_error_str(message: str, sec: "SecurityConfig") -> str:
+    """Return *message* with sensitive patterns redacted when logging errors."""
+    if sec.log_full_params:
+        return message
+    return redact_sensitive(message, sec.redact_patterns)
 
 class AgentGuard:
     """Wraps agent tools with spend controls, approval gates, rate limiting,
@@ -75,7 +82,13 @@ class AgentGuard:
             self._hourly_reset_at = time.time()
 
     def _requires_approval(self, tool_name: str) -> bool:
+        # Explicit policy patterns
         for pattern in self.policy.require_approval:
+            if tool_name == pattern or fnmatch.fnmatch(tool_name, pattern):
+                return True
+        # Sensitive tools always require approval (sandbox_mode or security config)
+        sec = self.policy.security
+        for pattern in sec.sensitive_tools:
             if tool_name == pattern or fnmatch.fnmatch(tool_name, pattern):
                 return True
         return False
@@ -123,6 +136,24 @@ class AgentGuard:
 
             @functools.wraps(fn)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
+                sec = self.policy.security
+
+                # --- Security: blocked tools (hard stop, no exceptions) ---
+                if is_tool_blocked(resolved_name, sec.blocked_tools):
+                    event = AuditEvent.now(
+                        tool_name=resolved_name,
+                        status="blocked",
+                        cost=0.0,
+                        decision="blocked_security",
+                        reason="tool_in_blocked_list",
+                    )
+                    self.audit_logger.record(event)
+                    from .errors import ToolBlockedError
+                    raise ToolBlockedError(
+                        f"Tool '{resolved_name}' is permanently blocked by security policy.",
+                        tool_name=resolved_name,
+                    )
+
                 # --- Cost estimation ---
                 invocation_cost = cost if cost is not None else self._estimate_cost(resolved_name, kwargs)
 
@@ -166,9 +197,22 @@ class AgentGuard:
                 # --- Rate-limit check ---
                 self._rate_limiter.check(resolved_name)
 
-                # --- Approval check ---
+                # --- Approval check (policy + sensitive tools) ---
                 if self._requires_approval(resolved_name):
-                    approved = self.approval_handler.request_approval(resolved_name, **kwargs)
+                    try:
+                        approved = self.approval_handler.request_approval(resolved_name, **kwargs)
+                    except Exception:
+                        # Handler raised directly (e.g. DenyAllApprover / InMemoryApprover).
+                        # Record the audit event before re-raising.
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=0.0,
+                            decision="approval_required",
+                        )
+                        self.audit_logger.record(event)
+                        raise
+
                     if not approved:
                         event = AuditEvent.now(
                             tool_name=resolved_name,
@@ -201,7 +245,7 @@ class AgentGuard:
                         status="error",
                         cost=0.0,
                         decision="error",
-                        error=str(exc),
+                        error=_safe_error_str(str(exc), sec),
                     )
                     self.audit_logger.record(event)
                     raise

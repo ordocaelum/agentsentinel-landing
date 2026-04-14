@@ -135,6 +135,7 @@
       </a>
       <div class="hidden md:flex items-center gap-7 text-slate-400 text-sm font-medium">
         <a href="#features"    class="hover:text-white transition-colors">Features</a>
+        <a href="#security"    class="hover:text-white transition-colors">Security</a>
         <a href="#how-it-works" class="hover:text-white transition-colors">SDK</a>
         <a href="#pricing"     class="hover:text-white transition-colors">Pricing</a>
         <a href="#faq"         class="hover:text-white transition-colors">FAQ</a>
@@ -155,6 +156,7 @@
     <div id="mobile-menu" class="md:hidden border-t border-slate-800/60" style="background-color:rgba(5,13,26,0.97)">
       <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-4 text-slate-300 text-sm font-medium">
         <a href="#features"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Features</a>
+        <a href="#security"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Security</a>
         <a href="#how-it-works" onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">SDK / Quick Start</a>
         <a href="#pricing"      onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Pricing</a>
         <a href="#faq"          onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">FAQ</a>
@@ -188,8 +190,9 @@
       <!-- Subheadline -->
       <p class="text-lg md:text-xl text-slate-400 max-w-2xl mx-auto mb-10 leading-relaxed">
         AgentSentinel wraps any AI agent with <span class="text-white font-semibold">spend limits</span>,
-        <span class="text-white font-semibold">human-in-the-loop approvals</span>, and
-        <span class="text-white font-semibold">real-time safety controls</span> — in under 60 seconds,
+        <span class="text-white font-semibold">human-in-the-loop approvals</span>,
+        <span class="text-white font-semibold">security controls</span>, and
+        <span class="text-white font-semibold">real-time audit logging</span> — in under 60 seconds,
         with no infrastructure changes.
       </p>
 
@@ -211,6 +214,7 @@
         <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> OpenAI · Anthropic · Any LLM</span>
         <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Open source — MIT license</span>
         <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Zero external dependencies</span>
+        <span class="flex items-center gap-1.5"><span class="text-emerald-400">✓</span> Designed for OpenClaw agents</span>
       </div>
     </div>
   </section>
@@ -387,6 +391,134 @@
           </div>
         </div>
 
+        <!-- Feature 5: Security-First Design (full-width) -->
+        <div class="card-hover bg-slate-900 border border-slate-800 hover:border-rose-700/60 rounded-2xl p-7 transition-colors md:col-span-2">
+          <div class="flex items-start gap-5">
+            <div class="w-10 h-10 rounded-xl bg-rose-900/50 border border-rose-800/50 flex items-center justify-center shrink-0">
+              <svg class="w-5 h-5 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+            </div>
+            <div class="flex-1">
+              <div class="flex items-center gap-3 mb-2">
+                <h3 class="text-lg font-bold">Security-First Design</h3>
+                <span class="text-xs font-semibold bg-rose-900/50 border border-rose-800/60 text-rose-300 px-2.5 py-0.5 rounded-full">OpenClaw Ready</span>
+              </div>
+              <p class="text-slate-400 text-sm leading-relaxed mb-4">
+                Built for agents with real tool access — shell commands, file system, API calls.
+                Permanently block catastrophic tools, auto-redact API keys and passwords from audit logs,
+                and enable <code class="text-rose-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">sandbox_mode</code> for untrusted agent code.
+              </p>
+              <div class="bg-slate-950 rounded-xl p-4 code-block text-xs border border-slate-800">
+                <span class="token-fn">security</span> = <span class="token-fn">SecurityConfig</span>(<br />
+                &nbsp;&nbsp;<span class="token-var">blocked_tools</span>=[<span class="token-string">"rm_rf"</span>, <span class="token-string">"drop_database"</span>],&nbsp;<span class="token-comment"># hard kill list</span><br />
+                &nbsp;&nbsp;<span class="token-var">sensitive_tools</span>=[<span class="token-string">"execute_shell"</span>, <span class="token-string">"delete_*"</span>],&nbsp;<span class="token-comment"># always approve</span><br />
+                )<br />
+                <span class="token-fn">policy</span> = <span class="token-fn">AgentPolicy</span>(<br />
+                &nbsp;&nbsp;<span class="token-var">security</span>=<span class="token-fn">security</span>, <span class="token-var">sandbox_mode</span>=<span class="token-keyword">True</span><br />
+                )
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════════════════
+       SECURITY SECTION
+  ════════════════════════════════════════════════════════════════ -->
+  <section id="security" class="py-24 px-6">
+    <div class="max-w-5xl mx-auto">
+      <p class="text-center text-rose-400 font-semibold tracking-widest text-xs uppercase mb-4">Security</p>
+      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Defence in depth for production agents</h2>
+      <p class="text-slate-500 text-center max-w-xl mx-auto mb-14">
+        OpenClaw agents wield real power — shell execution, file I/O, API calls.
+        AgentSentinel provides layered, overlapping controls so no single failure can cause catastrophic damage.
+        <a href="security.html" class="text-rose-400 hover:text-rose-300 underline ml-1">Full security details →</a>
+      </p>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+
+        <!-- Least Privilege -->
+        <div class="bg-slate-900 border border-slate-800 hover:border-rose-700/40 rounded-2xl p-6 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-rose-900/40 border border-rose-800/40 flex items-center justify-center mb-4">
+            <svg class="w-4 h-4 text-rose-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>
+          </div>
+          <h3 class="text-base font-bold mb-2">Principle of Least Privilege</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Agents only access explicitly approved tools. Wildcard patterns (<code class="text-rose-300 bg-slate-800 px-1 py-0.5 rounded text-xs">delete_*</code>,
+            <code class="text-rose-300 bg-slate-800 px-1 py-0.5 rounded text-xs">write_file_*</code>) give granular control.
+            Everything else is <strong class="text-white">default-deny</strong>.
+          </p>
+        </div>
+
+        <!-- Defense in Depth -->
+        <div class="bg-slate-900 border border-slate-800 hover:border-amber-700/40 rounded-2xl p-6 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-amber-900/40 border border-amber-800/40 flex items-center justify-center mb-4">
+            <svg class="w-4 h-4 text-amber-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+          </div>
+          <h3 class="text-base font-bold mb-2">Defence in Depth</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Multiple independent layers: budget limits + rate limits + approval gates + audit logs.
+            No single point of failure. Graceful degradation when any limit is hit.
+          </p>
+        </div>
+
+        <!-- Audit Everything -->
+        <div class="bg-slate-900 border border-slate-800 hover:border-emerald-700/40 rounded-2xl p-6 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-emerald-900/40 border border-emerald-800/40 flex items-center justify-center mb-4">
+            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z"/></svg>
+          </div>
+          <h3 class="text-base font-bold mb-2">Audit Everything</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Complete trail of every tool invocation — timestamps, parameters, costs, decisions.
+            Exportable for compliance and forensics via the pluggable <code class="text-emerald-300 bg-slate-800 px-1 py-0.5 rounded text-xs">AuditSink</code> interface.
+          </p>
+        </div>
+
+        <!-- Secrets Protection -->
+        <div class="bg-slate-900 border border-slate-800 hover:border-blue-700/40 rounded-2xl p-6 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-blue-900/40 border border-blue-800/40 flex items-center justify-center mb-4">
+            <svg class="w-4 h-4 text-blue-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 5.25a3 3 0 013 3m3 0a6 6 0 01-7.029 5.912c-.563-.097-1.159.026-1.563.43L10.5 17.25H8.25v2.25H6v2.25H2.25v-2.818c0-.597.237-1.17.659-1.591l6.499-6.499c.404-.404.527-1 .43-1.563A6 6 0 1121.75 8.25z"/></svg>
+          </div>
+          <h3 class="text-base font-bold mb-2">Secrets Protection</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            SDK never logs sensitive parameters by default. Configurable redaction patterns scrub
+            API keys, passwords, and bearer tokens from all audit output before they touch any sink.
+          </p>
+        </div>
+
+        <!-- Isolation -->
+        <div class="bg-slate-900 border border-slate-800 hover:border-cyan-700/40 rounded-2xl p-6 transition-colors">
+          <div class="w-9 h-9 rounded-lg bg-cyan-900/40 border border-cyan-800/40 flex items-center justify-center mb-4">
+            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z"/></svg>
+          </div>
+          <h3 class="text-base font-bold mb-2">Agent Isolation</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Per-agent budget isolation and per-session rate limiting. Each guard instance is independent —
+            no cross-agent data leakage or shared state between concurrent agent runs.
+          </p>
+        </div>
+
+        <!-- OpenClaw CTA card -->
+        <div class="bg-rose-950/30 border border-rose-800/40 rounded-2xl p-6 flex flex-col justify-between">
+          <div>
+            <div class="flex items-center gap-2 mb-3">
+              <span class="text-xs font-bold bg-rose-900/60 border border-rose-800/60 text-rose-300 px-2 py-0.5 rounded-full uppercase tracking-wide">OpenClaw</span>
+            </div>
+            <h3 class="text-base font-bold mb-2 text-white">Built for Real Tool Access</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+              See the full OpenClaw integration guide — protecting shell execution, file writes,
+              and API calls with sandbox mode enabled.
+            </p>
+          </div>
+          <a href="https://github.com/ordocaelum/agentsentinel-landing/blob/main/examples/openclaw_integration.py"
+             target="_blank" rel="noopener"
+             class="block text-center bg-rose-700 hover:bg-rose-600 text-white text-sm font-semibold py-2.5 rounded-xl transition-colors">
+            View OpenClaw Example →
+          </a>
+        </div>
+
       </div>
     </div>
   </section>
@@ -399,7 +531,7 @@
       <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Quick Start</p>
       <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Up and running in 60 seconds</h2>
       <p class="text-slate-500 text-center max-w-lg mx-auto mb-14">
-        Works with OpenAI, Anthropic, LangChain, AutoGen, CrewAI, and any Python or Node.js agent.
+        Works with OpenAI, Anthropic, LangChain, AutoGen, CrewAI, OpenClaw, and any Python or Node.js agent.
       </p>
 
       <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 items-start">
@@ -783,6 +915,52 @@
           </div>
         </details>
 
+        <details class="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <summary class="flex items-center justify-between px-6 py-5 font-semibold text-white hover:text-blue-300 transition-colors text-sm md:text-base">
+            Is AgentSentinel safe for production use with powerful tools (shell, file system)?
+            <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
+          </summary>
+          <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
+            Yes — this is the primary use case. For agents with real tool access (shell commands,
+            file I/O, API calls), configure a <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">SecurityConfig</code> with
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">blocked_tools</code> (permanent kill-list),
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">sensitive_tools</code> (always require approval),
+            and set <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">sandbox_mode=True</code>.
+            See the <a href="https://github.com/ordocaelum/agentsentinel-landing/blob/main/examples/openclaw_integration.py"
+            target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 underline">OpenClaw integration example</a> for a complete production-ready setup.
+          </div>
+        </details>
+
+        <details class="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <summary class="flex items-center justify-between px-6 py-5 font-semibold text-white hover:text-blue-300 transition-colors text-sm md:text-base">
+            How do I prevent prompt injection from bypassing controls?
+            <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
+          </summary>
+          <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
+            AgentSentinel enforces policy at the <em>tool call</em> level — not the prompt level —
+            so prompt injection cannot bypass budget limits, rate limits, or blocked-tool checks.
+            An injected prompt that convinces an agent to call a blocked tool will still be rejected
+            by the guard before execution.
+            For sensitive tools, combine the <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">require_approval</code> list
+            with an <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">ApprovalHandler</code> that requires human sign-off
+            so any suspicious call is human-reviewed before it runs.
+          </div>
+        </details>
+
+        <details class="group bg-slate-900 border border-slate-800 rounded-xl overflow-hidden">
+          <summary class="flex items-center justify-between px-6 py-5 font-semibold text-white hover:text-blue-300 transition-colors text-sm md:text-base">
+            What data does AgentSentinel collect or transmit?
+            <span class="faq-icon text-blue-500 text-2xl font-light ml-4 shrink-0">+</span>
+          </summary>
+          <div class="px-6 pb-6 text-slate-400 text-sm leading-relaxed border-t border-slate-800 pt-4">
+            <strong class="text-white">Nothing.</strong> The SDK runs entirely in-process; it does not phone home, transmit telemetry,
+            or contact any external service. All audit data stays inside the
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditSink</code> instances you configure — in-memory, local file, or your own infrastructure.
+            Parameter values are redacted by default using configurable regex patterns in
+            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">SecurityConfig.redact_patterns</code>.
+          </div>
+        </details>
+
       </div>
     </div>
   </section>
@@ -853,6 +1031,7 @@
         <h4 class="text-white text-sm font-semibold mb-5">Product</h4>
         <ul class="space-y-3 text-slate-500 text-sm">
           <li><a href="#features" class="hover:text-white transition-colors">Features</a></li>
+          <li><a href="#security" class="hover:text-white transition-colors">Security</a></li>
           <li><a href="#pricing" class="hover:text-white transition-colors">Pricing</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing/releases" target="_blank" rel="noopener" class="hover:text-white transition-colors">Changelog</a></li>
           <li><a href="mailto:hello@agentsentinel.dev?subject=Roadmap%20Feedback" class="hover:text-white transition-colors">Roadmap</a></li>
@@ -866,6 +1045,7 @@
         <ul class="space-y-3 text-slate-500 text-sm">
           <li><a href="docs.html" class="hover:text-white transition-colors">Documentation</a></li>
           <li><a href="docs.html#api-reference" class="hover:text-white transition-colors">API Reference</a></li>
+          <li><a href="security.html" class="hover:text-white transition-colors">Security Details</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing/tree/main/examples" target="_blank" rel="noopener" class="hover:text-white transition-colors">Examples</a></li>
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing/discussions" target="_blank" rel="noopener" class="hover:text-white transition-colors">Community</a></li>
@@ -878,7 +1058,7 @@
         <ul class="space-y-3 text-slate-500 text-sm">
           <li><a href="https://github.com/ordocaelum/agentsentinel-landing#readme" target="_blank" rel="noopener" class="hover:text-white transition-colors">About</a></li>
           <li><a href="mailto:hello@agentsentinel.dev?subject=Careers%20at%20AgentSentinel" class="hover:text-white transition-colors">Careers</a></li>
-          <li><a href="mailto:security@agentsentinel.dev?subject=Security%20Inquiry" class="hover:text-white transition-colors">Security</a></li>
+          <li><a href="security.html" class="hover:text-white transition-colors">Security Policy</a></li>
           <li><a href="mailto:privacy@agentsentinel.dev?subject=Privacy%20Policy%20Inquiry" class="hover:text-white transition-colors">Privacy Policy</a></li>
           <li><a href="mailto:hello@agentsentinel.dev?subject=Terms%20of%20Service%20Inquiry" class="hover:text-white transition-colors">Terms of Service</a></li>
         </ul>
