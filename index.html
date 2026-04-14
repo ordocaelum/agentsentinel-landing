@@ -744,76 +744,95 @@
   <!-- ════════════════════════════════════════════════════════════════
        PRICING
   ════════════════════════════════════════════════════════════════ -->
-  <section id="pricing" class="py-24 px-6">
-    <div class="max-w-5xl mx-auto">
-      <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Pricing</p>
-      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Simple, honest pricing</h2>
-      <p class="text-slate-500 text-center max-w-lg mx-auto mb-16">
-        AgentSentinel v1.0 is available on PyPI and npm. The open-source SDK is free to use.
-        Paid tiers are for teams that want dedicated support and design-partner access.
-      </p>
+  <section id="pricing" class="py-24 bg-slate-900/50 px-6">
+    <div class="max-w-7xl mx-auto">
+      <div class="text-center mb-16">
+        <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Pricing</p>
+        <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Simple, Transparent Pricing</h2>
+        <p class="text-slate-500 text-center max-w-lg mx-auto">Start free, scale as you grow</p>
+      </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5 items-stretch">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
 
-        <!-- Developer Preview -->
-        <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col">
-          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Open Source</p>
+        <!-- Free Tier -->
+        <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
+          <h3 class="text-lg font-semibold text-slate-400 mb-2">Free</h3>
           <div class="mb-6">
-            <span class="text-5xl font-black">Free</span>
+            <span class="text-4xl font-bold text-white">$0</span>
+            <span class="text-slate-500">/month</span>
           </div>
-          <p class="text-slate-500 text-sm mb-6">Install and use the SDK today. No sign-up, no credit card, no limits.</p>
-          <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Full SDK — Python &amp; TypeScript</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Budget enforcement</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Approval gates (in-memory)</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Rate limiting</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Console &amp; in-memory audit sinks</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> MIT license — open source</li>
+          <ul class="space-y-3 mb-8 text-sm text-slate-400 flex-1">
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 1 agent</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 1,000 events/month</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Basic policy controls</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Community support</li>
+            <li class="flex items-start gap-2"><span class="text-slate-600 shrink-0">✗</span> <span class="text-slate-600">Dashboard</span></li>
+            <li class="flex items-start gap-2"><span class="text-slate-600 shrink-0">✗</span> <span class="text-slate-600">Integrations</span></li>
           </ul>
           <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
-            View on GitHub →
+            Get Started
           </a>
         </div>
 
-        <!-- Team Pilot — Featured -->
+        <!-- Pro Tier -->
         <div class="plan-featured rounded-2xl p-8 flex flex-col relative">
-          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-blue-500 text-white text-xs font-bold px-4 py-1.5 rounded-full tracking-wide shadow-lg shadow-blue-900/50">
-            EARLY ADOPTER
+          <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-blue-900/50">
+            POPULAR
           </div>
-          <p class="text-blue-300 text-sm font-semibold uppercase tracking-wider mb-4">Team Pilot</p>
-          <div class="mb-2">
-            <span class="text-5xl font-black">Contact</span>
+          <h3 class="text-lg font-semibold text-sky-400 mb-2">Pro</h3>
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-white">$49</span>
+            <span class="text-slate-500">/month</span>
           </div>
-          <p class="text-blue-400/70 text-xs mb-6">for early-adopter teams</p>
-          <p class="text-slate-400 text-sm mb-6">For teams who want to shape the roadmap and get priority support.</p>
-          <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Everything in Open Source</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Direct Slack channel with the team</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Priority feature requests</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Early access to Slack/webhook adapters</li>
-            <li class="flex items-start gap-2.5 text-slate-200"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Co-design sessions</li>
+          <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 5 agents</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 50,000 events/month</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Full dashboard</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> All integrations</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Email support</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Basic policy editor</li>
           </ul>
-          <a href="mailto:hello@agentsentinel.dev?subject=Team%20Pilot%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20discuss%20the%20Team%20Pilot%20programme." class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
-            Get in Touch →
+          <a href="mailto:contact@agentsentinel.dev?subject=Pro%20Plan%20-%20AgentSentinel" class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-xl shadow-blue-900/40">
+            Start Free Trial
           </a>
         </div>
 
-        <!-- Enterprise Partner -->
-        <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col">
-          <p class="text-slate-400 text-sm font-semibold uppercase tracking-wider mb-4">Enterprise Partner</p>
+        <!-- Team Tier -->
+        <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
+          <h3 class="text-lg font-semibold text-emerald-400 mb-2">Team</h3>
           <div class="mb-6">
-            <span class="text-4xl font-black">Contact</span>
+            <span class="text-4xl font-bold text-white">$149</span>
+            <span class="text-slate-500">/month</span>
           </div>
-          <p class="text-slate-500 text-sm mb-6">For organizations with compliance, scale, or bespoke integration requirements.</p>
-          <ul class="space-y-3 text-sm mb-8 flex-1">
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Everything in Team Pilot</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Design-partner roadmap influence</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Custom integrations &amp; adapters</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> SLA &amp; dedicated support</li>
-            <li class="flex items-start gap-2.5 text-slate-300"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> On-premise / self-hosted (roadmap)</li>
+          <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 20 agents</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 500,000 events/month</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Multi-agent dashboard</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Full policy editor</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Priority support</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Team management</li>
           </ul>
-          <a href="mailto:sales@agentsentinel.dev?subject=Enterprise%20Partner%20Inquiry%20-%20AgentSentinel&body=Hi%2C%20I%E2%80%99d%20like%20to%20learn%20more%20about%20the%20Enterprise%20Partner%20programme." class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
-            Contact Us
+          <a href="mailto:contact@agentsentinel.dev?subject=Team%20Plan%20-%20AgentSentinel" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+            Start Free Trial
+          </a>
+        </div>
+
+        <!-- Enterprise Tier -->
+        <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
+          <h3 class="text-lg font-semibold text-amber-400 mb-2">Enterprise</h3>
+          <div class="mb-6">
+            <span class="text-4xl font-bold text-white">Custom</span>
+          </div>
+          <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Unlimited agents</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Unlimited events</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> SSO / SAML</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> On-premise option</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Dedicated support</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Custom SLA</li>
+          </ul>
+          <a href="mailto:sales@agentsentinel.dev?subject=Enterprise%20Inquiry%20-%20AgentSentinel" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 hover:text-white font-semibold py-3 rounded-xl text-sm transition-colors">
+            Contact Sales
           </a>
         </div>
 

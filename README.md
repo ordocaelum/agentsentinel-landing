@@ -215,4 +215,12 @@ This project is in early development. Issues and pull requests are welcome.
 
 ## License
 
-[MIT](https://opensource.org/licenses/MIT)
+AgentSentinel is licensed under the [Business Source License 1.1](LICENSE.md).
+
+- ✅ **Free** for personal and non-commercial use
+- ✅ **Free** for companies with <$1M revenue and <$5M funding
+- 💼 **Commercial license required** for larger organizations
+
+[View pricing →](https://agentsentinel.dev/pricing)
+
+© 2026 Leland E. Doss. All rights reserved.

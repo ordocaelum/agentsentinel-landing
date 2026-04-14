@@ -1,6 +1,6 @@
 {
   "name": "@agentsentinel/sdk",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "Safety controls for AI agents — budgets, approvals, rate limits, audit logs, and DLP",
   "main": "dist/index.js",
   "module": "dist/index.mjs",
@@ -55,8 +55,8 @@
     "langchain", "autogen", "crewai", "llamaindex", "budget", "rate-limit",
     "approval", "audit", "dlp", "pii", "typescript"
   ],
-  "author": "AgentSentinel <hello@agentsentinel.dev>",
-  "license": "MIT",
+  "author": "Leland E. Doss <contact@agentsentinel.dev>",
+  "license": "BSL-1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/ordocaelum/agentsentinel-landing.git"
