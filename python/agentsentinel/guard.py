@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """AgentGuard — the main decorator/wrapper class."""
 
 from __future__ import annotations
@@ -5,6 +10,8 @@ from __future__ import annotations
 import fnmatch
 import functools
 import time
+import uuid
+import warnings
 from typing import Any, Callable, Dict, List, Optional
 
 from .approval import ApprovalHandler, DenyAllApprover
@@ -12,6 +19,11 @@ from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
 from .cost_tracker import CostTracker
 from .errors import BudgetExceededError, ContentInspectionError, ModelBudgetExceededError, PIIDetectedError
 from .inspector import ContentInspector, InspectionResult
+from .licensing import (
+    get_license_manager,
+    LicenseError,
+    UsageLimitExceededError,
+)
 from .network import NetworkGuard
 from .policy import AgentPolicy
 from .rate_limit import RateLimiter
@@ -56,7 +68,21 @@ class AgentGuard:
         policy: AgentPolicy,
         approval_handler: Optional[ApprovalHandler] = None,
         audit_logger: Optional[AuditLogger] = None,
+        license_key: Optional[str] = None,
     ) -> None:
+        # Set license key if provided
+        if license_key:
+            from .licensing import set_license_key
+            set_license_key(license_key)
+
+        # Register this agent with the license manager
+        self._agent_id = str(uuid.uuid4())
+        get_license_manager().register_agent(self._agent_id)
+
+        # Show watermark if required by license tier
+        if get_license_manager().should_show_watermark():
+            print("[Powered by AgentSentinel — https://agentsentinel.dev]")
+
         self.policy = policy
         self.approval_handler: ApprovalHandler = approval_handler or DenyAllApprover()
 
@@ -93,6 +119,13 @@ class AgentGuard:
                 custom_token_counter=tracker_config.custom_token_counter,
             )
         self.cost_tracker = CostTracker(tracker_config)
+
+    def __del__(self) -> None:
+        """Unregister this agent from the license manager when destroyed."""
+        try:
+            get_license_manager().unregister_agent(self._agent_id)
+        except Exception:
+            pass  # Never raise in __del__
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -311,6 +344,12 @@ class AgentGuard:
                         decision="approved",
                     )
                     self.audit_logger.record(event)
+
+                # --- License: record event for usage tracking ---
+                try:
+                    get_license_manager().record_event()
+                except UsageLimitExceededError as exc:
+                    warnings.warn(str(exc), UserWarning, stacklevel=2)
 
                 # --- Execute the tool ---
                 try:

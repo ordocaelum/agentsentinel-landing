@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """AutoGen integration for AgentSentinel.
 
 Wraps AutoGen function maps (and individual callables) with
@@ -69,6 +74,8 @@ class AutoGenGuard:
     """
 
     def __init__(self, guard: AgentGuard) -> None:
+        from agentsentinel.licensing import require_feature
+        require_feature("integrations")
         self.guard = guard
 
     # ------------------------------------------------------------------

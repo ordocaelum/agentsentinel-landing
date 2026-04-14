@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """LlamaIndex integration for AgentSentinel.
 
 LlamaIndex is a data framework for LLM applications with tools, agents, and RAG.
@@ -81,6 +86,8 @@ class LlamaIndexGuard:
         guard: Optional[AgentGuard] = None,
         policy: Optional[AgentPolicy] = None,
     ) -> None:
+        from agentsentinel.licensing import require_feature
+        require_feature("integrations")
         if guard is not None:
             self._guard = guard
         elif policy is not None:

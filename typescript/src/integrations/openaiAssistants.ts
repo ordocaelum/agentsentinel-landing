@@ -1,4 +1,10 @@
 /**
+ * AgentSentinel — Safety controls for AI agents
+ * Copyright (c) 2026 Leland E. Doss. All rights reserved.
+ * Licensed under the Business Source License 1.1
+ * See LICENSE.md for details
+ */
+/**
  * OpenAI Assistants API integration for AgentSentinel.
  *
  * Wraps OpenAI Assistants API function calling with AgentSentinel protection.

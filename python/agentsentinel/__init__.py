@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """AgentSentinel Python SDK — developer preview."""
 
 from .approval import ApprovalHandler, DenyAllApprover, InMemoryApprover
@@ -16,6 +21,19 @@ from .errors import (
 )
 from .guard import AgentGuard
 from .inspector import ContentInspector, InspectionReport, InspectionResult, InspectorConfig
+from .licensing import (
+    LicenseError,
+    LicenseInfo,
+    LicenseManager,
+    LicenseTier,
+    FeatureNotAvailableError,
+    UsageLimitExceededError,
+    get_license_info,
+    get_license_manager,
+    is_feature_available,
+    require_feature,
+    set_license_key,
+)
 from .network import NetworkGuard, NetworkPolicy
 from .pii import PIIConfig, PIIMatch, PIIScanner, PIIType, luhn_check
 from .policy import AgentPolicy
@@ -31,7 +49,7 @@ from .pricing import (
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
-__version__ = "1.0.0"
+__version__ = "1.2.0"
 
 __all__ = [
     # Policy
@@ -91,6 +109,18 @@ __all__ = [
     "ModelUsage",
     "count_tokens",
     "estimate_tokens_from_response",
+    # Licensing
+    "LicenseError",
+    "LicenseInfo",
+    "LicenseManager",
+    "LicenseTier",
+    "FeatureNotAvailableError",
+    "UsageLimitExceededError",
+    "get_license_info",
+    "get_license_manager",
+    "is_feature_available",
+    "require_feature",
+    "set_license_key",
     # Optional integrations (imported lazily to avoid hard framework deps)
     # from agentsentinel.integrations.langchain import LangChainGuard, protect_langchain_agent
     # from agentsentinel.integrations.autogen  import AutoGenGuard, protect_function_map

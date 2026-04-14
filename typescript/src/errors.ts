@@ -1,3 +1,9 @@
+/**
+ * AgentSentinel — Safety controls for AI agents
+ * Copyright (c) 2026 Leland E. Doss. All rights reserved.
+ * Licensed under the Business Source License 1.1
+ * See LICENSE.md for details
+ */
 /** Custom error base class for all AgentSentinel errors. */
 export class AgentSentinelError extends Error {
   constructor(message: string) {

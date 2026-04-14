@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """Local web dashboard server for AgentSentinel.
 
 Zero external dependencies — built on :mod:`http.server` from the stdlib.
@@ -1654,6 +1659,16 @@ def start_dashboard(
         # Non-blocking (continue running your agent in the same process)
         server = start_dashboard(guard, port=8080, background=True)
     """
+    from agentsentinel.licensing import require_feature, FeatureNotAvailableError
+
+    try:
+        require_feature("dashboard")
+    except FeatureNotAvailableError as e:
+        print(f"\n⚠️  {e}\n")
+        print("The dashboard is available in Pro, Team, and Enterprise plans.")
+        print("Start your free trial at https://agentsentinel.dev/pricing\n")
+        return None
+
     server = DashboardServer(guard, port=port, host=host)
     if background:
         server.serve_in_background()

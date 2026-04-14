@@ -1,4 +1,10 @@
 /**
+ * AgentSentinel — Safety controls for AI agents
+ * Copyright (c) 2026 Leland E. Doss. All rights reserved.
+ * Licensed under the Business Source License 1.1
+ * See LICENSE.md for details
+ */
+/**
  * Anthropic Claude Tools integration for AgentSentinel.
  *
  * Wraps Anthropic's `tool_use` feature with AgentSentinel protection.

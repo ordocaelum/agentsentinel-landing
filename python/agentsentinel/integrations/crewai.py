@@ -1,3 +1,8 @@
+# AgentSentinel — Safety controls for AI agents
+# Copyright (c) 2026 Leland E. Doss. All rights reserved.
+# Licensed under the Business Source License 1.1
+# See LICENSE.md for details
+
 """CrewAI integration for AgentSentinel.
 
 CrewAI is a framework for orchestrating role-playing AI agents.
@@ -76,6 +81,8 @@ class CrewAIGuard:
         guard: Optional[AgentGuard] = None,
         policy: Optional[AgentPolicy] = None,
     ) -> None:
+        from agentsentinel.licensing import require_feature
+        require_feature("integrations")
         if guard is not None:
             self._guard = guard
         elif policy is not None:
