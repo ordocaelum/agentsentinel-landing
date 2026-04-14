@@ -1,0 +1,25 @@
+{
+  "name": "@agentsentinel/sdk",
+  "version": "0.1.0-preview",
+  "description": "Safety controls, spend limits, and audit logging for AI agents.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": ["dist"],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
+    "test": "node --experimental-vm-modules node_modules/.bin/jest",
+    "lint": "eslint src --ext .ts"
+  },
+  "keywords": ["ai", "agents", "safety", "guardrails", "llm"],
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ordocaelum/agentsentinel-landing"
+  },
+  "devDependencies": {
+    "typescript": "^5.4.0",
+    "@types/node": "^20.0.0"
+  },
+  "dependencies": {}
+}
