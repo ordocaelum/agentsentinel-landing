@@ -2,6 +2,7 @@ import { SecurityConfig } from "./security";
 import { PIIConfig } from "./pii";
 import { NetworkPolicy } from "./network";
 import { InspectorConfig } from "./inspector";
+import { CostTrackerConfig, CostTrackerConfigOptions } from "./costTracker";
 
 /** Configuration for agent safety controls. */
 export interface AgentPolicyOptions {
@@ -53,6 +54,15 @@ export interface AgentPolicyOptions {
   dlpEnabled?: boolean;
   /** Block tool execution when a DLP violation is detected. Default: true. */
   dlpBlockOnViolation?: boolean;
+  /** Cost tracking configuration. */
+  costTracking?: CostTrackerConfigOptions;
+  /**
+   * Per-model budget limits (USD) — convenience shortcut.
+   * Values are max USD spend per model name pattern (supports glob wildcards).
+   * e.g. `{ "gpt-4o": 10.0, "claude-*": 5.0 }`.
+   * Merged into `costTracking.modelBudgets`.
+   */
+  modelBudgets?: Record<string, number>;
 }
 
 /** Immutable policy value object used by {@link AgentGuard}. */
@@ -71,6 +81,8 @@ export class AgentPolicy {
   readonly inspectorConfig: InspectorConfig;
   readonly dlpEnabled: boolean;
   readonly dlpBlockOnViolation: boolean;
+  readonly costTracking: CostTrackerConfig;
+  readonly modelBudgets: Readonly<Record<string, number>>;
 
   constructor(options: AgentPolicyOptions = {}) {
     this.dailyBudget = options.dailyBudget ?? Infinity;
@@ -87,5 +99,12 @@ export class AgentPolicy {
     this.inspectorConfig = options.inspectorConfig ?? new InspectorConfig();
     this.dlpEnabled = options.dlpEnabled ?? true;
     this.dlpBlockOnViolation = options.dlpBlockOnViolation ?? true;
+    this.modelBudgets = Object.freeze(options.modelBudgets ?? {});
+    // Merge modelBudgets shortcut into cost tracking config
+    const mergedBudgets = { ...(options.costTracking?.modelBudgets ?? {}), ...this.modelBudgets };
+    this.costTracking = new CostTrackerConfig({
+      ...(options.costTracking ?? {}),
+      modelBudgets: mergedBudgets,
+    });
   }
 }

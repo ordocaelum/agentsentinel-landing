@@ -48,6 +48,37 @@ def _finite_or_none(value: float) -> "float | None":
     return value if value != _INF else None
 
 
+def _collect_model_costs(guard: Any) -> List[Dict[str, Any]]:
+    """Build a JSON-serialisable list of per-model cost stats from *guard*."""
+    try:
+        tracker = guard.cost_tracker
+        all_usage = tracker.get_all_usage()
+        budgets = tracker.config.model_budgets
+
+        result = []
+        for model_name, usage in all_usage.items():
+            # Find matching budget if any
+            budget = None
+            import fnmatch
+            for pattern, bud in budgets.items():
+                if fnmatch.fnmatch(model_name.lower(), pattern.lower()):
+                    budget = bud
+                    break
+
+            result.append({
+                "model": model_name,
+                "calls": usage.call_count,
+                "input_tokens": usage.total_input_tokens,
+                "output_tokens": usage.total_output_tokens,
+                "cost": round(usage.total_cost, 6),
+                "budget": budget,
+            })
+
+        return sorted(result, key=lambda x: x["cost"], reverse=True)
+    except Exception:
+        return []
+
+
 # ---------------------------------------------------------------------------
 # Stats helper — reads events from the guard's InMemoryAuditSink (if any)
 # ---------------------------------------------------------------------------
@@ -107,6 +138,7 @@ def _collect_stats(guard: Any) -> Dict[str, Any]:
         "tools": list(tool_counts.values()),
         "recent_events": recent,
         "server_time": time.time(),
+        "model_costs": _collect_model_costs(guard),
     }
 
 

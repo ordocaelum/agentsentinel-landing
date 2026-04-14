@@ -3,6 +3,7 @@
 from dataclasses import dataclass, field
 from typing import Callable, Dict, List, Optional
 
+from .cost_tracker import CostTrackerConfig
 from .inspector import InspectorConfig
 from .network import NetworkPolicy
 from .pii import PIIConfig
@@ -76,3 +77,10 @@ class AgentPolicy:
     # Data Loss Prevention
     dlp_enabled: bool = True
     dlp_block_on_violation: bool = True
+
+    # Cost tracking
+    cost_tracking: CostTrackerConfig = field(default_factory=CostTrackerConfig)
+
+    # Per-model budget limits — convenience shortcut; values are max USD spend
+    # per model name pattern (supports fnmatch wildcards, e.g. "claude-*": 5.0)
+    model_budgets: Dict[str, float] = field(default_factory=dict)

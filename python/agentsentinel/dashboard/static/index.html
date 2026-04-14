@@ -139,6 +139,18 @@
       </div>
     </section>
 
+    <!-- ── Cost By Model ────────────────────────────────────────────── -->
+    <section>
+      <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
+        <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 mb-4">
+          Cost By Model
+        </h2>
+        <div id="model-breakdown" class="space-y-4">
+          <p class="text-slate-600 text-sm italic">No model data yet…</p>
+        </div>
+      </div>
+    </section>
+
     <!-- ── Recent Event Log ─────────────────────────────────────────── -->
     <section>
       <div class="card-glow rounded-2xl bg-slate-900 border border-slate-800 p-6">
@@ -303,6 +315,55 @@
     }
 
     // -----------------------------------------------------------------------
+    // Per-model cost breakdown
+    // -----------------------------------------------------------------------
+    function renderModels(models) {
+      const container = document.getElementById('model-breakdown');
+      if (!models || models.length === 0) {
+        container.innerHTML = '<p class="text-slate-600 text-sm italic">No model data yet…</p>';
+        return;
+      }
+
+      const maxCost = models[0].cost || 1;
+
+      container.innerHTML = models.map(m => {
+        const barPct = maxCost > 0 ? Math.round((m.cost / maxCost) * 100) : 0;
+        const budgetHtml = m.budget != null
+          ? (() => {
+              const usedPct = m.budget > 0 ? Math.min(100, Math.round((m.cost / m.budget) * 100)) : 0;
+              const barColor = usedPct >= 90 ? 'bg-rose-500' : usedPct >= 70 ? 'bg-yellow-500' : 'bg-emerald-500';
+              return `
+                <div class="mt-1">
+                  <div class="flex justify-between text-xs text-slate-500 mb-0.5">
+                    <span>Budget: ${fmtCost(m.cost)} / ${fmtCost(m.budget)}</span>
+                    <span>${usedPct}%</span>
+                  </div>
+                  <div class="h-1.5 rounded-full bg-slate-800 overflow-hidden">
+                    <div class="h-full ${barColor} rounded-full" style="width: ${usedPct}%"></div>
+                  </div>
+                </div>`;
+            })()
+          : '';
+
+        return `
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-sm font-medium text-slate-200 font-mono">${escHtml(m.model)}</span>
+              <div class="flex items-center gap-3 text-xs text-slate-500">
+                <span>${fmt(m.calls)} calls</span>
+                <span>${fmt(m.input_tokens + m.output_tokens)} tokens</span>
+                <span class="text-yellow-400">${fmtCost(m.cost)}</span>
+              </div>
+            </div>
+            <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
+              <div class="h-full bar-shine rounded-full" style="width: ${barPct}%"></div>
+            </div>
+            ${budgetHtml}
+          </div>`;
+      }).join('');
+    }
+
+    // -----------------------------------------------------------------------
     // Event log
     // -----------------------------------------------------------------------
     function renderEvents(events) {
@@ -346,6 +407,7 @@
 
         renderStats(data);
         renderTools(data.tools);
+        renderModels(data.model_costs || []);
         renderEvents(data.recent_events);
 
         const now = new Date();

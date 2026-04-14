@@ -9,7 +9,8 @@ from typing import Any, Callable, Dict, List, Optional
 
 from .approval import ApprovalHandler, DenyAllApprover
 from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
-from .errors import BudgetExceededError, ContentInspectionError, PIIDetectedError
+from .cost_tracker import CostTracker
+from .errors import BudgetExceededError, ContentInspectionError, ModelBudgetExceededError, PIIDetectedError
 from .inspector import ContentInspector, InspectionResult
 from .network import NetworkGuard
 from .policy import AgentPolicy
@@ -78,6 +79,22 @@ class AgentGuard:
         self._hourly_spent: float = 0.0
         self._hourly_reset_at: float = time.time()
 
+        # Per-model cost tracking
+        # Merge model_budgets shortcut into the cost_tracking config
+        tracker_config = policy.cost_tracking
+        if policy.model_budgets:
+            merged = {**tracker_config.model_budgets, **policy.model_budgets}
+            from .cost_tracker import CostTrackerConfig
+            tracker_config = CostTrackerConfig(
+                enabled=tracker_config.enabled,
+                track_tokens=tracker_config.track_tokens,
+                track_by_model=tracker_config.track_by_model,
+                track_by_tool=tracker_config.track_by_tool,
+                model_budgets=merged,
+                custom_token_counter=tracker_config.custom_token_counter,
+            )
+        self.cost_tracker = CostTracker(tracker_config)
+
     # ------------------------------------------------------------------
     # Internal helpers
     # ------------------------------------------------------------------
@@ -114,6 +131,7 @@ class AgentGuard:
         *,
         tool_name: Optional[str] = None,
         cost: Optional[float] = None,
+        model: Optional[str] = None,
     ) -> Callable:
         """Decorator that enforces all policy rules on *func*.
 
@@ -125,6 +143,9 @@ class AgentGuard:
             @guard.protect(tool_name="my_tool", cost=0.05)
             def my_tool(): ...
 
+            @guard.protect(model="gpt-4o")
+            def call_llm(prompt: str) -> str: ...
+
         Parameters
         ----------
         func:
@@ -135,10 +156,15 @@ class AgentGuard:
         cost:
             Explicit cost per invocation (USD).  If not provided and no
             ``policy.cost_estimator`` is set, defaults to ``0.0``.
+        model:
+            LLM model name (e.g. ``"gpt-4o"``).  When provided, the guard
+            checks per-model budget limits before execution and records
+            token-level costs via the :class:`.CostTracker`.
         """
 
         def decorator(fn: Callable) -> Callable:
             resolved_name = tool_name or fn.__name__
+            resolved_model = model
 
             @functools.wraps(fn)
             def wrapper(*args: Any, **kwargs: Any) -> Any:
@@ -220,6 +246,32 @@ class AgentGuard:
                         spent=self._daily_spent,
                     )
 
+                # --- Per-model budget check ---
+                if resolved_model and self.cost_tracker.config.enabled:
+                    allowed, reason = self.cost_tracker.check_model_budget(resolved_model)
+                    if not allowed:
+                        usage = self.cost_tracker.get_model_usage(resolved_model)
+                        spent_amount = usage.total_cost if usage else 0.0
+                        budget_amount = 0.0
+                        import fnmatch as _fnmatch
+                        for pat, bud in self.cost_tracker.config.model_budgets.items():
+                            if _fnmatch.fnmatch(resolved_model.lower(), pat.lower()):
+                                budget_amount = bud
+                                break
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=0.0,
+                            decision="blocked_budget",
+                            reason="model_budget_exceeded",
+                        )
+                        self.audit_logger.record(event)
+                        raise ModelBudgetExceededError(
+                            model=resolved_model,
+                            spent=spent_amount,
+                            budget=budget_amount,
+                        )
+
                 # --- Rate-limit check ---
                 self._rate_limiter.check(resolved_name)
 
@@ -300,6 +352,15 @@ class AgentGuard:
                 self._daily_spent += invocation_cost
                 self._hourly_spent += invocation_cost
 
+                # Record per-model token/cost usage
+                if resolved_model and self.cost_tracker.config.enabled:
+                    self.cost_tracker.record_usage(
+                        model_name=resolved_model,
+                        input_tokens=0,
+                        output_tokens=0,
+                        tool_name=resolved_name,
+                    )
+
                 event = AuditEvent.now(
                     tool_name=resolved_name,
                     status="success",
@@ -332,3 +393,4 @@ class AgentGuard:
         self._daily_spent = 0.0
         self._hourly_spent = 0.0
         self._hourly_reset_at = time.time()
+        self.cost_tracker.reset()

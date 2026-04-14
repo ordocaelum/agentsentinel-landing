@@ -2,11 +2,13 @@
 
 from .approval import ApprovalHandler, DenyAllApprover, InMemoryApprover
 from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
+from .cost_tracker import CostTracker, CostTrackerConfig, ModelUsage, count_tokens, estimate_tokens_from_response
 from .errors import (
     AgentSentinelError,
     ApprovalRequiredError,
     BudgetExceededError,
     ContentInspectionError,
+    ModelBudgetExceededError,
     NetworkPolicyViolationError,
     PIIDetectedError,
     RateLimitExceededError,
@@ -17,6 +19,15 @@ from .inspector import ContentInspector, InspectionReport, InspectionResult, Ins
 from .network import NetworkGuard, NetworkPolicy
 from .pii import PIIConfig, PIIMatch, PIIScanner, PIIType, luhn_check
 from .policy import AgentPolicy
+from .pricing import (
+    MODEL_PRICING,
+    ModelPricing,
+    ModelProvider,
+    calculate_cost,
+    get_model_pricing,
+    list_all_providers,
+    list_models_by_provider,
+)
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
@@ -30,6 +41,7 @@ __all__ = [
     # Errors
     "AgentSentinelError",
     "BudgetExceededError",
+    "ModelBudgetExceededError",
     "ApprovalRequiredError",
     "RateLimitExceededError",
     "ToolBlockedError",
@@ -65,6 +77,20 @@ __all__ = [
     "ContentInspector",
     "InspectionResult",
     "InspectionReport",
+    # Pricing
+    "MODEL_PRICING",
+    "ModelPricing",
+    "ModelProvider",
+    "calculate_cost",
+    "get_model_pricing",
+    "list_all_providers",
+    "list_models_by_provider",
+    # Cost tracking
+    "CostTracker",
+    "CostTrackerConfig",
+    "ModelUsage",
+    "count_tokens",
+    "estimate_tokens_from_response",
     # Optional integrations (imported lazily to avoid hard framework deps)
     # from agentsentinel.integrations.langchain import LangChainGuard, protect_langchain_agent
     # from agentsentinel.integrations.autogen  import AutoGenGuard, protect_function_map

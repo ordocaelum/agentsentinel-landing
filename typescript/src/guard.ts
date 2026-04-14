@@ -3,6 +3,7 @@ import {
   ApprovalRequiredError,
   BudgetExceededError,
   ContentInspectionError,
+  ModelBudgetExceededError,
   PIIDetectedError,
   ToolBlockedError,
 } from "./errors";
@@ -12,12 +13,19 @@ import { AgentPolicy } from "./policy";
 import { RateLimiter } from "./rateLimit";
 import { ApprovalHandler, DenyAllApprover } from "./approval";
 import { isToolBlocked, redactSensitive } from "./security";
+import { CostTracker } from "./costTracker";
 
 export interface ProtectOptions {
   /** Override the tool name used for policy matching and audit logs. */
   toolName?: string;
   /** Explicit cost per invocation (USD). Defaults to `0`. */
   cost?: number;
+  /**
+   * LLM model name (e.g. `"gpt-4o"`).  When provided, the guard checks
+   * per-model budget limits before execution and records usage via
+   * {@link CostTracker}.
+   */
+  model?: string;
 }
 
 /** A generic async (or sync) callable. */
@@ -46,6 +54,7 @@ export class AgentGuard {
   private readonly rateLimiter: RateLimiter;
   private readonly contentInspector: ContentInspector;
   private readonly networkGuard: NetworkGuard;
+  readonly costTracker: CostTracker;
 
   private _dailySpent = 0;
   private _hourlySpent = 0;
@@ -73,6 +82,7 @@ export class AgentGuard {
     this.rateLimiter = new RateLimiter(policy.rateLimits);
     this.contentInspector = new ContentInspector(policy.inspectorConfig);
     this.networkGuard = new NetworkGuard(policy.networkPolicy);
+    this.costTracker = new CostTracker(policy.costTracking);
   }
 
   // -----------------------------------------------------------------------
@@ -127,6 +137,7 @@ export class AgentGuard {
   protect<T extends AnyFn>(fn: T, options: ProtectOptions = {}): T {
     const resolvedName = options.toolName ?? fn.name ?? "anonymous";
     const cost = options.cost ?? 0;
+    const resolvedModel = options.model;
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const self = this;
 
@@ -196,6 +207,28 @@ export class AgentGuard {
         );
       }
 
+      // --- Per-model budget check ---
+      if (resolvedModel && self.costTracker.config.enabled) {
+        const budgetCheck = self.costTracker.checkModelBudget(resolvedModel);
+        if (!budgetCheck.allowed) {
+          const usage = self.costTracker.getModelUsage(resolvedModel);
+          const spentAmount = usage?.totalCost ?? 0;
+          let budgetAmount = 0;
+          for (const [pat, bud] of Object.entries(self.costTracker.config.modelBudgets)) {
+            if (_matchesGlob(resolvedModel.toLowerCase(), pat.toLowerCase())) {
+              budgetAmount = bud;
+              break;
+            }
+          }
+          self.auditLogger.record(
+            AuditEvent.now(resolvedName, "blocked", 0, "blocked_budget", {
+              reason: "model_budget_exceeded",
+            })
+          );
+          throw new ModelBudgetExceededError(resolvedModel, spentAmount, budgetAmount);
+        }
+      }
+
       // --- Rate limit check ---
       self.rateLimiter.check(resolvedName);
 
@@ -240,6 +273,11 @@ export class AgentGuard {
         self._dailySpent += invocationCost;
         self._hourlySpent += invocationCost;
 
+        // Record per-model usage
+        if (resolvedModel && self.costTracker.config.enabled) {
+          self.costTracker.recordUsage(resolvedModel, 0, 0, resolvedName);
+        }
+
         self.auditLogger.record(AuditEvent.now(resolvedName, "success", invocationCost, "allowed"));
 
         return result as Awaited<ReturnType<T>>;
@@ -275,5 +313,15 @@ export class AgentGuard {
     this._dailySpent = 0;
     this._hourlySpent = 0;
     this._hourlyResetAt = Date.now();
+    this.costTracker.reset();
   }
+}
+
+/** Simple glob pattern matcher supporting `*` wildcards. */
+function _matchesGlob(str: string, pattern: string): boolean {
+  if (!pattern.includes("*")) return str === pattern;
+  const re = new RegExp(
+    "^" + pattern.replace(/[.+^${}()|[\]\\]/g, "\\$&").replace(/\*/g, ".*") + "$"
+  );
+  return re.test(str);
 }

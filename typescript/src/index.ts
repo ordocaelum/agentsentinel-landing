@@ -19,6 +19,7 @@ export {
   PIIDetectedError,
   NetworkPolicyViolationError,
   ContentInspectionError,
+  ModelBudgetExceededError,
 } from "./errors";
 
 export {
@@ -53,5 +54,22 @@ export type {
   InspectionReport,
   InspectorFn,
 } from "./inspector";
+
+export {
+  MODEL_PRICING,
+  ModelProvider,
+  getModelPricing,
+  calculateCost,
+  listModelsByProvider,
+  listAllProviders,
+} from "./pricing";
+export type { ModelPricing } from "./pricing";
+
+export {
+  CostTracker,
+  CostTrackerConfig,
+  estimateTokensFromResponse,
+} from "./costTracker";
+export type { ModelUsage, CostTrackerConfigOptions } from "./costTracker";
 
 export const VERSION = "0.1.0-preview";
