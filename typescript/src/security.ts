@@ -54,7 +54,7 @@ export class SecurityConfig {
     this.redactPatterns = Object.freeze(
       options.redactPatterns ?? [
         'api[_-]?key["\']?\\s*[:=]\\s*["\']?[\\w-]+',
-        'password["\']?\\s*[:=]\\s*["\']?[^\\s,}]+',
+        'password["\']?\\s*[:=]\\s*["\']?[^\\s"\']+',
         'secret["\']?\\s*[:=]\\s*["\']?[\\w-]+',
         'token["\']?\\s*[:=]\\s*["\']?[\\w-]+',
         'bearer\\s+[\\w-]+',

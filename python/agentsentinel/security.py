@@ -40,7 +40,7 @@ class SecurityConfig:
     # Patterns to redact from audit logs (e.g., API keys, passwords)
     redact_patterns: List[str] = field(default_factory=lambda: [
         r'api[_-]?key["\']?\s*[:=]\s*["\']?[\w-]+',
-        r'password["\']?\s*[:=]\s*["\']?[^\s,}]+',
+        r'password["\']?\s*[:=]\s*["\']?[^\s"\']+',
         r'secret["\']?\s*[:=]\s*["\']?[\w-]+',
         r'token["\']?\s*[:=]\s*["\']?[\w-]+',
         r'bearer\s+[\w-]+',

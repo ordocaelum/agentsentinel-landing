@@ -114,9 +114,15 @@ guard = AgentGuard(
 
 @guard.protect(tool_name="execute_shell")
 def execute_shell(command: str) -> str:
-    """Execute a shell command — guarded by an approval gate and rate limit."""
+    """Execute a shell command — guarded by an approval gate and rate limit.
+
+    WARNING: This demo uses ``shell=True`` for brevity. In production, prefer
+    ``shell=False`` with a list of command arguments to prevent shell injection:
+
+        subprocess.run(["ls", "-la", path], shell=False, ...)
+    """
     import subprocess
-    result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=10)
+    result = subprocess.run(command, shell=True, capture_output=True, text=True, timeout=10)  # noqa: S602
     return result.stdout or result.stderr
 
 
