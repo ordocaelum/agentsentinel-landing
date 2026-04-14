@@ -14,7 +14,8 @@ AgentSentinel is a lightweight SDK that wraps AI agent tools with:
 - **Human-in-the-loop approvals** — gate sensitive tools (email, database writes, deletions) behind an approval handler. Ships with `DenyAllApprover` and `InMemoryApprover`; plug in your own.
 - **Rate limiting** — per-tool sliding-window caps (`"10/min"`, `"100/hour"`) to prevent runaway retry storms.
 - **Audit logging** — every tool invocation produces a timestamped `AuditEvent` (tool name, decision, cost, status). Ships with `ConsoleAuditSink` and `InMemoryAuditSink`; extend with your own sink.
-- **Framework-agnostic** — wraps any Python or TypeScript function. Works with LangChain, AutoGen, CrewAI, plain OpenAI clients, or anything else.
+- **Security controls** — permanently block catastrophic tools, auto-redact API keys and passwords from logs, enforce sandbox mode for untrusted agents. Designed for OpenClaw and other agents with real tool access (shell, file system, APIs).
+- **Framework-agnostic** — wraps any Python or TypeScript function. Works with LangChain, AutoGen, CrewAI, OpenClaw, plain OpenAI clients, or anything else.
 
 ---
 
@@ -24,6 +25,7 @@ AgentSentinel is a lightweight SDK that wraps AI agent tools with:
 /
 ├── index.html                   # Landing page (GitHub Pages)
 ├── docs.html                    # Documentation page (GitHub Pages)
+├── security.html                # Security reference page (GitHub Pages)
 ├── README.md
 │
 ├── python/
@@ -31,10 +33,11 @@ AgentSentinel is a lightweight SDK that wraps AI agent tools with:
 │   │   ├── __init__.py
 │   │   ├── policy.py            # AgentPolicy dataclass
 │   │   ├── guard.py             # AgentGuard decorator/wrapper
-│   │   ├── errors.py            # Exception classes
+│   │   ├── errors.py            # Exception classes (incl. ToolBlockedError)
 │   │   ├── audit.py             # AuditEvent, AuditLogger, sinks
 │   │   ├── approval.py          # ApprovalHandler, DenyAllApprover, InMemoryApprover
-│   │   └── rate_limit.py        # RateLimiter (sliding window)
+│   │   ├── rate_limit.py        # RateLimiter (sliding window)
+│   │   └── security.py          # SecurityConfig, redact_sensitive, is_tool_blocked
 │   ├── pyproject.toml
 │   └── tests/
 │       └── test_guard.py        # pytest test suite
@@ -44,16 +47,18 @@ AgentSentinel is a lightweight SDK that wraps AI agent tools with:
 │   │   ├── index.ts             # Re-exports everything
 │   │   ├── policy.ts            # AgentPolicy class
 │   │   ├── guard.ts             # AgentGuard class
-│   │   ├── errors.ts            # Error classes
+│   │   ├── errors.ts            # Error classes (incl. ToolBlockedError)
 │   │   ├── audit.ts             # AuditEvent, AuditLogger, sinks
 │   │   ├── approval.ts          # ApprovalHandler, DenyAllApprover, InMemoryApprover
-│   │   └── rateLimit.ts         # RateLimiter (sliding window)
+│   │   ├── rateLimit.ts         # RateLimiter (sliding window)
+│   │   └── security.ts          # SecurityConfig, redactSensitive, isToolBlocked
 │   ├── package.json
 │   └── tsconfig.json
 │
 └── examples/
-    ├── python_quickstart.py     # Runnable Python demo
-    └── typescript_quickstart.ts # Runnable TypeScript demo
+    ├── python_quickstart.py       # Runnable Python demo
+    ├── typescript_quickstart.ts   # Runnable TypeScript demo
+    └── openclaw_integration.py    # OpenClaw security-focused demo
 ```
 
 ---
