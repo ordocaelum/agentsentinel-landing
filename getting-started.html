@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Getting Started | AgentSentinel</title>
+  <meta name="description" content="Step-by-step guide for activating your AgentSentinel license and protecting your first agent." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .doc-h2 { scroll-margin-top: 80px; }
+  </style>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2.5">
+        <span class="text-xl">🛡️</span>
+        <span class="text-lg font-bold tracking-tight text-white">AgentSentinel</span>
+        <span class="text-slate-500 font-normal text-sm ml-1">/ Getting Started</span>
+      </a>
+      <div class="flex items-center gap-4">
+        <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">GitHub</a>
+        <a href="/docs.html" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">Docs</a>
+        <a href="/getting-started.html" class="text-white text-sm font-medium">Getting Started</a>
+        <a href="/index.html" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">← Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <div class="max-w-7xl mx-auto px-6 py-12 flex gap-12">
+    <aside class="hidden lg:block w-64 shrink-0">
+      <nav class="sticky top-24 space-y-1 text-sm">
+        <a href="#activate-license" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">1. Activate Your License</a>
+        <a href="#install-sdk" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">2. Install the SDK</a>
+        <a href="#first-agent" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">3. First Protected Agent</a>
+        <a href="#dashboard" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">4. Launch the Dashboard</a>
+        <a href="#plan" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">5. Plan Features</a>
+        <a href="#next-steps" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">6. Next Steps</a>
+        <a href="#common-issues" class="block text-slate-400 hover:text-white px-2 py-1.5 rounded">7. Common Issues</a>
+      </nav>
+    </aside>
+
+    <main class="flex-1 min-w-0 max-w-4xl">
+      <div class="mb-10">
+        <h1 class="text-4xl md:text-5xl font-black mb-4 tracking-tight">Getting Started in 5 Minutes</h1>
+        <p class="text-slate-400 text-lg leading-relaxed">From license activation to your first protected tool call.</p>
+      </div>
+
+      <section id="activate-license" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">1. Activate Your License</h2>
+        <p class="text-slate-400 text-sm mb-4">Your license key was sent to your email. It looks like:</p>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-sm mb-4"><code>as_pro_xxxxxxxxxxxxxxxx</code></pre>
+        <p class="text-slate-400 text-sm mb-3">Set it as an environment variable:</p>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs overflow-x-auto"><code># Linux/Mac
+export AGENTSENTINEL_LICENSE_KEY="as_pro_your_key_here"
+
+# Windows (PowerShell)
+$env:AGENTSENTINEL_LICENSE_KEY="as_pro_your_key_here"
+
+# Or add to your .env file
+AGENTSENTINEL_LICENSE_KEY=as_pro_your_key_here</code></pre>
+      </section>
+
+      <section id="install-sdk" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">2. Install the SDK</h2>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs overflow-x-auto"><code># Python
+pip install agentsentinel
+
+# Node.js / TypeScript
+npm install @agentsentinel/sdk</code></pre>
+      </section>
+
+      <section id="first-agent" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">3. Your First Protected Agent (5-Minute Tutorial)</h2>
+        <h3 class="text-blue-300 font-semibold mb-2">Python</h3>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs overflow-x-auto mb-5"><code>from agentsentinel import AgentPolicy, AgentGuard
+
+# Define your safety policy
+policy = AgentPolicy(
+    daily_budget=10.00,          # Stop at $10/day
+    hourly_budget=2.00,          # Stop at $2/hour
+    require_approval=["send_email", "delete_*"],
+    rate_limits={"web_search": "10/min"},
+    audit_log=True,
+)
+
+# Create a guard
+guard = AgentGuard(policy=policy)
+
+# Protect any function
+@guard.protect(tool_name="web_search", cost=0.01)
+def web_search(query: str) -> str:
+    # Your actual search implementation
+    return f"Results for: {query}"
+
+# Use it normally - AgentSentinel handles the rest!
+result = web_search("AI safety best practices")
+print(result)</code></pre>
+
+        <h3 class="text-blue-300 font-semibold mb-2">TypeScript</h3>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs overflow-x-auto"><code>import { AgentPolicy, AgentGuard } from '@agentsentinel/sdk';
+
+const policy = new AgentPolicy({
+    dailyBudget: 10.00,
+    hourlyBudget: 2.00,
+    requireApproval: ['send_email', 'delete_*'],
+    rateLimits: { 'web_search': '10/min' },
+    auditLog: true,
+});
+
+const guard = new AgentGuard({ policy });
+
+const webSearch = guard.protect(
+    async (query: string) => {
+        return `Results for: ${query}`;
+    },
+    { toolName: 'web_search', cost: 0.01 }
+);
+
+// Use it normally
+const result = await webSearch("AI safety best practices");</code></pre>
+      </section>
+
+      <section id="dashboard" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">4. Launch the Dashboard</h2>
+        <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs overflow-x-auto mb-4"><code># Python
+python -m agentsentinel.dashboard
+
+# Then open http://localhost:8050 in your browser</code></pre>
+        <ul class="space-y-2 text-slate-400 text-sm list-disc list-inside">
+          <li>Real-time cost tracking</li>
+          <li>Audit log of all tool calls</li>
+          <li>Budget usage meters</li>
+          <li>Approval queue (if using approval gates)</li>
+        </ul>
+      </section>
+
+      <section id="plan" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">5. What's Included in Your Plan</h2>
+        <div class="overflow-x-auto">
+          <table class="w-full text-sm border-collapse bg-slate-800/40 border border-slate-700 rounded-xl overflow-hidden">
+            <thead>
+              <tr class="border-b border-slate-700 text-left">
+                <th class="p-3">Feature</th><th class="p-3">Free</th><th class="p-3">Pro</th><th class="p-3">Team</th><th class="p-3">Enterprise</th>
+              </tr>
+            </thead>
+            <tbody class="text-slate-300 divide-y divide-slate-700/60">
+              <tr><td class="p-3">Agents</td><td class="p-3">1</td><td class="p-3">5</td><td class="p-3">20</td><td class="p-3">Unlimited</td></tr>
+              <tr><td class="p-3">Events/month</td><td class="p-3">1,000</td><td class="p-3">50,000</td><td class="p-3">500,000</td><td class="p-3">Unlimited</td></tr>
+              <tr><td class="p-3">Dashboard</td><td class="p-3">❌</td><td class="p-3">✅</td><td class="p-3">✅</td><td class="p-3">✅</td></tr>
+              <tr><td class="p-3">Integrations</td><td class="p-3">❌</td><td class="p-3">✅</td><td class="p-3">✅</td><td class="p-3">✅</td></tr>
+              <tr><td class="p-3">Policy Editor</td><td class="p-3">❌</td><td class="p-3">Basic</td><td class="p-3">Full</td><td class="p-3">Full</td></tr>
+              <tr><td class="p-3">Support</td><td class="p-3">Community</td><td class="p-3">Email</td><td class="p-3">Priority</td><td class="p-3">Dedicated</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section id="next-steps" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">6. Next Steps</h2>
+        <ul class="space-y-2 text-slate-300">
+          <li>📖 <a href="/docs.html" class="text-blue-400 hover:text-blue-300 underline">Full Documentation</a></li>
+          <li>🔒 <a href="/security.html" class="text-blue-400 hover:text-blue-300 underline">Security Best Practices</a></li>
+          <li>💬 <a href="mailto:contact@agentsentinel.net" class="text-blue-400 hover:text-blue-300 underline">Get Support</a></li>
+          <li>🐙 <a href="https://github.com/ordocaelum/agentsentinel-landing" class="text-blue-400 hover:text-blue-300 underline" target="_blank" rel="noopener">GitHub Repository</a></li>
+        </ul>
+      </section>
+
+      <section id="common-issues" class="doc-h2 mb-14">
+        <h2 class="text-2xl md:text-3xl font-black mb-4">7. Common Issues</h2>
+        <div class="space-y-4 text-sm">
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <p class="font-semibold text-white mb-1">"License key not found"</p>
+            <p class="text-slate-400">→ Make sure AGENTSENTINEL_LICENSE_KEY is set in your environment</p>
+          </div>
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <p class="font-semibold text-white mb-1">"Module not found"</p>
+            <p class="text-slate-400">→ Run <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">pip install agentsentinel</code> or <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">npm install @agentsentinel/sdk</code></p>
+          </div>
+          <div class="bg-slate-800/50 border border-slate-700 rounded-xl p-4">
+            <p class="font-semibold text-white mb-1">"Dashboard won't start"</p>
+            <p class="text-slate-400">→ Make sure you have a Pro/Team/Enterprise license (Free tier doesn't include dashboard)</p>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <footer style="background-color:#03080f" class="border-t border-slate-800/60 py-8 px-6 text-center text-slate-600 text-sm">
+    <p>© 2025 AgentSentinel — <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a> · <a href="/docs.html" class="hover:text-white transition-colors">Docs</a> · <a href="/index.html" class="hover:text-white transition-colors">Home</a></p>
+  </footer>
+</body>
+</html>

@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Payment Successful | AgentSentinel</title>
+  <meta name="description" content="Payment successful. Activate your AgentSentinel license and get started in minutes." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+</head>
+<body class="bg-slate-900 text-white antialiased">
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <a href="/index.html" class="flex items-center gap-2.5 shrink-0">
+        <span class="text-xl">🛡️</span>
+        <span class="text-lg font-bold tracking-tight text-white">AgentSentinel</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-6 text-slate-400 text-sm font-medium">
+        <a href="/index.html#features" class="hover:text-white transition-colors">Features</a>
+        <a href="/index.html#security" class="hover:text-white transition-colors">Security</a>
+        <a href="/index.html#how-it-works" class="hover:text-white transition-colors">SDK</a>
+        <a href="/index.html#pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/index.html#faq" class="hover:text-white transition-colors">FAQ</a>
+        <a href="/docs.html" class="hover:text-white transition-colors">Docs</a>
+        <a href="/getting-started.html" class="text-white">Getting Started</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">GitHub</a>
+        <a href="/index.html" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">Home</a>
+      </div>
+    </div>
+  </nav>
+
+  <main class="max-w-5xl mx-auto px-6 py-16 md:py-20">
+    <section class="text-center mb-14">
+      <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-4xl mb-6">✅</div>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4">Payment Successful! 🎉</h1>
+      <p class="text-lg text-slate-400">Thank you for choosing AgentSentinel</p>
+    </section>
+
+    <section class="mb-12">
+      <h2 class="text-2xl md:text-3xl font-black mb-6">What Happens Next</h2>
+      <div class="grid gap-4 md:grid-cols-3">
+        <article class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+          <h3 class="font-bold text-lg mb-3">📧 Check Your Email</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">Your license key is on its way! Check your inbox (and spam folder) for an email from contact@agentsentinel.net</p>
+        </article>
+        <article class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+          <h3 class="font-bold text-lg mb-3">🔑 Activate Your License</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">Add your license key to your environment variables</p>
+        </article>
+        <article class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+          <h3 class="font-bold text-lg mb-3">🚀 Start Protecting Your Agents</h3>
+          <p class="text-slate-400 text-sm leading-relaxed">Follow our quick start guide to add safety controls in under 5 minutes</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="flex flex-col sm:flex-row gap-3 mb-12">
+      <a href="/getting-started.html" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">Get Started →</a>
+      <a href="/docs.html" class="inline-flex items-center justify-center gap-2 border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white font-semibold px-8 py-4 rounded-xl text-base transition-colors">Read the Docs</a>
+    </section>
+
+    <section class="bg-slate-800/50 border border-slate-700 rounded-2xl p-6">
+      <h2 class="text-xl font-bold mb-3">Need help?</h2>
+      <p class="text-slate-400 text-sm leading-relaxed mb-2">Contact us at <a href="mailto:contact@agentsentinel.net" class="text-blue-400 hover:text-blue-300 underline">contact@agentsentinel.net</a></p>
+      <p class="text-slate-500 text-sm">Didn't receive your email? Check spam or reply to your order confirmation</p>
+    </section>
+  </main>
+
+  <footer style="background-color:#03080f" class="border-t border-slate-800/60 py-16 px-6">
+    <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xl">🛡️</span>
+          <span class="text-base font-bold tracking-tight">AgentSentinel</span>
+        </div>
+        <p class="text-slate-500 text-sm leading-relaxed mb-5">Safety controls and spend limits for AI agents. Prevent runaway costs before they start.</p>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Product</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="/index.html#features" class="hover:text-white transition-colors">Features</a></li>
+          <li><a href="/index.html#security" class="hover:text-white transition-colors">Security</a></li>
+          <li><a href="/index.html#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Resources</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="/docs.html" class="hover:text-white transition-colors">Documentation</a></li>
+          <li><a href="/getting-started.html" class="hover:text-white transition-colors">Getting Started</a></li>
+          <li><a href="/security.html" class="hover:text-white transition-colors">Security Details</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Company</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a></li>
+          <li><a href="mailto:contact@agentsentinel.net" class="hover:text-white transition-colors">Support</a></li>
+          <li><a href="mailto:security@agentsentinel.net" class="hover:text-white transition-colors">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto border-t border-slate-800/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600 text-sm">
+      <p>© 2025 AgentSentinel, Inc. All rights reserved.</p>
+      <p>Built for developers who ship AI agents to production.</p>
+    </div>
+  </footer>
+</body>
+</html>
