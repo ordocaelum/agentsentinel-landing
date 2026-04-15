@@ -1666,7 +1666,7 @@ def start_dashboard(
     except FeatureNotAvailableError as e:
         print(f"\n⚠️  {e}\n")
         print("The dashboard is available in Pro, Team, and Enterprise plans.")
-        print("Start your free trial at https://agentsentinel.dev/pricing\n")
+        print("Start your free trial at https://agentsentinel.net/pricing\n")
         return None
 
     server = DashboardServer(guard, port=port, host=host)

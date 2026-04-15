@@ -34,7 +34,7 @@ You may use the Licensed Work for any purpose, including production use, **provi
 ## Contact
 
 For commercial licensing inquiries: [INSERT EMAIL]
-Website: https://agentsentinel.dev
+Website: https://agentsentinel.net
 
 ---
 

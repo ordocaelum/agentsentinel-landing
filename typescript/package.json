@@ -55,13 +55,13 @@
     "langchain", "autogen", "crewai", "llamaindex", "budget", "rate-limit",
     "approval", "audit", "dlp", "pii", "typescript"
   ],
-  "author": "Leland E. Doss <contact@agentsentinel.dev>",
+  "author": "Leland E. Doss <contact@agentsentinel.net>",
   "license": "BSL-1.1",
   "repository": {
     "type": "git",
     "url": "https://github.com/ordocaelum/agentsentinel-landing.git"
   },
-  "homepage": "https://agentsentinel.dev",
+  "homepage": "https://agentsentinel.net",
   "bugs": {
     "url": "https://github.com/ordocaelum/agentsentinel-landing/issues"
   },

@@ -68,7 +68,7 @@ Cost tracking for OpenAI, Anthropic, Google, Mistral, Cohere, Meta, AWS Bedrock,
 
 ## Documentation
 
-Full docs at [docs.agentsentinel.dev](https://docs.agentsentinel.dev)
+Full docs at [docs.agentsentinel.net](https://docs.agentsentinel.net)
 
 ## License
 
