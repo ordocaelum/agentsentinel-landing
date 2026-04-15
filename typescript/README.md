@@ -59,7 +59,7 @@ import { protectToolHandlers } from '@agentsentinel/sdk/integrations/anthropic-t
 
 ## Documentation
 
-Full docs at [docs.agentsentinel.dev](https://docs.agentsentinel.dev)
+Full docs at [docs.agentsentinel.net](https://docs.agentsentinel.net)
 
 ## License
 

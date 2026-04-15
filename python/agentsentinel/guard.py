@@ -81,7 +81,7 @@ class AgentGuard:
 
         # Show watermark if required by license tier
         if get_license_manager().should_show_watermark():
-            print("[Powered by AgentSentinel — https://agentsentinel.dev]")
+            print("[Powered by AgentSentinel — https://agentsentinel.net]")
 
         self.policy = policy
         self.approval_handler: ApprovalHandler = approval_handler or DenyAllApprover()

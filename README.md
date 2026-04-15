@@ -221,6 +221,6 @@ AgentSentinel is licensed under the [Business Source License 1.1](LICENSE.md).
 - ✅ **Free** for companies with <$1M revenue and <$5M funding
 - 💼 **Commercial license required** for larger organizations
 
-[View pricing →](https://agentsentinel.dev/pricing)
+[View pricing →](https://agentsentinel.net/pricing)
 
 © 2026 Leland E. Doss. All rights reserved.

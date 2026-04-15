@@ -9,7 +9,7 @@ description = "Safety controls for AI agents — budgets, approvals, rate limits
 readme = "README.md"
 license = {text = "BSL-1.1"}
 authors = [
-    {name = "Leland E. Doss", email = "contact@agentsentinel.dev"}
+    {name = "Leland E. Doss", email = "contact@agentsentinel.net"}
 ]
 keywords = [
     "ai", "agents", "safety", "guardrails", "llm", "openai", "anthropic",
@@ -46,8 +46,8 @@ dev = [
 ]
 
 [project.urls]
-Homepage = "https://agentsentinel.dev"
-Documentation = "https://docs.agentsentinel.dev"
+Homepage = "https://agentsentinel.net"
+Documentation = "https://docs.agentsentinel.net"
 Repository = "https://github.com/ordocaelum/agentsentinel-landing"
 Changelog = "https://github.com/ordocaelum/agentsentinel-landing/releases"
 

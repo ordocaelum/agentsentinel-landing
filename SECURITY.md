@@ -2,7 +2,7 @@
 
 ## Reporting Vulnerabilities
 
-Please report security vulnerabilities privately to **contact@agentsentinel.dev**.
+Please report security vulnerabilities privately to **contact@agentsentinel.net**.
 Include reproduction steps, impact, and affected versions. Do not open public issues for active vulnerabilities.
 
 ## Deployment Security Best Practices

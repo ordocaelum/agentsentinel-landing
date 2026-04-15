@@ -111,7 +111,7 @@ class UsageLimitExceededError(LicenseError):
 # License validation API endpoint
 LICENSE_API_URL = os.environ.get(
     "AGENTSENTINEL_LICENSE_API",
-    "https://api.agentsentinel.dev/v1/license/validate"
+    "https://api.agentsentinel.net/v1/license/validate"
 )
 
 # Cache duration for license validation (1 hour)
@@ -276,7 +276,7 @@ class LicenseManager:
             raise UsageLimitExceededError(
                 f"Agent limit exceeded. Your {self._license_info.tier.value} plan "
                 f"allows {limits.max_agents} agent(s). "
-                f"Upgrade at https://agentsentinel.dev/pricing"
+                f"Upgrade at https://agentsentinel.net/pricing"
             )
 
         self._registered_agents.add(agent_id)
@@ -305,7 +305,7 @@ class LicenseManager:
         if self._event_count > limits.max_events_per_month:
             raise UsageLimitExceededError(
                 f"Monthly event limit exceeded ({limits.max_events_per_month:,} events). "
-                f"Upgrade at https://agentsentinel.dev/pricing"
+                f"Upgrade at https://agentsentinel.net/pricing"
             )
 
     def get_usage(self) -> Dict[str, Any]:
@@ -344,7 +344,7 @@ class LicenseManager:
             tier = self._license_info.tier.value
             raise FeatureNotAvailableError(
                 f"The '{feature}' feature is not available in your {tier} plan. "
-                f"Upgrade at https://agentsentinel.dev/pricing"
+                f"Upgrade at https://agentsentinel.net/pricing"
             )
 
     def is_feature_available(self, feature: str) -> bool:
