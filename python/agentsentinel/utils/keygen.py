@@ -8,6 +8,7 @@
 from __future__ import annotations
 
 import base64
+import binascii
 import hashlib
 import hmac
 import json
@@ -97,5 +98,5 @@ def verify_license_key(key: str, secret: Optional[str] = None) -> Dict[str, Any]
             "valid_until": float(expires_at),
             "checksum": checksum,
         }
-    except Exception:
+    except (binascii.Error, json.JSONDecodeError, TypeError, UnicodeDecodeError, ValueError):
         return {"valid": False, "error": "Malformed key"}

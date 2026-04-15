@@ -103,7 +103,7 @@ def handle_stripe_event(
         else:
             _logger.info("Unhandled Stripe event type: %s", event_type)
         return 200, {"status": "ok"}
-    except Exception as exc:
+    except (KeyError, RuntimeError, TypeError, ValueError) as exc:
         _logger.exception("Failed processing Stripe event %s: %s", event_type, exc)
         return 500, {"error": "Webhook processing failed"}
 
