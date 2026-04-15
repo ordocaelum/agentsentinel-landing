@@ -9,14 +9,15 @@ from __future__ import annotations
 
 import json
 import os
-import time
-import urllib.request
-import urllib.error
-from dataclasses import dataclass, field
-from enum import Enum
-from typing import Optional, Dict, Any, Set
 import threading
-import warnings
+import time
+import urllib.error
+import urllib.request
+from dataclasses import dataclass
+from enum import Enum
+from typing import Any, Dict, Optional, Set
+
+from .utils.keygen import verify_license_key
 
 
 class LicenseTier(Enum):
@@ -234,37 +235,32 @@ class LicenseManager:
             return self._offline_validate()
 
     def _offline_validate(self) -> LicenseInfo:
-        """Offline validation using key format (fallback)."""
+        """Offline validation using cryptographic signature verification."""
         if not self._license_key:
             return LicenseInfo(
                 tier=LicenseTier.FREE,
                 limits=TIER_LIMITS[LicenseTier.FREE],
             )
 
-        # Key format: as_{tier}_{random}
-        # e.g., as_pro_abc123def456
-        parts = self._license_key.split("_")
-        if len(parts) >= 2 and parts[0] == "as":
-            tier_str = parts[1].lower()
-            try:
-                tier = LicenseTier(tier_str)
-                return LicenseInfo(
-                    tier=tier,
-                    limits=TIER_LIMITS[tier],
-                    license_key=self._license_key,
-                    is_valid=True,
-                    validation_error="Offline validation (API unreachable)",
-                )
-            except ValueError:
-                pass
+        verification = verify_license_key(self._license_key)
+        if verification.get("valid"):
+            tier = LicenseTier(verification["tier"])
+            return LicenseInfo(
+                tier=tier,
+                limits=TIER_LIMITS[tier],
+                license_key=self._license_key,
+                valid_until=verification.get("valid_until"),
+                is_valid=True,
+                validation_error="Offline validation (signed key)",
+            )
 
-        # Invalid key format
+        # API unavailable and key cannot be verified offline -> safest fallback is FREE.
         return LicenseInfo(
             tier=LicenseTier.FREE,
             limits=TIER_LIMITS[LicenseTier.FREE],
             license_key=self._license_key,
             is_valid=False,
-            validation_error="Invalid license key format",
+            validation_error=verification.get("error", "Offline validation failed"),
         )
 
     # ─── Usage Tracking ───────────────────────────────────────────────────
