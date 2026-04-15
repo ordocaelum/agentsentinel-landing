@@ -78,6 +78,7 @@
       <div class="flex items-center gap-4">
         <span class="preview-badge">🚧 Developer Preview</span>
         <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">GitHub</a>
+        <a href="/getting-started.html" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">Getting Started</a>
         <a href="index.html" class="text-slate-400 hover:text-white transition-colors text-sm font-medium">← Home</a>
       </div>
     </div>
@@ -89,6 +90,7 @@
     <aside class="hidden lg:block w-56 shrink-0">
       <nav class="sticky top-24 space-y-1 text-sm">
         <p class="text-xs font-bold uppercase tracking-widest text-slate-600 mb-3 px-2">Getting Started</p>
+        <a href="#license-activation" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">License Activation</a>
         <a href="#installation" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">Installation</a>
         <a href="#quickstart" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">Quick Start</a>
         <a href="#examples" class="sidebar-link block text-slate-400 px-2 py-1.5 rounded">Examples</a>
@@ -126,6 +128,41 @@
           <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="text-blue-400 hover:text-blue-300 underline">Follow the repo</a> for progress.
         </p>
       </div>
+
+      <section id="license-activation" class="doc-h2 mb-16">
+        <h2 class="text-3xl font-black mb-6">License Activation</h2>
+        <div class="space-y-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            <h3 class="text-white font-semibold mb-2">1) Find your license key</h3>
+            <p class="text-slate-400 text-sm leading-relaxed">
+              Your key is sent after purchase from <span class="text-white">contact@agentsentinel.net</span> and looks like
+              <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">as_pro_xxxxxxxxxxxxxxxx</code>.
+            </p>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            <h3 class="text-white font-semibold mb-2">2) Set the environment variable</h3>
+            <pre class="bg-slate-950 border border-slate-800 rounded-xl p-4 code-block text-xs"><code># Linux / macOS
+export AGENTSENTINEL_LICENSE_KEY="as_pro_your_key_here"
+
+# Windows (PowerShell)
+$env:AGENTSENTINEL_LICENSE_KEY="as_pro_your_key_here"
+
+# .env
+AGENTSENTINEL_LICENSE_KEY=as_pro_your_key_here</code></pre>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-5">
+            <h3 class="text-white font-semibold mb-2">3) Verify activation and troubleshoot</h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-3">
+              Run your first protected tool call. If your key is valid, AgentSentinel initializes without license errors.
+            </p>
+            <ul class="space-y-2 text-sm text-slate-400 list-disc list-inside">
+              <li><span class="text-white">License key not found:</span> ensure <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AGENTSENTINEL_LICENSE_KEY</code> is set in the same shell/process.</li>
+              <li><span class="text-white">Invalid key:</span> copy the full key exactly from your email (no extra spaces/quotes).</li>
+              <li><span class="text-white">Still stuck?</span> contact <a href="mailto:contact@agentsentinel.net" class="text-blue-400 hover:text-blue-300 underline">contact@agentsentinel.net</a>.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
 
       <!-- ── INSTALLATION ───────────────────────────────────────── -->
       <section id="installation" class="doc-h2 mb-16">
