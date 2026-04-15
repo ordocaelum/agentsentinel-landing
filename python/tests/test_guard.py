@@ -232,6 +232,44 @@ class TestAuditLogging:
         # With an explicit logger the events flow through.
         assert len(sink.events) == 1
 
+    def test_audit_log_true_auto_attaches_in_memory_sink(self):
+        """When audit_log=True and no custom audit_logger is provided, an
+        InMemoryAuditSink should be automatically added so the dashboard can
+        read events."""
+        policy = AgentPolicy(audit_log=True)
+        guard = AgentGuard(policy=policy)
+
+        @guard.protect(tool_name="tracked_tool")
+        def tracked_tool():
+            return "ok"
+
+        tracked_tool()
+
+        # Find the InMemoryAuditSink in the default logger's sinks.
+        memory_sink = next(
+            (s for s in guard.audit_logger._sinks if isinstance(s, InMemoryAuditSink)),
+            None,
+        )
+        assert memory_sink is not None, (
+            "Expected an InMemoryAuditSink to be auto-attached when audit_log=True"
+        )
+        assert len(memory_sink.events) == 1
+        assert memory_sink.events[0].tool_name == "tracked_tool"
+        assert memory_sink.events[0].decision == "allowed"
+
+    def test_audit_log_false_does_not_attach_in_memory_sink(self):
+        """When audit_log=False, no InMemoryAuditSink should be added."""
+        policy = AgentPolicy(audit_log=False)
+        guard = AgentGuard(policy=policy)
+
+        memory_sink = next(
+            (s for s in guard.audit_logger._sinks if isinstance(s, InMemoryAuditSink)),
+            None,
+        )
+        assert memory_sink is None, (
+            "Did not expect an InMemoryAuditSink when audit_log=False"
+        )
+
 
 # ---------------------------------------------------------------------------
 # Decorator forms

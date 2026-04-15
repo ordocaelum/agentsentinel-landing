@@ -89,8 +89,11 @@ class AgentGuard:
         if audit_logger is not None:
             self.audit_logger = audit_logger
         else:
-            sink = ConsoleAuditSink() if policy.alert_channel == "console" else ConsoleAuditSink()
-            self.audit_logger = AuditLogger(sinks=[sink] if policy.audit_log else [])
+            if policy.audit_log:
+                sinks = [ConsoleAuditSink(), InMemoryAuditSink()]
+            else:
+                sinks = []
+            self.audit_logger = AuditLogger(sinks=sinks)
 
         self._rate_limiter = RateLimiter(policy.rate_limits)
 
