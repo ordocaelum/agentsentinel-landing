@@ -26,6 +26,18 @@ serve(async (req) => {
       );
     }
 
+    // Accept both legacy `as_<tier>_*` keys and new HMAC-signed `asv1_*` keys.
+    // Both formats are stored as plain strings in the licenses table, so a
+    // simple equality lookup handles both without any format-specific logic here.
+    const isLegacyFormat = /^as_(pro|team|enterprise|free)_/.test(license_key);
+    const isSignedFormat = license_key.startsWith("asv1_");
+    if (!isLegacyFormat && !isSignedFormat) {
+      return new Response(
+        JSON.stringify({ valid: false, error: "Unrecognised license key format" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     // Look up the license
     const { data: license, error } = await supabase
       .from("licenses")

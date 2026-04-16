@@ -111,7 +111,7 @@ class UsageLimitExceededError(LicenseError):
 # License validation API endpoint
 LICENSE_API_URL = os.environ.get(
     "AGENTSENTINEL_LICENSE_API",
-    "https://api.agentsentinel.net/v1/license/validate"
+    "https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/validate-license"
 )
 
 # Cache duration for license validation (1 hour)
