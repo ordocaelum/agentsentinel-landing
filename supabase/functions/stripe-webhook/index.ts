@@ -12,14 +12,25 @@ const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") as string;
+const LICENSE_SIGNING_SECRET = Deno.env.get("AGENTSENTINEL_LICENSE_SIGNING_SECRET") as string;
 
-// Price ID to tier mapping - UPDATE THESE WITH YOUR ACTUAL STRIPE PRICE IDs
-const PRICE_TO_TIER: Record<string, string> = {
-  // Add your Stripe Price IDs here after creating products
-  "price_pro_monthly": "pro",
-  "price_team_monthly": "team",
-  "price_enterprise_monthly": "enterprise",
-};
+// Price ID to tier mapping
+const PRICE_TO_TIER: Record<string, string> = {};
+
+// Load price-to-tier mappings from environment
+// Set these as Supabase secrets:
+//   supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
+//   supabase secrets set STRIPE_PRICE_TEAM=price_xxxxx
+//   supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
+const priceEnvMappings = [
+  { env: "STRIPE_PRICE_PRO", tier: "pro" },
+  { env: "STRIPE_PRICE_TEAM", tier: "team" },
+  { env: "STRIPE_PRICE_ENTERPRISE", tier: "enterprise" },
+];
+for (const { env, tier } of priceEnvMappings) {
+  const priceId = Deno.env.get(env);
+  if (priceId) PRICE_TO_TIER[priceId] = tier;
+}
 
 // Tier limits
 const TIER_LIMITS: Record<string, { agents: number; events: number }> = {
@@ -29,11 +40,52 @@ const TIER_LIMITS: Record<string, { agents: number; events: number }> = {
   enterprise: { agents: 999999, events: 999999999 },
 };
 
-// Generate license key
-function generateLicenseKey(tier: string): string {
-  const randomPart = crypto.randomUUID().replace(/-/g, "").substring(0, 16);
-  const prefix = `as_${tier}_`;
-  return prefix + randomPart;
+const SECONDS_PER_DAY = 86400;
+
+// Base64url encode (no padding), compatible with Python's _b64url_encode
+function b64urlEncode(bytes: Uint8Array): string {
+  const base64 = btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
+  return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+// Generate an HMAC-signed license key in asv1_ format, compatible with
+// the Python SDK's verify_license_key() in python/agentsentinel/utils/keygen.py
+async function generateLicenseKey(tier: string, validDays = 365): Promise<string> {
+  if (!LICENSE_SIGNING_SECRET) {
+    throw new Error(
+      "AGENTSENTINEL_LICENSE_SIGNING_SECRET is not set. " +
+      "Configure it with: supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=your_secret",
+    );
+  }
+
+  const now = Math.floor(Date.now() / 1000);
+  // Generate nonce: 9 random bytes → 12 base64url chars (matches Python token_urlsafe(12) length)
+  const nonceBytes = crypto.getRandomValues(new Uint8Array(9));
+  const nonce = b64urlEncode(nonceBytes);
+
+  // Build payload with alphabetically sorted keys to match Python's sort_keys=True
+  // Key order: exp, iat, nonce, tier
+  const payloadJson = JSON.stringify({
+    exp: now + validDays * SECONDS_PER_DAY,
+    iat: now,
+    nonce: nonce,
+    tier: tier.toLowerCase(),
+  }, ["exp", "iat", "nonce", "tier"]);
+
+  const payloadB64 = b64urlEncode(new TextEncoder().encode(payloadJson));
+
+  // HMAC-SHA256 sign the base64url-encoded payload
+  const key = await crypto.subtle.importKey(
+    "raw",
+    new TextEncoder().encode(LICENSE_SIGNING_SECRET),
+    { name: "HMAC", hash: "SHA-256" },
+    false,
+    ["sign"],
+  );
+  const sigBytes = await crypto.subtle.sign("HMAC", key, new TextEncoder().encode(payloadB64));
+  const sigB64 = b64urlEncode(new Uint8Array(sigBytes));
+
+  return `asv1_${payloadB64}.${sigB64}`;
 }
 
 // Send email via Resend
@@ -237,7 +289,7 @@ serve(async (req) => {
       console.log(`✅ Customer created/updated: ${customerEmail}`);
 
       // 2. Generate license key
-      const licenseKey = generateLicenseKey(tier);
+      const licenseKey = await generateLicenseKey(tier);
 
       // 3. Create license
       const { error: licenseError } = await supabase.from("licenses").insert({

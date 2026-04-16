@@ -27,6 +27,10 @@ supabase db push
 supabase secrets set STRIPE_SECRET_KEY=sk_live_xxx
 supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxx
 supabase secrets set RESEND_API_KEY=re_xxx
+supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=your_secret
+supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
+supabase secrets set STRIPE_PRICE_TEAM=price_xxxxx
+supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
 ```
 
 ### 6. Deploy Edge Functions
