@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Customer Portal | AgentSentinel</title>
+  <meta name="description" content="Manage your AgentSentinel license, view usage stats, and manage your subscription." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    .hero-bg {
+      background-color: #050d1a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(6,182,212,0.12) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.15' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .grad-text {
+      background: linear-gradient(90deg, #38bdf8 0%, #34d399 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    /* Glass card effect */
+    .glass-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+
+    /* License key monospace */
+    .license-key-text {
+      font-family: 'Fira Code', 'Cascadia Code', 'Menlo', 'Courier New', monospace;
+      font-size: 0.8rem;
+      line-height: 1.6;
+      word-break: break-all;
+    }
+
+    /* Progress bar animation */
+    .progress-bar {
+      transition: width 0.6s ease;
+    }
+
+    /* Status badge */
+    .status-active  { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.3); }
+    .status-cancelled { background: rgba(239,68,68,0.15); color: #f87171; border: 1px solid rgba(239,68,68,0.3); }
+    .status-expired { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.3); }
+
+    /* Copy button */
+    .copy-btn { cursor: pointer; background: none; border: none; padding: 0; }
+    .copy-btn.copied { color: #34d399 !important; }
+
+    /* Spinner */
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+
+<body class="bg-slate-900 text-white antialiased">
+
+  <!-- ══════ NAV ══════ -->
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2.5">
+        <span class="text-xl">🛡️</span>
+        <span class="text-lg font-bold tracking-tight text-white">AgentSentinel</span>
+        <span class="text-slate-500 font-normal text-sm ml-1">/ Portal</span>
+      </a>
+      <div class="hidden md:flex items-center gap-7 text-slate-400 text-sm font-medium">
+        <a href="/index.html#features"    class="hover:text-white transition-colors">Features</a>
+        <a href="/index.html#pricing"     class="hover:text-white transition-colors">Pricing</a>
+        <a href="/docs.html"              class="hover:text-white transition-colors">Docs</a>
+        <a href="/getting-started.html"   class="hover:text-white transition-colors">Getting Started</a>
+        <a href="/portal.html"            class="text-white">Portal</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">GitHub</a>
+        <a href="/index.html#pricing" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
+          Get Started
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════ HERO / LOGIN SECTION ══════ -->
+  <section id="login-section" class="hero-bg min-h-[calc(100vh-65px)] flex items-center justify-center px-6 py-16">
+    <div class="w-full max-w-md">
+      <!-- Badge -->
+      <div class="flex justify-center mb-8">
+        <div class="inline-flex items-center gap-2 border border-blue-700/60 bg-blue-950/50 text-blue-300 text-xs font-semibold px-4 py-2 rounded-full tracking-wide">
+          <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full"></span>
+          Customer Portal
+        </div>
+      </div>
+
+      <div class="glass-card rounded-2xl p-8 shadow-2xl shadow-black/40">
+        <div class="text-center mb-8">
+          <span class="text-4xl">🛡️</span>
+          <h1 class="text-2xl font-black tracking-tight mt-3 mb-2">Access Your Portal</h1>
+          <p class="text-slate-400 text-sm leading-relaxed">
+            Enter your email address to view your license details, usage stats, and manage your subscription.
+          </p>
+        </div>
+
+        <form id="login-form" class="space-y-4">
+          <div>
+            <label for="email-input" class="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
+            <input
+              type="email"
+              id="email-input"
+              required
+              placeholder="you@company.com"
+              class="w-full bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-colors"
+            />
+          </div>
+
+          <!-- Error message -->
+          <div id="login-error" class="hidden bg-red-950/60 border border-red-800/60 text-red-300 text-sm rounded-lg px-4 py-3"></div>
+
+          <button
+            type="submit"
+            id="login-btn"
+            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
+          >
+            <span id="login-btn-text">View My License →</span>
+            <div id="login-spinner" class="spinner hidden"></div>
+          </button>
+        </form>
+
+        <p class="text-center text-xs text-slate-500 mt-6">
+          Don't have a license? <a href="/index.html#pricing" class="text-blue-400 hover:text-blue-300 transition-colors">View pricing →</a>
+        </p>
+      </div>
+
+      <p class="text-center text-xs text-slate-600 mt-4">
+        Need help? <a href="mailto:contact@agentsentinel.net" class="hover:text-slate-400 transition-colors">contact@agentsentinel.net</a>
+      </p>
+    </div>
+  </section>
+
+  <!-- ══════ PORTAL DASHBOARD ══════ -->
+  <section id="dashboard-section" class="hidden min-h-screen py-12 px-6" style="background-color:#050d1a">
+    <div class="max-w-4xl mx-auto space-y-6">
+
+      <!-- Header bar -->
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div>
+          <h1 class="text-2xl font-black tracking-tight">My Portal</h1>
+          <p id="dash-email-subtitle" class="text-slate-400 text-sm mt-0.5"></p>
+        </div>
+        <button
+          id="logout-btn"
+          class="text-sm text-slate-400 hover:text-white border border-slate-700/60 hover:border-slate-500 px-4 py-2 rounded-lg transition-colors"
+        >
+          ← Sign Out
+        </button>
+      </div>
+
+      <!-- Account Info + Plan Details row -->
+      <div class="grid md:grid-cols-2 gap-6">
+
+        <!-- Account Info -->
+        <div class="glass-card rounded-2xl p-6">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Account Info</h2>
+          <dl class="space-y-3">
+            <div class="flex justify-between items-start gap-4">
+              <dt class="text-slate-400 text-sm">Name</dt>
+              <dd id="info-name" class="text-sm font-medium text-right">—</dd>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <dt class="text-slate-400 text-sm">Email</dt>
+              <dd id="info-email" class="text-sm font-medium text-right break-all">—</dd>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <dt class="text-slate-400 text-sm">Member Since</dt>
+              <dd id="info-since" class="text-sm font-medium text-right">—</dd>
+            </div>
+          </dl>
+        </div>
+
+        <!-- Plan Details -->
+        <div class="glass-card rounded-2xl p-6">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Plan Details</h2>
+          <dl class="space-y-3">
+            <div class="flex justify-between items-center gap-4">
+              <dt class="text-slate-400 text-sm">Plan</dt>
+              <dd id="plan-tier" class="text-sm font-bold uppercase tracking-wide">—</dd>
+            </div>
+            <div class="flex justify-between items-center gap-4">
+              <dt class="text-slate-400 text-sm">Status</dt>
+              <dd>
+                <span id="plan-status-badge" class="text-xs font-semibold px-2.5 py-1 rounded-full">—</span>
+              </dd>
+            </div>
+            <div class="flex justify-between items-start gap-4">
+              <dt class="text-slate-400 text-sm">License Since</dt>
+              <dd id="plan-since" class="text-sm font-medium text-right">—</dd>
+            </div>
+            <div id="plan-expiry-row" class="flex justify-between items-start gap-4 hidden">
+              <dt class="text-slate-400 text-sm">Expires</dt>
+              <dd id="plan-expiry" class="text-sm font-medium text-right">—</dd>
+            </div>
+          </dl>
+        </div>
+      </div>
+
+      <!-- License Key -->
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+          <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500">License Key</h2>
+          <div class="flex items-center gap-2">
+            <button
+              id="reveal-btn"
+              class="text-xs text-slate-400 hover:text-white border border-slate-700/60 hover:border-slate-500 px-3 py-1 rounded-md transition-colors"
+            >
+              👁 Reveal
+            </button>
+            <button
+              id="copy-key-btn"
+              class="copy-btn text-xs text-slate-400 hover:text-white border border-slate-700/60 hover:border-slate-500 px-3 py-1 rounded-md transition-colors"
+            >
+              📋 Copy
+            </button>
+          </div>
+        </div>
+        <div class="bg-slate-950/60 border border-slate-700/40 rounded-lg px-4 py-3">
+          <p id="license-key-display" class="license-key-text text-emerald-300 select-all"></p>
+        </div>
+
+        <!-- Quick Start commands -->
+        <div class="mt-5">
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Quick Start</p>
+          <div class="space-y-2">
+            <div class="bg-slate-950/60 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+              <code id="cmd-export" class="license-key-text text-slate-300 text-xs flex-1 min-w-0 break-all">export AGENTSENTINEL_LICENSE_KEY=...</code>
+              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-export', this)" title="Copy">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              </button>
+            </div>
+            <div class="bg-slate-950/60 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
+              <code id="cmd-powershell" class="license-key-text text-slate-300 text-xs flex-1 min-w-0 break-all">$env:AGENTSENTINEL_LICENSE_KEY = "..."</code>
+              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-powershell', this)" title="Copy">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage Stats -->
+      <div class="glass-card rounded-2xl p-6">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-5">Usage Limits</h2>
+        <div class="space-y-5">
+          <!-- Agents -->
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-300 font-medium">Agents</span>
+              <span id="agents-label" class="text-slate-400">— / —</span>
+            </div>
+            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div id="agents-bar" class="progress-bar h-full bg-gradient-to-r from-blue-500 to-cyan-400 rounded-full" style="width:0%"></div>
+            </div>
+          </div>
+          <!-- Events -->
+          <div>
+            <div class="flex justify-between text-sm mb-2">
+              <span class="text-slate-300 font-medium">Events / month</span>
+              <span id="events-label" class="text-slate-400">— / —</span>
+            </div>
+            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+              <div id="events-bar" class="progress-bar h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature Access -->
+      <div class="glass-card rounded-2xl p-6">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-4">Feature Access</h2>
+        <div class="grid sm:grid-cols-3 gap-3">
+          <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl px-4 py-3">
+            <span id="feat-dashboard-icon" class="text-lg">—</span>
+            <div>
+              <p class="text-sm font-medium">Dashboard</p>
+              <p id="feat-dashboard-label" class="text-xs text-slate-400">—</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl px-4 py-3">
+            <span id="feat-integrations-icon" class="text-lg">—</span>
+            <div>
+              <p class="text-sm font-medium">Integrations</p>
+              <p id="feat-integrations-label" class="text-xs text-slate-400">—</p>
+            </div>
+          </div>
+          <div class="flex items-center gap-3 bg-slate-800/40 rounded-xl px-4 py-3">
+            <span id="feat-multiagent-icon" class="text-lg">—</span>
+            <div>
+              <p class="text-sm font-medium">Multi-agent</p>
+              <p id="feat-multiagent-label" class="text-xs text-slate-400">—</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions row -->
+      <div class="grid sm:grid-cols-3 gap-4">
+        <!-- Manage Subscription -->
+        <button
+          id="manage-sub-btn"
+          class="glass-card rounded-xl px-5 py-4 text-left hover:border-blue-500/40 transition-colors group disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          <div class="text-2xl mb-2">💳</div>
+          <p class="font-semibold text-sm group-hover:text-blue-300 transition-colors">Manage Subscription</p>
+          <p class="text-xs text-slate-500 mt-0.5">Update payment, cancel, or change plan</p>
+        </button>
+
+        <!-- Download Invoice -->
+        <a
+          id="invoice-link"
+          href="https://billing.stripe.com/p/login/test_00000"
+          target="_blank"
+          rel="noopener"
+          class="glass-card rounded-xl px-5 py-4 hover:border-slate-500/60 transition-colors group block"
+        >
+          <div class="text-2xl mb-2">🧾</div>
+          <p class="font-semibold text-sm group-hover:text-white transition-colors">Download Invoice</p>
+          <p class="text-xs text-slate-500 mt-0.5">View and download past invoices</p>
+        </a>
+
+        <!-- Support -->
+        <a
+          href="mailto:contact@agentsentinel.net"
+          class="glass-card rounded-xl px-5 py-4 hover:border-slate-500/60 transition-colors group block"
+        >
+          <div class="text-2xl mb-2">💬</div>
+          <p class="font-semibold text-sm group-hover:text-white transition-colors">Get Support</p>
+          <p class="text-xs text-slate-400 mt-0.5">contact@agentsentinel.net</p>
+        </a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer class="border-t border-slate-800/60 py-8 px-6" style="background-color:#050d1a">
+    <div class="max-w-4xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-sm text-slate-500">
+      <p>© 2025 AgentSentinel. All rights reserved.</p>
+      <div class="flex items-center gap-5">
+        <a href="/index.html" class="hover:text-white transition-colors">Home</a>
+        <a href="/docs.html" class="hover:text-white transition-colors">Docs</a>
+        <a href="/security.html" class="hover:text-white transition-colors">Security</a>
+        <a href="mailto:contact@agentsentinel.net" class="hover:text-white transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+
+  <script>
+    // ── Configuration ──────────────────────────────────────────────────────
+    // REQUIRED: Replace with your Supabase project URL before deploying.
+    // Find it in: Supabase Dashboard → Settings → API → Project URL
+    // e.g. https://abcdefghijklmnop.supabase.co
+    const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
+    const CUSTOMER_PORTAL_FN  = `${SUPABASE_URL}/functions/v1/customer-portal`;
+    const BILLING_SESSION_FN  = `${SUPABASE_URL}/functions/v1/create-billing-session`;
+
+    // ── State ──────────────────────────────────────────────────────────────
+    let currentData = null;
+    let licenseRevealed = false;
+
+    // ── DOM refs ───────────────────────────────────────────────────────────
+    const loginSection     = document.getElementById('login-section');
+    const dashboardSection = document.getElementById('dashboard-section');
+    const loginForm        = document.getElementById('login-form');
+    const emailInput       = document.getElementById('email-input');
+    const loginBtn         = document.getElementById('login-btn');
+    const loginBtnText     = document.getElementById('login-btn-text');
+    const loginSpinner     = document.getElementById('login-spinner');
+    const loginError       = document.getElementById('login-error');
+
+    // ── Helpers ────────────────────────────────────────────────────────────
+    function formatDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    function maskKey(key) {
+      if (!key) return '';
+      // Show first 12 and last 4 chars, mask the rest
+      if (key.length <= 20) return key;
+      return key.slice(0, 12) + '••••••••••••••••••••••••' + key.slice(-4);
+    }
+
+    function fmtNumber(n) {
+      if (n >= 999999) return 'Unlimited';
+      return n.toLocaleString();
+    }
+
+    function showError(msg) {
+      loginError.textContent = msg;
+      loginError.classList.remove('hidden');
+    }
+
+    function hideError() {
+      loginError.classList.add('hidden');
+    }
+
+    function setLoginLoading(loading) {
+      loginBtn.disabled = loading;
+      loginBtnText.textContent = loading ? 'Looking up…' : 'View My License →';
+      loginSpinner.classList.toggle('hidden', !loading);
+    }
+
+    // ── Login / Lookup ─────────────────────────────────────────────────────
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideError();
+      const email = emailInput.value.trim();
+      if (!email) return;
+
+      setLoginLoading(true);
+      try {
+        const res = await fetch(`${CUSTOMER_PORTAL_FN}?email=${encodeURIComponent(email)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          showError(data.error || 'Something went wrong. Please try again.');
+          return;
+        }
+
+        currentData = data;
+        renderDashboard(data);
+        loginSection.classList.add('hidden');
+        dashboardSection.classList.remove('hidden');
+        window.scrollTo(0, 0);
+      } catch (err) {
+        showError('Unable to connect. Please check your connection and try again.');
+      } finally {
+        setLoginLoading(false);
+      }
+    });
+
+    // ── Render Dashboard ───────────────────────────────────────────────────
+    function renderDashboard(data) {
+      const { customer, license } = data;
+
+      // Account info
+      document.getElementById('dash-email-subtitle').textContent = customer.email;
+      document.getElementById('info-name').textContent  = customer.name || '—';
+      document.getElementById('info-email').textContent = customer.email;
+      document.getElementById('info-since').textContent = formatDate(customer.created_at);
+
+      // Plan details
+      const tierDisplay = license.tier.charAt(0).toUpperCase() + license.tier.slice(1);
+      document.getElementById('plan-tier').textContent = tierDisplay;
+      document.getElementById('plan-since').textContent = formatDate(license.created_at);
+
+      const statusBadge = document.getElementById('plan-status-badge');
+      statusBadge.textContent = license.status.charAt(0).toUpperCase() + license.status.slice(1);
+      statusBadge.className = 'text-xs font-semibold px-2.5 py-1 rounded-full';
+      if (license.status === 'active') {
+        statusBadge.classList.add('status-active');
+      } else if (license.status === 'cancelled') {
+        statusBadge.classList.add('status-cancelled');
+      } else {
+        statusBadge.classList.add('status-expired');
+      }
+
+      if (license.expires_at) {
+        document.getElementById('plan-expiry-row').classList.remove('hidden');
+        document.getElementById('plan-expiry').textContent = formatDate(license.expires_at);
+      }
+
+      // License key
+      renderLicenseKey(license.license_key, false);
+
+      // Quick start commands
+      document.getElementById('cmd-export').textContent     = `export AGENTSENTINEL_LICENSE_KEY="${license.license_key}"`;
+      document.getElementById('cmd-powershell').textContent = `$env:AGENTSENTINEL_LICENSE_KEY = "${license.license_key}"`;
+
+      // Usage stats
+      const agentsLimit  = license.agents_limit;
+      const eventsLimit  = license.events_limit;
+      // We don't have current usage from this endpoint — show 0/limit as a baseline
+      document.getElementById('agents-label').textContent = `0 / ${fmtNumber(agentsLimit)}`;
+      document.getElementById('events-label').textContent = `0 / ${fmtNumber(eventsLimit)}`;
+      document.getElementById('agents-bar').style.width = agentsLimit >= 999999 ? '100%' : '0%';
+      document.getElementById('events-bar').style.width = eventsLimit >= 999999999 ? '100%' : '0%';
+      if (agentsLimit >= 999999) {
+        document.getElementById('agents-bar').style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+      }
+      if (eventsLimit >= 999999999) {
+        document.getElementById('events-bar').style.background = 'linear-gradient(90deg, #10b981, #34d399)';
+      }
+
+      // Feature access
+      const tier = license.tier;
+      const dashEnabled  = tier !== 'free';
+      const intEnabled   = tier !== 'free';
+      const multiEnabled = ['team', 'enterprise'].includes(tier);
+
+      setFeature('dashboard',   dashEnabled);
+      setFeature('integrations', intEnabled);
+      setFeature('multiagent',  multiEnabled);
+
+      // Manage subscription button
+      const manageBtn = document.getElementById('manage-sub-btn');
+      if (data.stripe_customer_id) {
+        manageBtn.disabled = false;
+        manageBtn.addEventListener('click', handleManageSubscription);
+      } else {
+        manageBtn.disabled = true;
+      }
+    }
+
+    function setFeature(name, enabled) {
+      document.getElementById(`feat-${name}-icon`).textContent  = enabled ? '✅' : '❌';
+      document.getElementById(`feat-${name}-label`).textContent = enabled ? 'Included' : 'Not available';
+    }
+
+    function renderLicenseKey(key, revealed) {
+      document.getElementById('license-key-display').textContent = revealed ? key : maskKey(key);
+    }
+
+    // ── Reveal toggle ──────────────────────────────────────────────────────
+    document.getElementById('reveal-btn').addEventListener('click', () => {
+      if (!currentData) return;
+      licenseRevealed = !licenseRevealed;
+      renderLicenseKey(currentData.license.license_key, licenseRevealed);
+      document.getElementById('reveal-btn').textContent = licenseRevealed ? '🙈 Hide' : '👁 Reveal';
+    });
+
+    // ── Copy license key ───────────────────────────────────────────────────
+    document.getElementById('copy-key-btn').addEventListener('click', () => {
+      if (!currentData) return;
+      navigator.clipboard.writeText(currentData.license.license_key).then(() => {
+        const btn = document.getElementById('copy-key-btn');
+        btn.textContent = '✅ Copied!';
+        btn.classList.add('copied');
+        setTimeout(() => { btn.textContent = '📋 Copy'; btn.classList.remove('copied'); }, 2000);
+      });
+    });
+
+    // ── Copy command helper ────────────────────────────────────────────────
+    function copyCommand(elemId, btn) {
+      const text = document.getElementById(elemId).textContent;
+      navigator.clipboard.writeText(text).then(() => {
+        btn.innerHTML = '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
+        setTimeout(() => {
+          btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
+        }, 2000);
+      });
+    }
+
+    // ── Manage Subscription ────────────────────────────────────────────────
+    async function handleManageSubscription() {
+      const manageBtn = document.getElementById('manage-sub-btn');
+      const original  = manageBtn.innerHTML;
+      manageBtn.disabled = true;
+      manageBtn.innerHTML = '<div class="spinner mx-auto"></div>';
+
+      try {
+        const res = await fetch(BILLING_SESSION_FN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ stripe_customer_id: currentData.stripe_customer_id }),
+        });
+        const data = await res.json();
+        if (res.ok && data.url) {
+          window.location.href = data.url;
+        } else {
+          alert('Unable to open billing portal. Please contact contact@agentsentinel.net');
+          manageBtn.disabled = false;
+          manageBtn.innerHTML = original;
+        }
+      } catch {
+        alert('Unable to connect. Please try again.');
+        manageBtn.disabled = false;
+        manageBtn.innerHTML = original;
+      }
+    }
+
+    // ── Sign out ───────────────────────────────────────────────────────────
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      currentData = null;
+      licenseRevealed = false;
+      emailInput.value = '';
+      hideError();
+      dashboardSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+      window.scrollTo(0, 0);
+    });
+  </script>
+</body>
+</html>
