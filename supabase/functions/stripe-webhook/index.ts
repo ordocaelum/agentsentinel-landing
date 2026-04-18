@@ -121,7 +121,7 @@ async function sendLicenseEmail(
 <body>
   <div class="container">
     <div class="header">
-      <h1 style="margin: 0;">🛡️ AgentSentinel</h1>
+      <h1 style="margin: 0;">AgentSentinel™</h1>
       <p style="margin: 10px 0 0 0; opacity: 0.9;">Payment Successful!</p>
     </div>
 

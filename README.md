@@ -1,4 +1,4 @@
-# 🛡️ AgentSentinel
+# AgentSentinel™
 
 [![PyPI version](https://badge.fury.io/py/agentsentinel.svg)](https://pypi.org/project/agentsentinel/)
 [![npm version](https://badge.fury.io/js/@agentsentinel%2Fsdk.svg)](https://www.npmjs.com/package/@agentsentinel/sdk)
