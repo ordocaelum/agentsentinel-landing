@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agentsentinel-sdk"
+name = "agentsentinel-core"
 version = "1.2.0"
 description = "Safety controls for AI agents — budgets, approvals, rate limits, and audit logs"
 readme = "README.md"
