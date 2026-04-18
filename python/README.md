@@ -2,13 +2,13 @@
 
 **Safety controls for AI agents** — budgets, approvals, rate limits, audit logs, and DLP.
 
-[![PyPI version](https://badge.fury.io/py/agentsentinel.svg)](https://pypi.org/project/agentsentinel/)
+[![PyPI version](https://badge.fury.io/py/agentsentinel-core.svg)](https://pypi.org/project/agentsentinel-core/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
 ## Installation
 
 ```bash
-pip install agentsentinel
+pip install agentsentinel-core
 ```
 
 ## Quick Start

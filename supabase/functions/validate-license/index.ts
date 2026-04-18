@@ -29,7 +29,7 @@ serve(async (req) => {
     // Accept both legacy `as_<tier>_*` keys and new HMAC-signed `asv1_*` keys.
     // Both formats are stored as plain strings in the licenses table, so a
     // simple equality lookup handles both without any format-specific logic here.
-    const isLegacyFormat = /^as_(pro|team|enterprise|free)_/.test(license_key);
+    const isLegacyFormat = /^as_(pro|pro_team|starter|enterprise)_/.test(license_key);
     const isSignedFormat = license_key.startsWith("asv1_");
     if (!isLegacyFormat && !isSignedFormat) {
       return new Response(
@@ -97,14 +97,14 @@ serve(async (req) => {
           max_events_per_month: license.events_limit,
         },
         features: {
-          dashboard_enabled: license.tier !== "free",
-          integrations_enabled: license.tier !== "free",
-          multi_agent_enabled: ["team", "enterprise"].includes(license.tier),
-          policy_editor: license.tier === "free"
-            ? "none"
-            : license.tier === "pro"
+          dashboard_enabled: true,
+          integrations_enabled: license.tier !== "starter",
+          multi_agent_enabled: ["pro_team", "enterprise"].includes(license.tier),
+          policy_editor: ["pro_team", "enterprise"].includes(license.tier)
+            ? "full"
+            : ["starter", "pro"].includes(license.tier)
             ? "basic"
-            : "full",
+            : "basic",
         },
       }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },

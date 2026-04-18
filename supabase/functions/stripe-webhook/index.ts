@@ -19,12 +19,14 @@ const PRICE_TO_TIER: Record<string, string> = {};
 
 // Load price-to-tier mappings from environment
 // Set these as Supabase secrets:
+//   supabase secrets set STRIPE_PRICE_STARTER=price_xxxxx
 //   supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
-//   supabase secrets set STRIPE_PRICE_TEAM=price_xxxxx
+//   supabase secrets set STRIPE_PRICE_PRO_TEAM=price_xxxxx
 //   supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
 const priceEnvMappings = [
+  { env: "STRIPE_PRICE_STARTER", tier: "starter" },
   { env: "STRIPE_PRICE_PRO", tier: "pro" },
-  { env: "STRIPE_PRICE_TEAM", tier: "team" },
+  { env: "STRIPE_PRICE_PRO_TEAM", tier: "pro_team" },
   { env: "STRIPE_PRICE_ENTERPRISE", tier: "enterprise" },
 ];
 for (const { env, tier } of priceEnvMappings) {
@@ -34,9 +36,9 @@ for (const { env, tier } of priceEnvMappings) {
 
 // Tier limits
 const TIER_LIMITS: Record<string, { agents: number; events: number }> = {
-  free: { agents: 1, events: 1000 },
+  starter: { agents: 1, events: 1000 },
   pro: { agents: 5, events: 50000 },
-  team: { agents: 20, events: 500000 },
+  pro_team: { agents: 5, events: 50000 },
   enterprise: { agents: 999999, events: 999999999 },
 };
 
@@ -95,8 +97,8 @@ async function sendLicenseEmail(
   licenseKey: string,
   tier: string,
 ): Promise<void> {
-  const limits = TIER_LIMITS[tier] || TIER_LIMITS.free;
-  const tierDisplay = tier.charAt(0).toUpperCase() + tier.slice(1);
+  const limits = TIER_LIMITS[tier] || TIER_LIMITS.starter;
+  const tierDisplay = tier === "pro_team" ? "Pro Team" : tier.charAt(0).toUpperCase() + tier.slice(1);
 
   const emailHtml = `
 <!DOCTYPE html>
@@ -148,7 +150,7 @@ async function sendLicenseEmail(
         <div class="step">
           <span class="step-number">2</span>
           <strong>Install the SDK:</strong><br>
-          <code>pip install agentsentinel</code> or <code>npm install @agentsentinel/sdk</code>
+          <code>pip install agentsentinel-core</code> or <code>npm install @agentsentinel/sdk</code>
         </div>
 
         <div class="step">
@@ -169,7 +171,7 @@ async function sendLicenseEmail(
         <div class="plan-row"><span>Events/month</span><strong>${limits.events === 999999999 ? "Unlimited" : limits.events.toLocaleString()}</strong></div>
         <div class="plan-row"><span>Dashboard</span><strong>✅ Included</strong></div>
         <div class="plan-row"><span>Integrations</span><strong>✅ All included</strong></div>
-        <div class="plan-row" style="border: none;"><span>Support</span><strong>${tier === "enterprise" ? "Dedicated" : tier === "team" ? "Priority" : "Email"}</strong></div>
+        <div class="plan-row" style="border: none;"><span>Support</span><strong>${tier === "enterprise" ? "Dedicated" : tier === "pro_team" ? "Priority" : "Email"}</strong></div>
       </div>
 
       <p style="margin-top: 30px;">
@@ -216,6 +218,80 @@ async function sendLicenseEmail(
   }
 
   console.log(`✅ License email sent to ${email}`);
+}
+
+// Send Pro intro-pricing reminder email via Resend
+async function sendProPriceChangeReminder(
+  email: string,
+  name: string | null,
+  monthNumber: number,
+  nextChargeDate: string,
+): Promise<void> {
+  const isLastMonth = monthNumber >= 3;
+  const subject = isLastMonth
+    ? "⚠️ Last month at $9.99 — your Pro plan renews at $49/mo next cycle"
+    : "📅 Heads up: your AgentSentinel Pro intro pricing ends next month";
+
+  const bodyMessage = isLastMonth
+    ? `This is your <strong>last month at $9.99/mo</strong>. Your next charge on <strong>${nextChargeDate}</strong> will be <strong>$49/mo</strong> — the standard Pro rate.`
+    : `Your intro pricing of <strong>$9.99/mo</strong> ends next month. Starting <strong>${nextChargeDate}</strong>, your plan will renew at <strong>$49/mo</strong>.`;
+
+  const emailHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+    .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; }
+    .notice-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin: 20px 0; }
+    .footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0;">AgentSentinel™</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">Pricing Update Notice</p>
+    </div>
+    <div class="content">
+      <p>Hi ${name || "there"},</p>
+      <div class="notice-box">
+        <p style="margin: 0;">${bodyMessage}</p>
+      </div>
+      <p>No action is needed — your subscription will continue uninterrupted. If you have any questions, reply to this email or contact us at <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>.</p>
+      <p>Thank you for being an AgentSentinel Pro subscriber!</p>
+    </div>
+    <div class="footer">
+      <p>— Leland, Founder of AgentSentinel™</p>
+    </div>
+  </div>
+</body>
+</html>
+  `;
+
+  const response = await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${RESEND_API_KEY}`,
+    },
+    body: JSON.stringify({
+      from: "AgentSentinel <noreply@agentsentinel.net>",
+      to: [email],
+      subject,
+      html: emailHtml,
+    }),
+  });
+
+  if (!response.ok) {
+    const error = await response.text();
+    console.error("Failed to send price-change reminder email:", error);
+    throw new Error(`Failed to send price-change reminder email: ${error}`);
+  }
+
+  console.log(`✅ Pro price-change reminder (month ${monthNumber}) sent to ${email}`);
 }
 
 // Main webhook handler
@@ -342,6 +418,52 @@ serve(async (req) => {
       const invoice = event.data.object as Stripe.Invoice;
       console.log(`❌ Payment failed for customer: ${invoice.customer}`);
       // Could send a "payment failed" email here
+    }
+
+    // Handle invoice.upcoming — used for Pro intro pricing email reminders
+    if (event.type === "invoice.upcoming") {
+      const invoice = event.data.object as Stripe.Invoice;
+      const subscriptionId = invoice.subscription as string;
+
+      if (!subscriptionId) {
+        console.log("invoice.upcoming: no subscription ID, skipping");
+      } else {
+        // Look up the license to check tier and subscription start date
+        const { data: license } = await supabase
+          .from("licenses")
+          .select("tier, created_at, customers(email, name)")
+          .eq("stripe_subscription_id", subscriptionId)
+          .single();
+
+        if (license && license.tier === "pro") {
+          const createdAt = new Date(license.created_at);
+          const now = new Date();
+          // Calculate months elapsed, accounting for day-of-month so reminders aren't early
+          let monthsElapsed = (now.getFullYear() - createdAt.getFullYear()) * 12 +
+            (now.getMonth() - createdAt.getMonth());
+          if (now.getDate() < createdAt.getDate()) {
+            monthsElapsed -= 1;
+          }
+
+          // Send reminder at month 2 (one month before price change) and month 3 (last month at intro price)
+          if (monthsElapsed === 2 || monthsElapsed === 3) {
+            const customer = license.customers as { email: string; name: string | null } | null;
+            if (customer?.email) {
+              const nextPaymentTs = invoice.next_payment_attempt;
+              const nextChargeDate = nextPaymentTs
+                ? new Date(nextPaymentTs * 1000)
+                  .toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
+                : "your next billing date";
+              await sendProPriceChangeReminder(
+                customer.email,
+                customer.name ?? null,
+                monthsElapsed,
+                nextChargeDate,
+              );
+            }
+          }
+        }
+      }
     }
 
     return new Response(JSON.stringify({ received: true }), {
