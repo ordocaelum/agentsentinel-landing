@@ -1,15 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@13.0.0?target=deno";
-
-const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") as string, {
-  apiVersion: "2023-10-16",
-  httpClient: Stripe.createFetchHttpClient(),
-});
 
 // Pro Team price IDs — must be set as Supabase secrets:
 //   supabase secrets set STRIPE_PRICE_PRO_TEAM_BASE=<base_price_id>
 //   supabase secrets set STRIPE_PRICE_PRO_TEAM_SEAT=<per_seat_price_id>
 // See STRIPE_SETUP.md for the price IDs and full configuration instructions.
+const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 const PRICE_PRO_TEAM_BASE = Deno.env.get("STRIPE_PRICE_PRO_TEAM_BASE");
 const PRICE_PRO_TEAM_SEAT = Deno.env.get("STRIPE_PRICE_PRO_TEAM_SEAT");
 
@@ -55,6 +50,14 @@ serve(async (req) => {
       );
     }
 
+    if (!STRIPE_SECRET_KEY) {
+      console.error("STRIPE_SECRET_KEY is not set");
+      return new Response(
+        JSON.stringify({ error: "Checkout is not configured. Please contact support." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     if (!PRICE_PRO_TEAM_BASE || !PRICE_PRO_TEAM_SEAT) {
       console.error("STRIPE_PRICE_PRO_TEAM_BASE or STRIPE_PRICE_PRO_TEAM_SEAT is not set");
       return new Response(
@@ -65,28 +68,40 @@ serve(async (req) => {
 
     console.log(`🛒 Creating checkout session for ${seatCount} seat(s)`);
 
-    const session = await stripe.checkout.sessions.create({
-      payment_method_types: ["card"],
-      mode: "subscription",
-      line_items: [
-        {
-          // Base flat fee — always 1 unit
-          price: PRICE_PRO_TEAM_BASE,
-          quantity: 1,
-        },
-        {
-          // Per-seat add-on — quantity matches customer's selection
-          price: PRICE_PRO_TEAM_SEAT,
-          quantity: seatCount,
-        },
-      ],
-      metadata: {
-        tier: "pro_team",
-        seats: String(seatCount),
-      },
-      success_url: `${SITE_BASE_URL}/success.html`,
-      cancel_url: `${SITE_BASE_URL}/pricing-team.html`,
+    // Use raw Stripe HTTP API instead of the SDK to avoid Deno compatibility issues
+    // (stripe@13.0.0 triggers "Deno.core.runMicrotasks() is not supported" errors)
+    const checkoutData = new URLSearchParams({
+      "payment_method_types[0]": "card",
+      "line_items[0][price]": PRICE_PRO_TEAM_BASE,
+      "line_items[0][quantity]": "1",
+      "line_items[1][price]": PRICE_PRO_TEAM_SEAT,
+      "line_items[1][quantity]": String(seatCount),
+      "mode": "subscription",
+      "success_url": `${SITE_BASE_URL}/success.html`,
+      "cancel_url": `${SITE_BASE_URL}/pricing-team.html`,
+      "metadata[tier]": "pro_team",
+      "metadata[seats]": String(seatCount),
     });
+
+    const auth = btoa(`${STRIPE_SECRET_KEY}:`);
+    const stripeRes = await fetch("https://api.stripe.com/v1/checkout/sessions", {
+      method: "POST",
+      headers: {
+        "Authorization": `Basic ${auth}`,
+        "Content-Type": "application/x-www-form-urlencoded",
+      },
+      body: checkoutData.toString(),
+    });
+
+    const session = await stripeRes.json();
+
+    if (!stripeRes.ok) {
+      console.error("Stripe API error:", session);
+      return new Response(
+        JSON.stringify({ error: session?.error?.message || "Failed to create checkout session" }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
 
     console.log(`✅ Checkout session created: ${session.id}`);
 
@@ -97,7 +112,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("Checkout session error:", err);
     return new Response(
-      JSON.stringify({ error: "Failed to create checkout session" }),
+      JSON.stringify({ error: "Failed to create checkout session. Please try again." }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   }
