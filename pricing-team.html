@@ -393,11 +393,11 @@
 
         const data = await response.json();
 
-        if (!response.ok || !data.url) {
+        if (!response.ok || !data.checkoutUrl) {
           throw new Error(data.error || 'Unexpected error from checkout endpoint');
         }
 
-        window.location.href = data.url;
+        window.location.href = data.checkoutUrl;
       } catch (err) {
         console.error('Checkout error:', err);
         checkoutBtn.disabled    = false;

@@ -21,7 +21,7 @@ const corsHeaders = {
 
 // POST /functions/v1/checkout-team
 // Body:     { seats: number }
-// Response: { url: string }  — redirect customer to this Stripe Checkout URL
+// Response: { checkoutUrl: string }  — redirect customer to this Stripe Checkout URL
 //
 // Creates a Stripe Checkout Session (subscription mode) with two line items:
 //   1. Base flat fee (qty: 1)
@@ -63,6 +63,8 @@ serve(async (req) => {
       );
     }
 
+    console.log(`🛒 Creating checkout session for ${seatCount} seat(s)`);
+
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
       mode: "subscription",
@@ -80,14 +82,16 @@ serve(async (req) => {
       ],
       metadata: {
         tier: "pro_team",
-        seat_count: String(seatCount),
+        seats: String(seatCount),
       },
       success_url: `${SITE_BASE_URL}/success.html`,
       cancel_url: `${SITE_BASE_URL}/pricing-team.html`,
     });
 
+    console.log(`✅ Checkout session created: ${session.id}`);
+
     return new Response(
-      JSON.stringify({ url: session.url }),
+      JSON.stringify({ checkoutUrl: session.url }),
       { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } },
     );
   } catch (err) {

@@ -31,12 +31,15 @@ supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=your_secret
 supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
 supabase secrets set STRIPE_PRICE_TEAM=price_xxxxx
 supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
+supabase secrets set STRIPE_PRICE_PRO_TEAM_BASE=price_xxxxx
+supabase secrets set STRIPE_PRICE_PRO_TEAM_SEAT=price_xxxxx
 ```
 
 ### 6. Deploy Edge Functions
 ```bash
 supabase functions deploy stripe-webhook
 supabase functions deploy validate-license
+supabase functions deploy checkout-team
 ```
 
 ### 7. Get your webhook URL
@@ -56,6 +59,24 @@ https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/stripe-webhook
 5. Update: `supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_xxx`
 
 ## API Endpoints
+
+### Checkout — Pro Team (per-seat)
+```bash
+curl -X POST https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/checkout-team \
+  -H "Content-Type: application/json" \
+  -d '{"seats": 5}'
+```
+
+Response:
+```json
+{
+  "checkoutUrl": "https://checkout.stripe.com/c/pay/cs_live_..."
+}
+```
+
+Redirect the customer to `checkoutUrl` to complete payment. The session includes:
+- Base price (`STRIPE_PRICE_PRO_TEAM_BASE`) × 1
+- Per-seat price (`STRIPE_PRICE_PRO_TEAM_SEAT`) × seats
 
 ### Validate License
 ```bash
@@ -98,4 +119,5 @@ Response:
 | `migrations/001_initial_schema.sql` | Database tables, indexes, RLS policies, helper functions |
 | `functions/stripe-webhook/index.ts` | Handle Stripe webhook events (checkout, cancellation, payment failure) |
 | `functions/validate-license/index.ts` | License validation API used by the SDK |
+| `functions/checkout-team/index.ts` | Create Stripe Checkout Session for Pro Team per-seat subscriptions |
 | `.env.example` | Environment variables template |
