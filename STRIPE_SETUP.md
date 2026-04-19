@@ -12,11 +12,11 @@ Browser (pricing-team.html)
   └─ POST { seats } ──────────────────────────────────────────────►
                           Supabase Edge Function: checkout-team
                           (supabase/functions/checkout-team/index.ts)
-                            └─ stripe.checkout.sessions.create()
+                            └─ fetch("https://api.stripe.com/v1/checkout/sessions")
                                  line_items:
                                    [{ price: BASE,  qty: 1     },
                                     { price: SEAT,  qty: seats }]
-                          ◄── { url: session.url } ───────────────
+                          ◄── { checkoutUrl: session.url } ───────
   └─ window.location.href = url
          │
          ▼
@@ -146,21 +146,34 @@ Content-Type: application/json
 
 **Response:**
 ```json
-{ "url": "https://checkout.stripe.com/c/pay/..." }
+{ "checkoutUrl": "https://checkout.stripe.com/c/pay/..." }
 ```
 
-**Stripe session created:**
-```javascript
-stripe.checkout.sessions.create({
-  payment_method_types: ['card'],
-  mode: 'subscription',
-  line_items: [
-    { price: process.env.STRIPE_PRICE_PRO_TEAM_BASE, quantity: 1 },      // $49 base
-    { price: process.env.STRIPE_PRICE_PRO_TEAM_SEAT, quantity: seats },   // $29/seat
-  ],
-  metadata: { tier: 'pro_team', seat_count: String(seats) },
-  success_url: 'https://agentsentinel.net/success.html',
-  cancel_url:  'https://agentsentinel.net/pricing-team.html',
+**Stripe session created via raw HTTP (no SDK — Deno-compatible):**
+```typescript
+// Uses native fetch + Basic auth instead of the Stripe SDK to avoid
+// "Deno.core.runMicrotasks() is not supported" errors in Supabase Edge Functions.
+const checkoutData = new URLSearchParams({
+  'payment_method_types[0]': 'card',
+  'line_items[0][price]': PRICE_PRO_TEAM_BASE,   // $49 base
+  'line_items[0][quantity]': '1',
+  'line_items[1][price]': PRICE_PRO_TEAM_SEAT,   // $29/seat
+  'line_items[1][quantity]': String(seats),
+  'mode': 'subscription',
+  'success_url': 'https://agentsentinel.net/success.html',
+  'cancel_url':  'https://agentsentinel.net/pricing-team.html',
+  'metadata[tier]': 'pro_team',
+  'metadata[seats]': String(seats),
+});
+
+const auth = btoa(`${STRIPE_SECRET_KEY}:`);
+const response = await fetch('https://api.stripe.com/v1/checkout/sessions', {
+  method: 'POST',
+  headers: {
+    'Authorization': `Basic ${auth}`,
+    'Content-Type': 'application/x-www-form-urlencoded',
+  },
+  body: checkoutData.toString(),
 });
 ```
 
