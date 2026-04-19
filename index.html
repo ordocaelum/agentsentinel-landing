@@ -776,9 +776,9 @@
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Basic policy controls</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Email support</li>
           </ul>
-          <!-- TODO: Replace with new Stripe checkout link -->
-          <a href="#" class="block text-center border border-emerald-700 hover:border-emerald-500 hover:bg-emerald-900/30 text-emerald-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
-            Start Free Trial
+          <!-- Starter plan: links to Stripe checkout for $7.99/mo subscription -->
+          <a href="https://buy.stripe.com/5kQ7sL2vT2ysaAt7aKcjS03" class="block text-center border border-emerald-700 hover:border-emerald-500 hover:bg-emerald-900/30 text-emerald-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
+            Get Started
           </a>
         </div>
 
@@ -789,10 +789,10 @@
           </div>
           <h3 class="text-lg font-semibold text-sky-400 mb-2 mt-2">Pro</h3>
           <div class="mb-1">
-            <span class="text-4xl font-bold text-white">$9.99</span>
+            <span class="text-4xl font-bold text-white">$39</span>
             <span class="text-slate-500">/mo</span>
           </div>
-          <p class="text-slate-500 text-xs mb-6">for first 3 months, then $49/mo</p>
+          <p class="text-slate-500 text-xs mb-6">flat monthly rate</p>
           <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 5 agents</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 50,000 events/month</li>
@@ -801,13 +801,37 @@
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Policy editor</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Email support</li>
           </ul>
-          <!-- TODO: Replace with new Stripe checkout link -->
-          <a href="#" class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-900/30">
-            Start Free Trial
+          <!-- Pro plan: links to Stripe checkout for $39/mo flat subscription -->
+          <a href="https://buy.stripe.com/00wdR90nL3Cw7oh9iScjS06" class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-900/30">
+            Get Started
           </a>
         </div>
 
         <!-- Pro Team Tier -->
+        <!--
+          STRIPE PER-SEAT SETUP (Option A: base product + per-seat line item)
+          ─────────────────────────────────────────────────────────────────────
+          Step 1: In the Stripe Dashboard (https://dashboard.stripe.com/products),
+                  create TWO products:
+                    a) "Pro Team Base" – Recurring, $49/month  → note the Price ID (price_BASE_xxxx)
+                    b) "Pro Team Seat" – Recurring, $29/month per seat → note the Price ID (price_SEAT_xxxx)
+
+          Step 2: When the customer submits pricing-team.html, your backend
+                  creates a Stripe Checkout Session with both line items:
+                    line_items: [
+                      { price: 'price_BASE_xxxx', quantity: 1 },
+                      { price: 'price_SEAT_xxxx', quantity: <selected_seat_count> }
+                    ]
+
+          Step 3: To update seats later, use stripe.subscriptions.update() to
+                  change the quantity on the per-seat item only.
+
+          Step 4: Listen for "customer.subscription.updated" webhooks to sync
+                  seat count with your application database.
+
+          The "Get Started" button below redirects to /pricing-team.html where
+          customers choose their initial seat count before proceeding to checkout.
+        -->
         <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
           <h3 class="text-lg font-semibold text-violet-400 mb-2">Pro Team</h3>
           <div class="mb-1">
@@ -823,9 +847,11 @@
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Per-seat scaling</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Priority support</li>
           </ul>
-          <!-- TODO: Replace with new Stripe checkout link -->
-          <a href="#" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
-            Start Free Trial
+          <!-- Pro Team: redirects to seat customization form before Stripe checkout.
+               Backend integration required to create a Checkout Session with
+               base ($49) + per-seat ($29 × quantity) line items. -->
+          <a href="/pricing-team.html" class="block text-center border border-violet-700 hover:border-violet-500 hover:bg-violet-900/30 text-violet-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
+            Get Started
           </a>
         </div>
 

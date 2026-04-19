@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pro Team Plan – Customize Your Seats | AgentSentinel</title>
+  <meta name="description" content="Choose how many team members you need. AgentSentinel Pro Team starts at $49/mo base + $29 per seat." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+        },
+      },
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    .hero-bg {
+      background-color: #050d1a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.2) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(139,92,246,0.1) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.15' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    /* Slider styling */
+    input[type="range"] {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 100%;
+      height: 6px;
+      border-radius: 9999px;
+      background: #334155;
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      border: 2px solid #c4b5fd;
+      cursor: pointer;
+      box-shadow: 0 0 0 4px rgba(139,92,246,0.2);
+      transition: box-shadow 0.15s;
+    }
+    input[type="range"]::-webkit-slider-thumb:hover {
+      box-shadow: 0 0 0 6px rgba(139,92,246,0.3);
+    }
+    input[type="range"]::-moz-range-thumb {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #8b5cf6;
+      border: 2px solid #c4b5fd;
+      cursor: pointer;
+    }
+
+    .card-glass {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(139, 92, 246, 0.25);
+      backdrop-filter: blur(12px);
+    }
+  </style>
+</head>
+<body class="bg-slate-950 text-white antialiased">
+
+  <!-- ══════ NAV ══════ -->
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-4">
+      <a href="/index.html" class="flex items-center gap-2.5 shrink-0">
+        <svg class="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 6v6c0 4.4 3.4 8.2 8 9.9 4.6-1.7 8-5.5 8-9.9V6L12 2z" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="7.5" y1="12" x2="16.5" y2="12" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+          <line x1="9.5" y1="10" x2="9.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/>
+          <line x1="14.5" y1="10" x2="14.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.3" fill="#38bdf8"/>
+          <circle cx="7.5" cy="12" r="0.9" fill="#6366f1"/>
+          <circle cx="16.5" cy="12" r="0.9" fill="#6366f1"/>
+          <circle cx="9.5" cy="12" r="0.7" fill="#38bdf8"/>
+          <circle cx="14.5" cy="12" r="0.7" fill="#38bdf8"/>
+        </svg>
+        <span class="text-lg font-bold tracking-tight text-white">AgentSentinel™</span>
+      </a>
+      <div class="hidden lg:flex items-center gap-6 text-slate-400 text-sm font-medium">
+        <a href="/index.html#features" class="hover:text-white transition-colors">Features</a>
+        <a href="/index.html#security" class="hover:text-white transition-colors">Security</a>
+        <a href="/index.html#how-it-works" class="hover:text-white transition-colors">SDK</a>
+        <a href="/index.html#pricing" class="hover:text-white transition-colors">Pricing</a>
+        <a href="/index.html#faq" class="hover:text-white transition-colors">FAQ</a>
+        <a href="/docs.html" class="hover:text-white transition-colors">Docs</a>
+        <a href="/getting-started.html" class="hover:text-white transition-colors">Getting Started</a>
+        <a href="/portal.html" class="hover:text-white transition-colors">Portal</a>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">GitHub</a>
+        <a href="/index.html#pricing" class="border border-slate-600 hover:border-slate-400 text-slate-300 hover:text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors">← Back to Pricing</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ══════ HERO ══════ -->
+  <div class="hero-bg py-16 px-6 text-center">
+    <div class="max-w-2xl mx-auto">
+      <div class="inline-flex items-center gap-2 border border-violet-700/60 bg-violet-950/50 text-violet-300 text-xs font-semibold px-4 py-2 rounded-full tracking-wide mb-6">
+        🟣 Pro Team Plan
+      </div>
+      <h1 class="text-4xl md:text-5xl font-black tracking-tight mb-4">
+        Build your team,<br />
+        <span class="text-violet-400">pay for what you use</span>
+      </h1>
+      <p class="text-slate-400 text-lg max-w-xl mx-auto">
+        Start with a $49/mo base and add team members at $29/seat. Customize your team size below, then proceed to checkout.
+      </p>
+    </div>
+  </div>
+
+  <!-- ══════ SEAT CUSTOMIZER ══════ -->
+  <main class="max-w-3xl mx-auto px-6 py-14">
+
+    <div class="card-glass rounded-2xl p-8 md:p-10 mb-8">
+
+      <!-- Seat count selector -->
+      <div class="mb-10">
+        <div class="flex items-center justify-between mb-4">
+          <label for="seat-slider" class="text-base font-semibold text-white">
+            Number of team members
+          </label>
+          <div class="flex items-center gap-2">
+            <button
+              id="btn-decrease"
+              aria-label="Decrease seat count"
+              class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-500 text-slate-300 hover:text-white text-lg font-bold transition-colors flex items-center justify-center"
+              onclick="adjustSeats(-1)"
+            >−</button>
+            <input
+              id="seat-input"
+              type="number"
+              min="1"
+              max="100"
+              value="5"
+              aria-label="Number of seats"
+              class="w-16 text-center bg-slate-800 border border-slate-700 focus:border-violet-500 text-white font-bold text-lg rounded-lg py-1 outline-none transition-colors"
+              oninput="syncFromInput(this.value)"
+            />
+            <button
+              id="btn-increase"
+              aria-label="Increase seat count"
+              class="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:border-violet-500 text-slate-300 hover:text-white text-lg font-bold transition-colors flex items-center justify-center"
+              onclick="adjustSeats(1)"
+            >+</button>
+          </div>
+        </div>
+
+        <input
+          id="seat-slider"
+          type="range"
+          min="1"
+          max="50"
+          value="5"
+          aria-labelledby="seat-slider"
+          oninput="syncFromSlider(this.value)"
+        />
+
+        <div class="flex justify-between text-xs text-slate-500 mt-2 px-0.5">
+          <span>1 seat</span>
+          <span>50 seats</span>
+        </div>
+      </div>
+
+      <!-- Cost breakdown -->
+      <div class="bg-slate-900/60 border border-slate-700/60 rounded-xl p-6 mb-8">
+        <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-5">Cost Breakdown</h2>
+        <div class="space-y-3 text-sm">
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">Base plan fee</span>
+            <span class="text-white font-medium">$49.00 / mo</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-slate-400">
+              Per-seat fee
+              (<span id="display-seats">5</span> seats × $29)
+            </span>
+            <span class="text-white font-medium">$<span id="display-seat-cost">145.00</span> / mo</span>
+          </div>
+          <div class="border-t border-slate-700 pt-3 flex justify-between items-center">
+            <span class="font-semibold text-white">Total per month</span>
+            <span class="text-2xl font-black text-violet-400">$<span id="display-total">194.00</span></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- What's included -->
+      <div class="mb-8">
+        <h2 class="text-sm font-semibold text-slate-400 mb-4 uppercase tracking-widest text-xs">What each seat gets</h2>
+        <ul class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm text-slate-300">
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 5 AI agents per seat</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> 50,000 monitored events/seat/mo</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Full dashboard access</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> All integrations unlocked</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Policy editor + approval gates</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Team management console</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Shared audit log</li>
+          <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0 mt-0.5">✓</span> Priority email support</li>
+        </ul>
+      </div>
+
+      <!--
+        CHECKOUT BUTTON
+        ───────────────────────────────────────────────────────────────────
+        When backend integration is ready, this button should POST to your
+        server with the selected seat count. Your server then creates a
+        Stripe Checkout Session with two line items:
+
+          line_items: [
+            { price: 'price_BASE_xxxx',  quantity: 1 },           // $49 base
+            { price: 'price_SEAT_xxxx',  quantity: <seatCount> }  // $29 × seats
+          ],
+          mode: 'subscription'
+
+        Until the backend is in place, clicking this button shows an alert
+        with the configured seat count so you can verify the UI is working.
+        Replace the onclick handler below once your /api/checkout endpoint
+        is live.
+      -->
+      <button
+        id="checkout-btn"
+        onclick="proceedToCheckout()"
+        class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-4 rounded-xl text-base transition-colors shadow-lg shadow-violet-900/40"
+      >
+        Proceed to Checkout →
+      </button>
+
+      <p class="text-center text-slate-500 text-xs mt-4">
+        You can adjust your seat count at any time from the billing portal.
+        No long-term contracts — cancel or change your plan monthly.
+      </p>
+    </div>
+
+    <!-- FAQ / Notes -->
+    <div class="grid gap-4 sm:grid-cols-2">
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <h3 class="font-semibold text-sm mb-2">🔄 Can I change seats later?</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Yes. Seats can be added or removed at any time from the Stripe Billing Portal. Changes are prorated automatically.
+        </p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <h3 class="font-semibold text-sm mb-2">👥 What counts as a seat?</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Each seat represents one team member who has their own agent quota, dashboard access, and policy controls.
+        </p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <h3 class="font-semibold text-sm mb-2">💳 How does billing work?</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          You're billed monthly: $49 base + $29 per seat. Adding a seat mid-cycle is prorated to your next invoice date.
+        </p>
+      </div>
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-5">
+        <h3 class="font-semibold text-sm mb-2">🏢 Need more than 50 seats?</h3>
+        <p class="text-slate-400 text-sm leading-relaxed">
+          Contact us at <a href="mailto:contact@agentsentinel.net" class="text-violet-400 hover:text-violet-300 underline">contact@agentsentinel.net</a> for Enterprise pricing with volume discounts.
+        </p>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- ══════ FOOTER ══════ -->
+  <footer style="background-color:#03080f" class="border-t border-slate-800/60 py-16 px-6">
+    <div class="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+      <div class="col-span-2 md:col-span-1">
+        <div class="flex items-center gap-2 mb-4">
+          <svg class="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M12 2L4 6v6c0 4.4 3.4 8.2 8 9.9 4.6-1.7 8-5.5 8-9.9V6L12 2z" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+            <line x1="7.5" y1="12" x2="16.5" y2="12" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+            <line x1="9.5" y1="10" x2="9.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/>
+            <line x1="14.5" y1="10" x2="14.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/>
+            <circle cx="12" cy="12" r="1.3" fill="#38bdf8"/>
+            <circle cx="7.5" cy="12" r="0.9" fill="#6366f1"/>
+            <circle cx="16.5" cy="12" r="0.9" fill="#6366f1"/>
+            <circle cx="9.5" cy="12" r="0.7" fill="#38bdf8"/>
+            <circle cx="14.5" cy="12" r="0.7" fill="#38bdf8"/>
+          </svg>
+          <span class="text-base font-bold tracking-tight">AgentSentinel™</span>
+        </div>
+        <p class="text-slate-500 text-sm leading-relaxed mb-5">Safety controls and spend limits for AI agents. Prevent runaway costs before they start.</p>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Product</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="/index.html#features" class="hover:text-white transition-colors">Features</a></li>
+          <li><a href="/index.html#security" class="hover:text-white transition-colors">Security</a></li>
+          <li><a href="/index.html#pricing" class="hover:text-white transition-colors">Pricing</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Resources</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="/docs.html" class="hover:text-white transition-colors">Documentation</a></li>
+          <li><a href="/getting-started.html" class="hover:text-white transition-colors">Getting Started</a></li>
+          <li><a href="/security.html" class="hover:text-white transition-colors">Security Details</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white text-sm font-semibold mb-5">Company</h4>
+        <ul class="space-y-3 text-slate-500 text-sm">
+          <li><a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors">GitHub</a></li>
+          <li><a href="mailto:contact@agentsentinel.net" class="hover:text-white transition-colors">Support</a></li>
+          <li><a href="mailto:security@agentsentinel.net" class="hover:text-white transition-colors">Security</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="max-w-6xl mx-auto border-t border-slate-800/60 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-slate-600 text-sm">
+      <p>© 2025 AgentSentinel, Inc. All rights reserved.</p>
+      <p>Built for developers who ship AI agents to production.</p>
+    </div>
+  </footer>
+
+  <script>
+    const BASE_PRICE = 49;
+    const SEAT_PRICE = 29;
+
+    const slider    = document.getElementById('seat-slider');
+    const seatInput = document.getElementById('seat-input');
+    const dispSeats = document.getElementById('display-seats');
+    const dispSeatCost = document.getElementById('display-seat-cost');
+    const dispTotal = document.getElementById('display-total');
+
+    function clamp(val, min, max) {
+      return Math.min(Math.max(parseInt(val, 10) || min, min), max);
+    }
+
+    function updateDisplay(seats) {
+      const seatCost = seats * SEAT_PRICE;
+      const total    = BASE_PRICE + seatCost;
+      dispSeats.textContent    = seats;
+      dispSeatCost.textContent = seatCost.toFixed(2);
+      dispTotal.textContent    = total.toFixed(2);
+    }
+
+    function syncFromSlider(val) {
+      const seats = clamp(val, 1, 50);
+      seatInput.value = seats;
+      updateDisplay(seats);
+    }
+
+    function syncFromInput(val) {
+      const seats = clamp(val, 1, 100);
+      // Clamp slider to its own max (50); allow input to go beyond for large teams
+      slider.value = Math.min(seats, 50);
+      updateDisplay(seats);
+    }
+
+    function adjustSeats(delta) {
+      const current = parseInt(seatInput.value, 10) || 1;
+      const seats   = clamp(current + delta, 1, 100);
+      seatInput.value = seats;
+      slider.value    = Math.min(seats, 50);
+      updateDisplay(seats);
+    }
+
+    // Initialise display on load
+    updateDisplay(parseInt(seatInput.value, 10));
+
+    function proceedToCheckout() {
+      const seats = parseInt(seatInput.value, 10) || 1;
+      const total = BASE_PRICE + seats * SEAT_PRICE;
+
+      /*
+        TODO: Replace this alert with a POST request to your backend once the
+        Stripe Checkout integration is ready. Example:
+
+          fetch('/api/create-checkout-session', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ seats })
+          })
+          .then(r => r.json())
+          .then(data => window.location.href = data.url);
+
+        Your server should create a Stripe Checkout Session:
+          line_items: [
+            { price: 'price_BASE_xxxx',  quantity: 1 },
+            { price: 'price_SEAT_xxxx',  quantity: seats }
+          ],
+          mode: 'subscription',
+          success_url: 'https://agentsentinel.net/success.html',
+          cancel_url:  'https://agentsentinel.net/pricing-team.html'
+      */
+      alert(
+        `Pro Team checkout\n\n` +
+        `${seats} seat${seats !== 1 ? 's' : ''} selected\n` +
+        `Estimated total: $${total}/mo\n\n` +
+        `(Backend integration coming soon — please contact contact@agentsentinel.net to get set up.)`
+      );
+    }
+  </script>
+</body>
+</html>
