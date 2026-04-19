@@ -219,31 +219,15 @@
         </ul>
       </div>
 
-      <!--
-        CHECKOUT BUTTON
-        ───────────────────────────────────────────────────────────────────
-        When backend integration is ready, this button should POST to your
-        server with the selected seat count. Your server then creates a
-        Stripe Checkout Session with two line items:
-
-          line_items: [
-            { price: 'price_BASE_xxxx',  quantity: 1 },           // $49 base
-            { price: 'price_SEAT_xxxx',  quantity: <seatCount> }  // $29 × seats
-          ],
-          mode: 'subscription'
-
-        Until the backend is in place, clicking this button shows an alert
-        with the configured seat count so you can verify the UI is working.
-        Replace the onclick handler below once your /api/checkout endpoint
-        is live.
-      -->
       <button
         id="checkout-btn"
         onclick="proceedToCheckout()"
-        class="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold py-4 rounded-xl text-base transition-colors shadow-lg shadow-violet-900/40"
+        class="w-full bg-violet-600 hover:bg-violet-500 disabled:opacity-60 disabled:cursor-not-allowed text-white font-bold py-4 rounded-xl text-base transition-colors shadow-lg shadow-violet-900/40"
       >
         Proceed to Checkout →
       </button>
+
+      <p id="checkout-error" class="hidden text-center text-red-400 text-sm mt-3"></p>
 
       <p class="text-center text-slate-500 text-xs mt-4">
         You can adjust your seat count at any time from the billing portal.
@@ -378,37 +362,51 @@
     // Initialize display on load
     updateDisplay(parseInt(seatInput.value, 10));
 
-    function proceedToCheckout() {
+    // Supabase edge function that creates the Stripe Checkout Session.
+    // POST body:     { seats: number }
+    // Response:      { url: string }  — Stripe Checkout URL to redirect to
+    //
+    // The function creates a subscription session with two line items:
+    //   base flat fee (qty: 1) + per-seat add-on (qty: seats)
+    // See STRIPE_SETUP.md for price IDs and full configuration details.
+    //
+    // Update this URL to match your Supabase project if redeploying to a different project.
+    const CHECKOUT_ENDPOINT =
+      'https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/checkout-team';
+
+    async function proceedToCheckout() {
       const seats = parseInt(seatInput.value, 10) || 1;
-      const total = BASE_PRICE + seats * SEAT_PRICE;
+      const checkoutBtn = document.getElementById('checkout-btn');
+      const errorEl = document.getElementById('checkout-error');
 
-      /*
-        TODO: Replace this alert with a POST request to your backend once the
-        Stripe Checkout integration is ready. Example:
+      checkoutBtn.disabled    = true;
+      checkoutBtn.textContent = 'Redirecting to Stripe…';
+      errorEl.classList.add('hidden');
+      errorEl.textContent = '';
 
-          fetch('/api/create-checkout-session', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ seats })
-          })
-          .then(r => r.json())
-          .then(data => window.location.href = data.url);
+      try {
+        const response = await fetch(CHECKOUT_ENDPOINT, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ seats }),
+        });
 
-        Your server should create a Stripe Checkout Session:
-          line_items: [
-            { price: 'price_BASE_xxxx',  quantity: 1 },
-            { price: 'price_SEAT_xxxx',  quantity: seats }
-          ],
-          mode: 'subscription',
-          success_url: 'https://agentsentinel.net/success.html',
-          cancel_url:  'https://agentsentinel.net/pricing-team.html'
-      */
-      alert(
-        `Pro Team checkout\n\n` +
-        `${seats} seat${seats !== 1 ? 's' : ''} selected\n` +
-        `Estimated total: $${total}/mo\n\n` +
-        `(Backend integration coming soon — please contact contact@agentsentinel.net to get set up.)`
-      );
+        const data = await response.json();
+
+        if (!response.ok || !data.url) {
+          throw new Error(data.error || 'Unexpected error from checkout endpoint');
+        }
+
+        window.location.href = data.url;
+      } catch (err) {
+        console.error('Checkout error:', err);
+        checkoutBtn.disabled    = false;
+        checkoutBtn.textContent = 'Proceed to Checkout →';
+        errorEl.textContent =
+          'Something went wrong starting checkout. Please try again or contact ' +
+          'contact@agentsentinel.net for help.';
+        errorEl.classList.remove('hidden');
+      }
     }
   </script>
 </body>

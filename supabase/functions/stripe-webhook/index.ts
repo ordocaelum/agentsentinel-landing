@@ -21,8 +21,9 @@ const PRICE_TO_TIER: Record<string, string> = {};
 // Set these as Supabase secrets:
 //   supabase secrets set STRIPE_PRICE_STARTER=price_xxxxx
 //   supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
-//   supabase secrets set STRIPE_PRICE_PRO_TEAM=price_xxxxx
+//   supabase secrets set STRIPE_PRICE_PRO_TEAM=price_xxxxx  (base price ID)
 //   supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
+// See STRIPE_SETUP.md for the actual price IDs to use.
 const priceEnvMappings = [
   { env: "STRIPE_PRICE_STARTER", tier: "starter" },
   { env: "STRIPE_PRICE_PRO", tier: "pro" },
@@ -33,6 +34,11 @@ for (const { env, tier } of priceEnvMappings) {
   const priceId = Deno.env.get(env);
   if (priceId) PRICE_TO_TIER[priceId] = tier;
 }
+
+// Pro Team per-seat price ID used to extract seat count from subscription events.
+// Set STRIPE_PRICE_PRO_TEAM_SEAT as a Supabase secret.
+// See STRIPE_SETUP.md for the actual price ID to use.
+const PRICE_PRO_TEAM_SEAT = Deno.env.get("STRIPE_PRICE_PRO_TEAM_SEAT");
 
 // Tier limits
 const TIER_LIMITS: Record<string, { agents: number; events: number }> = {
@@ -462,6 +468,40 @@ serve(async (req) => {
               );
             }
           }
+        }
+      }
+    }
+
+    // Handle Pro Team seat sync on subscription create/update
+    // Webhook: customer.subscription.created + customer.subscription.updated
+    // These fire whenever a Pro Team subscription is first created or its
+    // seat quantity is changed (e.g. via the Stripe Billing Portal).
+    if (
+      PRICE_PRO_TEAM_SEAT &&
+      (event.type === "customer.subscription.created" ||
+        event.type === "customer.subscription.updated")
+    ) {
+      const subscription = event.data.object as Stripe.Subscription;
+
+      // Find the per-seat line item to extract the current seat count
+      const perSeatItem = subscription.items.data.find(
+        (item) => item.price.id === PRICE_PRO_TEAM_SEAT,
+      );
+
+      if (perSeatItem) {
+        const seatCount = perSeatItem.quantity ?? 0;
+
+        const { error: seatUpdateError } = await supabase
+          .from("licenses")
+          .update({ seat_count: seatCount })
+          .eq("stripe_subscription_id", subscription.id);
+
+        if (seatUpdateError) {
+          console.error("Error syncing seat count:", seatUpdateError);
+        } else {
+          console.log(
+            `✅ Pro Team seat count synced: ${seatCount} seat(s) for subscription ${subscription.id}`,
+          );
         }
       }
     }
