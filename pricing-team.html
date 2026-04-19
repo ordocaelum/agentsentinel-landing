@@ -137,7 +137,7 @@
       <!-- Seat count selector -->
       <div class="mb-10">
         <div class="flex items-center justify-between mb-4">
-          <label for="seat-slider" class="text-base font-semibold text-white">
+          <label id="seat-slider-label" for="seat-slider" class="text-base font-semibold text-white">
             Number of team members
           </label>
           <div class="flex items-center gap-2">
@@ -172,7 +172,7 @@
           min="1"
           max="50"
           value="5"
-          aria-labelledby="seat-slider"
+          aria-labelledby="seat-slider-label"
           oninput="syncFromSlider(this.value)"
         />
 
@@ -375,7 +375,7 @@
       updateDisplay(seats);
     }
 
-    // Initialise display on load
+    // Initialize display on load
     updateDisplay(parseInt(seatInput.value, 10));
 
     function proceedToCheckout() {
