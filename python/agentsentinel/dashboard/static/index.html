@@ -513,6 +513,11 @@
           <span id="theme-icon">🌙</span><span id="theme-label" class="hidden sm:inline">Dark</span>
         </button>
         <button onclick="showShortcutsModal()" class="btn btn-ghost" title="Shortcuts (?)">⌨️</button>
+        <!-- License tier badge (shown once a license is activated) -->
+        <div id="license-badge" style="display:none" class="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-800/50 border border-slate-700/60">
+          <span id="license-tier" class="text-xs font-bold text-blue-400">PRO</span>
+          <span id="license-agents" class="text-xs text-slate-400"></span>
+        </div>
         <button id="btn-settings-gear" onclick="window.agentTheme && window.agentTheme.openSettings()" class="btn btn-ghost" title="Settings (Cmd+,)" aria-label="Open settings">
           <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M14.4 5.6l-1.4 1.4M5.6 14.4l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           <span class="hidden sm:inline">Settings</span>
@@ -3408,5 +3413,7 @@ function updateMCStatusBar(){
 
 <!-- Theme Switcher (after DOM is loaded) -->
 <script src="./js/theme-switcher.js"></script>
+<!-- License Manager (after theme switcher) -->
+<script src="./js/license-manager.js"></script>
 </body>
 </html>

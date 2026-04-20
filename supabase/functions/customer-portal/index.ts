@@ -277,7 +277,7 @@ serve(async (req) => {
     const { data: license, error: licenseError } = await supabase
       .from("licenses")
       .select(
-        "license_key, tier, status, agents_limit, events_limit, created_at, expires_at, cancelled_at",
+        "license_key, tier, status, agents_limit, events_limit, created_at, expires_at, cancelled_at, promo_code_id, discount_type, discount_value, promo_codes(code)",
       )
       .eq("customer_id", customer.id)
       .order("created_at", { ascending: false })
@@ -319,6 +319,10 @@ serve(async (req) => {
           created_at: license.created_at,
           expires_at: license.expires_at,
           cancelled_at: license.cancelled_at,
+          promo_code_id: license.promo_code_id || null,
+          promo_code: (license.promo_codes as { code?: string } | null)?.code || null,
+          discount_type: license.discount_type || null,
+          discount_value: license.discount_value || 0,
         },
         // portal_token replaces stripe_customer_id in the browser.
         // Pass this to create-billing-session instead of the raw Stripe ID.
