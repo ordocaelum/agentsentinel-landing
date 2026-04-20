@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="dark" data-theme="mission-control">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,6 +7,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <!-- Theme system: load before page renders to avoid flash -->
+  <link rel="stylesheet" href="./css/theme-variables.css">
+  <link rel="stylesheet" href="./css/themes/mission-control.css">
+  <link rel="stylesheet" href="./css/themes/minimal-pro.css">
+  <link rel="stylesheet" href="./css/themes/cyberpunk.css">
+  <link rel="stylesheet" href="./css/themes/arctic.css">
+  <!-- Immediately apply saved theme to avoid flash of wrong theme -->
+  <script>
+    (function(){
+      var t = localStorage.getItem('agentsentinel-theme') || 'mission-control';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   <script>
@@ -500,6 +513,10 @@
           <span id="theme-icon">🌙</span><span id="theme-label" class="hidden sm:inline">Dark</span>
         </button>
         <button onclick="showShortcutsModal()" class="btn btn-ghost" title="Shortcuts (?)">⌨️</button>
+        <button id="btn-settings-gear" onclick="window.agentTheme && window.agentTheme.openSettings()" class="btn btn-ghost" title="Settings (Cmd+,)" aria-label="Open settings">
+          <svg width="16" height="16" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><circle cx="10" cy="10" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M10 2v2M10 16v2M2 10h2M16 10h2M4.2 4.2l1.4 1.4M14.4 14.4l1.4 1.4M14.4 5.6l-1.4 1.4M5.6 14.4l-1.4 1.4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          <span class="hidden sm:inline">Settings</span>
+        </button>
         <!-- Notification Bell -->
         <button onclick="openNotifDrawer()" class="btn btn-ghost relative" title="Notifications (N)" id="btn-notif-bell">
           🔔
@@ -555,21 +572,77 @@
 
 <main class="max-w-[1600px] mx-auto px-4 sm:px-6 py-6 space-y-6">
 
+<!-- ═══════════════════════════════════════════ MISSION CONTROL STATUS BAR ════ -->
+<section id="section-status-bar" aria-label="Mission Control Status Bar">
+  <div class="mc-status-bar">
+    <!-- Status indicator -->
+    <div class="mc-status-indicator">
+      <span id="mc-live-dot" class="mc-status-dot"></span>
+      <div>
+        <p id="mc-status-label" class="mc-status-label">RUNNING</p>
+        <p class="text-xs" style="color:var(--text-muted);margin-top:2px;font-size:.65rem">Agent Status</p>
+      </div>
+    </div>
+
+    <!-- Stat pills -->
+    <div class="flex flex-wrap gap-2">
+      <div class="mc-stat-pill">
+        <span class="label">Events</span>
+        <span id="mc-pill-events" class="value">—</span>
+      </div>
+      <div class="mc-stat-pill">
+        <span class="label">Spent</span>
+        <span id="mc-pill-cost" class="value">—</span>
+      </div>
+      <div class="mc-stat-pill">
+        <span class="label">Budget</span>
+        <span id="mc-pill-budget" class="value ok">—</span>
+      </div>
+      <div class="mc-stat-pill">
+        <span class="label">Success</span>
+        <span id="mc-pill-success" class="value ok">—</span>
+      </div>
+      <div class="mc-stat-pill">
+        <span class="label">Rate</span>
+        <span id="mc-pill-rate" class="value">—</span>
+        <span class="label">/min</span>
+      </div>
+    </div>
+
+    <!-- Heartbeat + last updated -->
+    <div style="display:flex;align-items:center;gap:10px;font-size:.7rem;color:var(--text-muted)">
+      <span style="display:flex;align-items:center;gap:5px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M2 12h4l3-8 4 16 3-8 2 0 2 0" stroke="var(--color-success)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <span id="mc-heartbeat-ts" style="font-variant-numeric:tabular-nums">LIVE</span>
+      </span>
+    </div>
+  </div>
+</section>
+
 <!-- ═════════════════════════════════════════════════ ① STAT CARDS ═════ -->
 <section id="section-stats">
   <div id="stats-grid" class="grid grid-cols-2 lg:grid-cols-4 gap-4">
 
     <!-- Total -->
-    <div id="card-total" class="card-glow glow-blue rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('total')">
+    <div id="card-total" class="card-glow mc-metric-card accent-blue rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('total')">
+      <div class="mc-card-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M3 10h14M3 6h14M3 14h8" stroke="#38bdf8" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
       <div class="flex items-start justify-between">
-        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Events</p>
+        <p class="mc-card-label">Total Events</p>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onclick="event.stopPropagation();copyValue('stat-total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">📋</button>
-          <button onclick="event.stopPropagation();togglePin('total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Pin">📌</button>
+          <button onclick="event.stopPropagation();copyValue('stat-total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Copy">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();togglePin('total')" class="btn btn-ghost py-0.5 px-1.5 text-xs" title="Pin">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M5.5 1.5l9 9-3.5 1-4-4 1-3.5zM1.5 14.5l4-4M9 3l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
-      <p id="stat-total" class="text-4xl font-bold text-white tabular-nums">—</p>
-      <p class="mt-1 text-xs text-slate-500">All tool invocations</p>
+      <p id="stat-total" class="mc-card-value tabular-nums">—</p>
+      <p class="mc-card-sub">All tool invocations</p>
       <canvas id="spark-total" class="mt-3 w-full" style="height:32px"></canvas>
       <div id="expand-total" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-400 space-y-1 slide-up">
         <p>Events/min: <span id="detail-events-min" class="text-white">—</span></p>
@@ -578,51 +651,74 @@
     </div>
 
     <!-- Allowed -->
-    <div id="card-allowed" class="card-glow glow-green rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('allowed')">
+    <div id="card-allowed" class="card-glow mc-metric-card accent-green rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('allowed')">
+      <div class="mc-card-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><path d="M4 10l5 5 7-8" stroke="#34d399" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
       <div class="flex items-start justify-between">
-        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Allowed</p>
+        <p class="mc-card-label">Allowed</p>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onclick="event.stopPropagation();copyValue('stat-allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
-          <button onclick="event.stopPropagation();togglePin('allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+          <button onclick="event.stopPropagation();copyValue('stat-allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();togglePin('allowed')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M5.5 1.5l9 9-3.5 1-4-4 1-3.5zM1.5 14.5l4-4M9 3l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
-      <p id="stat-allowed" class="text-4xl font-bold text-emerald-400 tabular-nums">—</p>
-      <p id="stat-allowed-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+      <p id="stat-allowed" class="mc-card-value tabular-nums">—</p>
+      <p id="stat-allowed-pct" class="mc-card-sub">0% of total</p>
       <canvas id="spark-allowed" class="mt-3 w-full" style="height:32px"></canvas>
     </div>
 
     <!-- Blocked -->
-    <div id="card-blocked" class="card-glow glow-red rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('blocked')">
+    <div id="card-blocked" class="card-glow mc-metric-card accent-red rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('blocked')">
+      <div class="mc-card-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="#f87171" stroke-width="1.8"/><path d="M7 7l6 6M13 7l-6 6" stroke="#f87171" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </div>
       <div class="flex items-start justify-between">
-        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Blocked</p>
+        <p class="mc-card-label">Blocked</p>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onclick="event.stopPropagation();copyValue('stat-blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
-          <button onclick="event.stopPropagation();togglePin('blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+          <button onclick="event.stopPropagation();copyValue('stat-blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();togglePin('blocked')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M5.5 1.5l9 9-3.5 1-4-4 1-3.5zM1.5 14.5l4-4M9 3l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
-      <p id="stat-blocked" class="text-4xl font-bold text-rose-400 tabular-nums">—</p>
-      <p id="stat-blocked-pct" class="mt-1 text-xs text-slate-500">0% of total</p>
+      <p id="stat-blocked" class="mc-card-value tabular-nums">—</p>
+      <p id="stat-blocked-pct" class="mc-card-sub">0% of total</p>
       <canvas id="spark-blocked" class="mt-3 w-full" style="height:32px"></canvas>
     </div>
 
     <!-- Cost -->
-    <div id="card-cost" class="card-glow glow-yellow rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('cost')">
+    <div id="card-cost" class="card-glow mc-metric-card accent-yellow rounded-2xl bg-slate-900 border border-slate-800 p-5 cursor-pointer relative group" onclick="expandCard('cost')">
+      <div class="mc-card-icon">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="10" cy="10" r="8" stroke="#fbbf24" stroke-width="1.8"/><path d="M10 6v1.5m0 5V14m-2-5.5h3a1 1 0 010 2h-2a1 1 0 000 2h3" stroke="#fbbf24" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </div>
       <div class="flex items-start justify-between">
-        <p class="text-xs font-medium uppercase tracking-widest text-slate-500 mb-1">Total Cost</p>
+        <p class="mc-card-label">Total Cost</p>
         <div class="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <button onclick="event.stopPropagation();copyValue('stat-cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📋</button>
-          <button onclick="event.stopPropagation();togglePin('cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">📌</button>
+          <button onclick="event.stopPropagation();copyValue('stat-cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><rect x="1" y="5" width="10" height="10" rx="1.5" stroke="currentColor" stroke-width="1.5"/><path d="M5 5V4a1 1 0 011-1h6a1 1 0 011 1v7a1 1 0 01-1 1h-1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+          </button>
+          <button onclick="event.stopPropagation();togglePin('cost')" class="btn btn-ghost py-0.5 px-1.5 text-xs">
+            <svg width="11" height="11" viewBox="0 0 16 16" fill="none"><path d="M5.5 1.5l9 9-3.5 1-4-4 1-3.5zM1.5 14.5l4-4M9 3l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </button>
         </div>
       </div>
-      <p id="stat-cost" class="text-4xl font-bold text-yellow-400 tabular-nums">—</p>
-      <p id="stat-budget" class="mt-1 text-xs text-slate-500">No budget set</p>
+      <p id="stat-cost" class="mc-card-value tabular-nums">—</p>
+      <p id="stat-budget" class="mc-card-sub">No budget set</p>
       <canvas id="spark-cost" class="mt-3 w-full" style="height:32px"></canvas>
       <div id="budget-gauge-row" class="hidden mt-3">
         <div class="flex justify-between text-xs text-slate-500 mb-1">
           <span>Budget Usage</span><span id="budget-pct-label">0%</span>
         </div>
-        <div class="h-2 rounded-full bg-slate-800 overflow-hidden">
-          <div id="budget-bar" class="h-full rounded-full bg-emerald-500 transition-all duration-500" style="width:0%"></div>
+        <div class="mc-budget-bar-wrap">
+          <div class="mc-budget-bar-track">
+            <div id="budget-bar" class="mc-budget-bar-fill" style="width:0%"></div>
+          </div>
         </div>
       </div>
       <div id="expand-cost" class="hidden mt-3 pt-3 border-t border-slate-800 text-xs text-slate-400 space-y-1 slide-up">
@@ -632,7 +728,10 @@
     </div>
   </div>
   <div class="mt-2 flex justify-end">
-    <button onclick="showAddMetricModal()" class="btn btn-ghost text-xs">➕ Add Custom Metric</button>
+    <button onclick="showAddMetricModal()" class="btn btn-ghost text-xs">
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 2v12M2 8h12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      Add Custom Metric
+    </button>
   </div>
 </section>
 
@@ -1223,6 +1322,7 @@
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Ctrl+S</kbd><span class="text-slate-400">Save policy</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">?</kbd><span class="text-slate-400">This dialog</span></div>
       <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Esc</kbd><span class="text-slate-400">Close modal</span></div>
+      <div class="flex items-center gap-3"><kbd class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-xs font-mono">Cmd+,</kbd><span class="text-slate-400">Open settings</span></div>
     </div>
   </div>
 </div>
@@ -3258,7 +3358,55 @@ window.doRefresh=async function(){
   await loadBudgetForecast();
   // Update budget controls if we have data
   if(STATE.lastData) updateBudgetControls(STATE.lastData);
+  updateMCStatusBar();
 };
+
+/* ─── Mission Control Status Bar updater ─────────────────────────────── */
+function updateMCStatusBar(){
+  const data=STATE.lastData||{};
+  const total=data.total_events||0;
+  const allowed=data.allowed||0;
+  const cost=data.total_cost||0;
+  const budget=STATE.budget||0;
+
+  const pillEvents=document.getElementById('mc-pill-events');
+  const pillCost=document.getElementById('mc-pill-cost');
+  const pillBudget=document.getElementById('mc-pill-budget');
+  const pillSuccess=document.getElementById('mc-pill-success');
+  const pillRate=document.getElementById('mc-pill-rate');
+  const heartbeat=document.getElementById('mc-heartbeat-ts');
+
+  if(pillEvents) pillEvents.textContent=total.toLocaleString();
+  if(pillCost) pillCost.textContent='$'+(cost||0).toFixed(4);
+  if(pillBudget && budget>0){
+    const pct=Math.round((cost/budget)*100);
+    pillBudget.textContent=pct+'%';
+    pillBudget.className='value '+(pct>=90?'danger':pct>=70?'warn':'ok');
+  }
+  if(pillSuccess && total>0){
+    const pct=Math.round((allowed/total)*100);
+    pillSuccess.textContent=pct+'%';
+    pillSuccess.className='value '+(pct<70?'danger':pct<90?'warn':'ok');
+  }
+  if(pillRate) pillRate.textContent=(data.events_per_min||0).toFixed(1);
+  if(heartbeat){
+    const now=new Date();
+    heartbeat.textContent=now.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  }
+
+  // Update MC status dot based on agent state
+  const dot=document.getElementById('mc-live-dot');
+  const label=document.getElementById('mc-status-label');
+  const agentStatus=STATE.agentStatus||'running';
+  if(dot&&label){
+    dot.className='mc-status-dot '+(agentStatus==='running'?'':'paused'==='paused'?'paused':'stopped');
+    label.className='mc-status-label '+(agentStatus==='running'?'':'paused');
+    label.textContent=agentStatus.toUpperCase();
+  }
+}
 </script>
+
+<!-- Theme Switcher (after DOM is loaded) -->
+<script src="./js/theme-switcher.js"></script>
 </body>
 </html>

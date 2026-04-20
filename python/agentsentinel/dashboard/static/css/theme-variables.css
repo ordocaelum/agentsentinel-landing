@@ -1,0 +1,227 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AgentSentinel Dashboard — Theme Variables
+   Extensible CSS custom properties system. Each theme overrides these vars.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ── Default (Mission Control) ─────────────────────────────────────────────── */
+:root {
+  /* Core palette */
+  --color-primary:   #0ea5e9;
+  --color-accent:    #06b6d4;
+  --color-success:   #10b981;
+  --color-warning:   #f59e0b;
+  --color-danger:    #ef4444;
+  --color-info:      #6366f1;
+
+  /* Backgrounds */
+  --bg-base:         #030712;
+  --bg-surface:      #0f172a;
+  --bg-card:         #1e293b;
+  --bg-hover:        #334155;
+
+  /* Text */
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #cbd5e1;
+  --text-muted:      #64748b;
+  --text-hint:       #475569;
+
+  /* Borders */
+  --border-color:    rgba(148, 163, 184, 0.1);
+  --border-active:   rgba(14, 165, 233, 0.4);
+
+  /* Gradients */
+  --gradient-brand:   linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --gradient-danger:  linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+
+  /* Glows */
+  --glow-primary: 0 0 40px rgba(14, 165, 233, 0.15);
+  --glow-success: 0 0 30px rgba(16, 185, 129, 0.2);
+  --glow-danger:  0 0 30px rgba(239, 68, 68, 0.2);
+
+  /* Card */
+  --card-bg:      linear-gradient(145deg, rgba(30,41,59,.8) 0%, rgba(15,23,42,.9) 100%);
+  --card-shadow:  0 4px 6px -1px rgba(0,0,0,.3), 0 2px 4px -2px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05);
+  --card-hover-shadow: 0 20px 40px -15px rgba(0,0,0,.5), 0 0 30px rgba(14,165,233,.1);
+  --card-hover-border: rgba(14, 165, 233, 0.3);
+  --card-radius:  16px;
+
+  /* Transitions */
+  --transition-speed:  0.3s;
+  --transition-ease:   cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Animations */
+  --animation-pulse:   glow-pulse 2s ease-in-out infinite;
+  --animation-heartbeat: heartbeat 1.4s ease-in-out infinite;
+}
+
+/* ── Mission Control ─────────────────────────────────────────────────────── */
+:root[data-theme="mission-control"],
+:root:not([data-theme]) {
+  --color-primary:   #0ea5e9;
+  --color-accent:    #06b6d4;
+  --color-success:   #10b981;
+  --color-warning:   #f59e0b;
+  --color-danger:    #ef4444;
+  --color-info:      #6366f1;
+
+  --bg-base:         #030712;
+  --bg-surface:      #0f172a;
+  --bg-card:         #1e293b;
+  --bg-hover:        #334155;
+
+  --text-primary:    #f1f5f9;
+  --text-secondary:  #cbd5e1;
+  --text-muted:      #64748b;
+  --text-hint:       #475569;
+
+  --border-color:    rgba(148, 163, 184, 0.1);
+  --border-active:   rgba(14, 165, 233, 0.4);
+
+  --gradient-brand:   linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%);
+  --gradient-success: linear-gradient(135deg, #10b981 0%, #34d399 100%);
+  --gradient-danger:  linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%);
+
+  --glow-primary: 0 0 40px rgba(14, 165, 233, 0.15);
+
+  --card-bg:      linear-gradient(145deg, rgba(30,41,59,.8) 0%, rgba(15,23,42,.9) 100%);
+  --card-shadow:  0 4px 6px -1px rgba(0,0,0,.3), 0 2px 4px -2px rgba(0,0,0,.2), inset 0 1px 0 rgba(255,255,255,.05);
+  --card-hover-shadow: 0 20px 40px -15px rgba(0,0,0,.5), 0 0 30px rgba(14,165,233,.1);
+  --card-hover-border: rgba(14, 165, 233, 0.3);
+
+  /* Header bar bottom glow color */
+  --header-glow-color: rgba(14, 165, 233, 0.5);
+
+  /* Sidebar/accent line */
+  --accent-line: linear-gradient(180deg, #0ea5e9, #6366f1);
+
+  /* Status colors */
+  --status-running-bg:    rgba(16, 185, 129, 0.1);
+  --status-running-border: rgba(16, 185, 129, 0.3);
+  --status-running-text:  #6ee7b7;
+  --status-paused-bg:     rgba(245, 158, 11, 0.1);
+  --status-paused-border: rgba(245, 158, 11, 0.3);
+  --status-paused-text:   #fcd34d;
+  --status-stopped-bg:    rgba(239, 68, 68, 0.1);
+  --status-stopped-border: rgba(239, 68, 68, 0.3);
+  --status-stopped-text:  #fca5a5;
+}
+
+/* ── Minimal Pro ─────────────────────────────────────────────────────────── */
+:root[data-theme="minimal-pro"] {
+  --color-primary:   #3b82f6;
+  --color-accent:    #60a5fa;
+  --color-success:   #22c55e;
+  --color-warning:   #eab308;
+  --color-danger:    #ef4444;
+  --color-info:      #8b5cf6;
+
+  --bg-base:         #09090b;
+  --bg-surface:      #18181b;
+  --bg-card:         #27272a;
+  --bg-hover:        #3f3f46;
+
+  --text-primary:    #fafafa;
+  --text-secondary:  #d4d4d8;
+  --text-muted:      #71717a;
+  --text-hint:       #52525b;
+
+  --border-color:    rgba(255, 255, 255, 0.08);
+  --border-active:   rgba(59, 130, 246, 0.5);
+
+  --gradient-brand:   linear-gradient(135deg, #3b82f6 0%, #8b5cf6 100%);
+  --gradient-success: linear-gradient(135deg, #22c55e 0%, #4ade80 100%);
+  --gradient-danger:  linear-gradient(135deg, #ef4444 0%, #f97316 100%);
+  --gradient-warning: linear-gradient(135deg, #eab308 0%, #facc15 100%);
+
+  --glow-primary: 0 0 30px rgba(59, 130, 246, 0.1);
+
+  --card-bg:      rgba(39, 39, 42, 0.9);
+  --card-shadow:  0 2px 8px rgba(0,0,0,.4);
+  --card-hover-shadow: 0 8px 24px rgba(0,0,0,.5);
+  --card-hover-border: rgba(59, 130, 246, 0.3);
+  --card-radius:  12px;
+
+  --header-glow-color: transparent;
+  --accent-line: linear-gradient(180deg, #3b82f6, #8b5cf6);
+}
+
+/* ── Cyberpunk ───────────────────────────────────────────────────────────── */
+:root[data-theme="cyberpunk"] {
+  --color-primary:   #f0e040;
+  --color-accent:    #ff2d78;
+  --color-success:   #39ff14;
+  --color-warning:   #ff6b00;
+  --color-danger:    #ff073a;
+  --color-info:      #00d4ff;
+
+  --bg-base:         #04000a;
+  --bg-surface:      #0a0010;
+  --bg-card:         #110020;
+  --bg-hover:        #1a0030;
+
+  --text-primary:    #f0e040;
+  --text-secondary:  #cc88ff;
+  --text-muted:      #884488;
+  --text-hint:       #553355;
+
+  --border-color:    rgba(240, 224, 64, 0.15);
+  --border-active:   rgba(240, 224, 64, 0.6);
+
+  --gradient-brand:   linear-gradient(135deg, #f0e040 0%, #ff2d78 100%);
+  --gradient-success: linear-gradient(135deg, #39ff14 0%, #00d4ff 100%);
+  --gradient-danger:  linear-gradient(135deg, #ff073a 0%, #ff6b00 100%);
+  --gradient-warning: linear-gradient(135deg, #ff6b00 0%, #f0e040 100%);
+
+  --glow-primary: 0 0 40px rgba(240, 224, 64, 0.2);
+
+  --card-bg:      linear-gradient(145deg, rgba(17,0,32,.9) 0%, rgba(4,0,10,.95) 100%);
+  --card-shadow:  0 4px 20px rgba(240,224,64,.1), inset 0 1px 0 rgba(240,224,64,.05);
+  --card-hover-shadow: 0 0 40px rgba(240,224,64,.2), 0 0 80px rgba(255,45,120,.1);
+  --card-hover-border: rgba(240, 224, 64, 0.5);
+  --card-radius:  4px;
+
+  --header-glow-color: rgba(240, 224, 64, 0.4);
+  --accent-line: linear-gradient(180deg, #f0e040, #ff2d78);
+}
+
+/* ── Arctic ──────────────────────────────────────────────────────────────── */
+:root[data-theme="arctic"] {
+  --color-primary:   #38bdf8;
+  --color-accent:    #7dd3fc;
+  --color-success:   #34d399;
+  --color-warning:   #fbbf24;
+  --color-danger:    #fb7185;
+  --color-info:      #a78bfa;
+
+  --bg-base:         #f0f9ff;
+  --bg-surface:      #ffffff;
+  --bg-card:         #ffffff;
+  --bg-hover:        #e0f2fe;
+
+  --text-primary:    #0c4a6e;
+  --text-secondary:  #075985;
+  --text-muted:      #7dd3fc;
+  --text-hint:       #bae6fd;
+
+  --border-color:    rgba(56, 189, 248, 0.2);
+  --border-active:   rgba(56, 189, 248, 0.6);
+
+  --gradient-brand:   linear-gradient(135deg, #38bdf8 0%, #a78bfa 100%);
+  --gradient-success: linear-gradient(135deg, #34d399 0%, #6ee7b7 100%);
+  --gradient-danger:  linear-gradient(135deg, #fb7185 0%, #fda4af 100%);
+  --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #fde68a 100%);
+
+  --glow-primary: 0 0 30px rgba(56, 189, 248, 0.15);
+
+  --card-bg:      rgba(255, 255, 255, 0.9);
+  --card-shadow:  0 2px 8px rgba(56, 189, 248, 0.1), 0 1px 2px rgba(0,0,0,.05);
+  --card-hover-shadow: 0 12px 40px rgba(56, 189, 248, 0.2);
+  --card-hover-border: rgba(56, 189, 248, 0.5);
+  --card-radius:  20px;
+
+  --header-glow-color: rgba(56, 189, 248, 0.3);
+  --accent-line: linear-gradient(180deg, #38bdf8, #a78bfa);
+}
