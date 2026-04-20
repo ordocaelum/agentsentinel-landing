@@ -178,9 +178,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     keygen_parser.add_argument(
         "--tier",
-        choices=["free", "pro", "team", "enterprise"],
+        choices=["free", "starter", "pro", "pro_team", "team", "enterprise"],
         default="pro",
-        help="License tier (default: pro)",
+        help="License tier: free, starter, pro, pro_team, team, enterprise (default: pro)",
     )
     keygen_parser.add_argument(
         "--days",
@@ -205,9 +205,9 @@ def build_parser() -> argparse.ArgumentParser:
     )
     dev_setup_parser.add_argument(
         "--tier",
-        choices=["free", "pro", "team", "enterprise"],
+        choices=["free", "starter", "pro", "pro_team", "team", "enterprise"],
         default="pro",
-        help="License tier to generate (default: pro)",
+        help="License tier to generate: free, starter, pro, pro_team, team, enterprise (default: pro)",
     )
     dev_setup_parser.set_defaults(func=_cmd_dev_setup)
 

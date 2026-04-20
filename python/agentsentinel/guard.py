@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import fnmatch
 import functools
+import threading
 import time
 import uuid
 import warnings
@@ -103,6 +104,9 @@ class AgentGuard:
 
         # Cost accumulators — reset on each new day/hour in a real system;
         # here we reset at construction time for simplicity.
+        # Guards concurrent access from multiple threads: Python's GIL does
+        # not make read-modify-write on floats atomic.
+        self._budget_lock = threading.Lock()
         self._daily_spent: float = 0.0
         self._hourly_spent: float = 0.0
         self._hourly_reset_at: float = time.time()
@@ -135,6 +139,7 @@ class AgentGuard:
     # ------------------------------------------------------------------
 
     def _reset_hourly_if_needed(self) -> None:
+        # Called while _budget_lock is held.
         if time.time() - self._hourly_reset_at >= 3600:
             self._hourly_spent = 0.0
             self._hourly_reset_at = time.time()
@@ -245,9 +250,23 @@ class AgentGuard:
                 invocation_cost = cost if cost is not None else self._estimate_cost(resolved_name, kwargs)
 
                 # --- Budget checks (pre-execution) ---
-                self._reset_hourly_if_needed()
+                # Use _budget_lock to make the read-check-update sequence
+                # atomic; otherwise two concurrent calls can both pass the
+                # check and jointly exceed the budget.
+                with self._budget_lock:
+                    self._reset_hourly_if_needed()
 
-                if self._hourly_spent + invocation_cost > self.policy.hourly_budget:
+                    if self._hourly_spent + invocation_cost > self.policy.hourly_budget:
+                        hourly_spent_snap = self._hourly_spent
+                    else:
+                        hourly_spent_snap = None
+
+                    if hourly_spent_snap is None and self._daily_spent + invocation_cost > self.policy.daily_budget:
+                        daily_spent_snap = self._daily_spent
+                    else:
+                        daily_spent_snap = None
+
+                if hourly_spent_snap is not None:
                     event = AuditEvent.now(
                         tool_name=resolved_name,
                         status="blocked",
@@ -259,12 +278,12 @@ class AgentGuard:
                     raise BudgetExceededError(
                         f"Hourly budget exceeded for '{resolved_name}'. "
                         f"Budget: ${self.policy.hourly_budget:.2f}, "
-                        f"spent this hour: ${self._hourly_spent:.2f}.",
+                        f"spent this hour: ${hourly_spent_snap:.2f}.",
                         budget=self.policy.hourly_budget,
-                        spent=self._hourly_spent,
+                        spent=hourly_spent_snap,
                     )
 
-                if self._daily_spent + invocation_cost > self.policy.daily_budget:
+                if daily_spent_snap is not None:
                     event = AuditEvent.now(
                         tool_name=resolved_name,
                         status="blocked",
@@ -276,9 +295,9 @@ class AgentGuard:
                     raise BudgetExceededError(
                         f"Daily budget exceeded for '{resolved_name}'. "
                         f"Budget: ${self.policy.daily_budget:.2f}, "
-                        f"spent today: ${self._daily_spent:.2f}.",
+                        f"spent today: ${daily_spent_snap:.2f}.",
                         budget=self.policy.daily_budget,
-                        spent=self._daily_spent,
+                        spent=daily_spent_snap,
                     )
 
                 # --- Per-model budget check ---
@@ -389,8 +408,9 @@ class AgentGuard:
                             )
 
                 # --- Post-execution: record cost + audit event ---
-                self._daily_spent += invocation_cost
-                self._hourly_spent += invocation_cost
+                with self._budget_lock:
+                    self._daily_spent += invocation_cost
+                    self._hourly_spent += invocation_cost
 
                 # Record per-model token/cost usage
                 if resolved_model and self.cost_tracker.config.enabled:

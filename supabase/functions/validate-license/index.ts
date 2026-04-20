@@ -62,6 +62,17 @@ serve(async (req) => {
     return new Response("ok", { headers: corsHeaders });
   }
 
+  // ── Request size guard ───────────────────────────────────────────────────
+  // Reject bodies larger than 1 MB before parsing to prevent OOM DoS attacks.
+  const MAX_BODY_BYTES = 1024 * 1024;
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return new Response(
+      JSON.stringify({ valid: false, error: "Request payload too large" }),
+      { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+    );
+  }
+
   // ── Rate limiting ────────────────────────────────────────────────────────
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (!checkRateLimit(clientIp)) {

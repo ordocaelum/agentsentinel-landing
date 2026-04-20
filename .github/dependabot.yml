@@ -18,6 +18,24 @@ updates:
         update-types:
           - patch
 
+  # Keep Python (pip) dependencies in the Python SDK up-to-date.
+  # This catches CVEs in dev dependencies (pytest, ruff, mypy, etc.) that
+  # Dependabot would otherwise miss.
+  - package-ecosystem: pip
+    directory: /python
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "python"
+      - "security"
+    groups:
+      patch-updates:
+        update-types:
+          - patch
+
   # Keep GitHub Actions up-to-date.
   - package-ecosystem: github-actions
     directory: /
