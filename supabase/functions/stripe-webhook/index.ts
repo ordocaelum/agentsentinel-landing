@@ -403,6 +403,79 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Pro
   console.log(`\u26A0\uFE0F Subscription cancelled: ${subscription.id}`);
 }
 
+async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
+  const subscriptionId = invoice.subscription as string;
+  if (!subscriptionId) {
+    console.log("invoice.payment_failed: no subscription ID, skipping");
+    return;
+  }
+
+  // Look up the license linked to this subscription.
+  const { data: license } = await supabase
+    .from("licenses")
+    .select("id, status, tier, customers(email, name)")
+    .eq("stripe_subscription_id", subscriptionId)
+    .maybeSingle();
+
+  if (!license) {
+    console.warn(`\u26A0\uFE0F invoice.payment_failed: no license for subscription ${subscriptionId}`);
+    return;
+  }
+
+  // Idempotency: if already suspended, nothing more to do.
+  if (license.status === "suspended") {
+    console.warn(`\u26A0\uFE0F Idempotency: license already suspended for subscription ${subscriptionId}`);
+    return;
+  }
+
+  // Suspend the license so the customer loses access during the dunning period.
+  const { error: updateError } = await supabase
+    .from("licenses")
+    .update({ status: "suspended" })
+    .eq("id", license.id);
+
+  if (updateError) {
+    console.error("Error suspending license:", updateError);
+    throw updateError;
+  }
+
+  console.log(`\u274C License suspended for subscription ${subscriptionId} due to payment failure`);
+
+  // Notify the customer so they can update their payment method.
+  const customer = license.customers as { email: string; name: string | null } | null;
+  if (!customer?.email) {
+    console.warn("invoice.payment_failed: no customer email found, skipping notification");
+    return;
+  }
+
+  const safeName = escapeHtml(customer.name || "there");
+  // Direct customers to the self-serve portal where they can update payment details.
+  const portalUrl = "https://agentsentinel.net/portal.html";
+
+  const content = `
+    <p>Hi ${safeName},</p>
+    <div style="background:#fff1f2;border:1px solid #fca5a5;border-radius:8px;padding:20px;margin:20px 0;">
+      <p style="margin:0;color:#991b1b;font-weight:bold;">&#x26A0;&#xFE0F; Payment failed — your access has been suspended</p>
+    </div>
+    <p>We were unable to process your latest payment for AgentSentinel. To restore access to your license, please update your payment method via the customer portal.</p>
+    <div style="text-align:center;margin:30px 0;">
+      <a href="${portalUrl}" style="display:inline-block;background:#dc2626;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Update Payment Method &#x2192;</a>
+    </div>
+    <p>Once your payment is processed, your license will be reactivated automatically.</p>
+    <p>If you need help, reply to this email or contact us at <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>.</p>`;
+
+  const footer = `<p>&#x2014; The AgentSentinel team</p>`;
+  const html = buildEmailShell("Payment Failed — Action Required", footer, content);
+
+  try {
+    await sendEmail(customer.email, "Action required: Update your AgentSentinel payment method", html);
+    console.log(`\u2705 Payment-failed notification sent to ${customer.email}`);
+  } catch (emailErr) {
+    // Log but don't fail the webhook — the suspension already happened.
+    console.error("Failed to send payment-failed email:", emailErr);
+  }
+}
+
 async function handleInvoiceUpcoming(invoice: Stripe.Invoice): Promise<void> {
   const subscriptionId = invoice.subscription as string;
   if (!subscriptionId) {
@@ -480,6 +553,14 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "No signature" }), { status: 400 });
   }
 
+  // ── Request size guard ─────────────────────────────────────────────────────
+  // Stripe webhook events are typically a few KB; 1 MB is a safe upper bound.
+  const MAX_BODY_BYTES = 1024 * 1024;
+  const contentLength = req.headers.get("content-length");
+  if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+    return new Response(JSON.stringify({ error: "Request payload too large" }), { status: 413 });
+  }
+
   try {
     const body = await req.text();
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") as string;
@@ -504,9 +585,26 @@ serve(async (req) => {
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
         break;
 
-      case "invoice.payment_failed": {
-        const invoice = event.data.object as Stripe.Invoice;
-        console.log(`\u274C Payment failed for customer: ${invoice.customer}`);
+      case "invoice.payment_failed":
+        await handlePaymentFailed(event.data.object as Stripe.Invoice);
+        break;
+
+      case "invoice.payment_succeeded": {
+        // Auto-reactivate a suspended license when payment goes through.
+        const paidInvoice = event.data.object as Stripe.Invoice;
+        const subId = paidInvoice.subscription as string;
+        if (subId) {
+          const { error: reactivateError } = await supabase
+            .from("licenses")
+            .update({ status: "active" })
+            .eq("stripe_subscription_id", subId)
+            .eq("status", "suspended");
+          if (reactivateError) {
+            console.error(`Failed to reactivate license for subscription ${subId}:`, reactivateError);
+          } else {
+            console.log(`\u2705 License reactivated for subscription ${subId}`);
+          }
+        }
         break;
       }
 

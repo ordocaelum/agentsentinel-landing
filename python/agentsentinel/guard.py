@@ -139,6 +139,7 @@ class AgentGuard:
     # ------------------------------------------------------------------
 
     def _reset_hourly_if_needed(self) -> None:
+        # Called while _spend_lock is held.
         if time.time() - self._hourly_reset_at >= 3600:
             self._hourly_spent = 0.0
             self._hourly_reset_at = time.time()
@@ -249,6 +250,9 @@ class AgentGuard:
                 invocation_cost = cost if cost is not None else self._estimate_cost(resolved_name, kwargs)
 
                 # --- Budget checks (pre-execution) ---
+                # Use _spend_lock to make the read-check sequence atomic;
+                # otherwise two concurrent calls can both pass the check and
+                # jointly exceed the budget.
                 with self._spend_lock:
                     self._reset_hourly_if_needed()
 

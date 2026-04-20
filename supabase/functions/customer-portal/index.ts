@@ -174,6 +174,16 @@ serve(async (req) => {
   }
 
   try {
+    // ── Request size guard ───────────────────────────────────────────────────
+    const MAX_BODY_BYTES = 1024 * 1024;
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "Request payload too large" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const body = await req.json();
     const email = typeof body.email === "string" ? body.email.toLowerCase().trim() : "";
     const otp = typeof body.otp === "string" ? body.otp.trim() : "";

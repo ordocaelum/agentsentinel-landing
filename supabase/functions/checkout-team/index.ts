@@ -43,6 +43,16 @@ serve(async (req) => {
   }
 
   try {
+    // ── Request size guard ───────────────────────────────────────────────────
+    const MAX_BODY_BYTES = 1024 * 1024;
+    const contentLength = req.headers.get("content-length");
+    if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
+      return new Response(
+        JSON.stringify({ error: "Request payload too large" }),
+        { status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
     const body = await req.json();
     // Phase 3.3: reject non-integer values like "5abc" or "5.7" that parseInt
     // would silently accept.  Only a plain integer string or a safe integer

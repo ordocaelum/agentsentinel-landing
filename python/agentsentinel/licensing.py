@@ -42,7 +42,7 @@ class LicenseLimits:
     watermark_required: bool
 
 
-# Tier configurations
+# Tier configurations — keep in sync with supabase/functions/_shared/tiers.ts
 TIER_LIMITS: Dict[LicenseTier, LicenseLimits] = {
     LicenseTier.FREE: LicenseLimits(
         max_agents=1,
@@ -165,9 +165,14 @@ class LicenseManager:
         )
         self._last_validation: float = 0
         self._event_count: int = 0
-        self._agent_count: int = 0
+        # _registered_agents tracks the set of active agent IDs; set size is the
+        # authoritative agent count, so no separate counter is needed.
         self._registered_agents: Set[str] = set()
         self._validation_lock = threading.Lock()
+        # Guards _event_count increments so concurrent calls from multiple
+        # threads don't produce inaccurate counts (Python's GIL does not
+        # prevent non-atomic read-modify-write races on plain integers).
+        self._event_count_lock = threading.Lock()
 
         # Check for license key in environment
         env_key = os.environ.get("AGENTSENTINEL_LICENSE_KEY")
@@ -336,15 +341,19 @@ class LicenseManager:
         )
         self._last_validation = 0
         self._event_count = 0
-        self._agent_count = 0
         self._registered_agents = set()
 
     def record_event(self) -> None:
         """Record an event and check limits."""
-        self._event_count += 1
+        # Use the event-count lock to prevent data races when multiple threads
+        # call record_event() concurrently (Python's GIL does not make the
+        # read-modify-write sequence atomic).
+        with self._event_count_lock:
+            self._event_count += 1
+            current_count = self._event_count
         limits = self.get_license_info().limits
 
-        if self._event_count > limits.max_events_per_month:
+        if current_count > limits.max_events_per_month:
             raise UsageLimitExceededError(
                 f"Monthly event limit exceeded ({limits.max_events_per_month:,} events). "
                 f"Upgrade at https://agentsentinel.net/pricing"
@@ -366,7 +375,8 @@ class LicenseManager:
 
     def reset_monthly_usage(self) -> None:
         """Reset monthly event counter (call on billing cycle)."""
-        self._event_count = 0
+        with self._event_count_lock:
+            self._event_count = 0
 
     # ─── Feature Gating ───────────────────────────────────────────────────
 
