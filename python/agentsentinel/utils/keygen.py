@@ -84,7 +84,7 @@ def verify_license_key(key: str, secret: Optional[str] = None) -> Dict[str, Any]
 
         payload = json.loads(_b64url_decode(payload_b64).decode("utf-8"))
         tier = str(payload.get("tier", "")).lower()
-        if tier not in {"free", "pro", "team", "enterprise"}:
+        if tier not in {"free", "starter", "pro", "pro_team", "team", "enterprise"}:
             return {"valid": False, "error": "Invalid tier"}
 
         expires_at = int(payload.get("exp", 0))

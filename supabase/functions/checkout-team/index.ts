@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 
 // Pro Team price IDs — must be set as Supabase secrets:
 //   supabase secrets set STRIPE_PRICE_PRO_TEAM_BASE=<base_price_id>
@@ -41,7 +41,17 @@ serve(async (req) => {
 
   try {
     const body = await req.json();
-    const seatCount = parseInt(body.seats, 10);
+    // Phase 3.3: reject non-integer values like "5abc" or "5.7" that parseInt
+    // would silently accept.  Only a plain integer string (no whitespace, no
+    // decimal point, no extra characters) is accepted.
+    const seatsRaw = body.seats;
+    if (typeof seatsRaw !== "number" && !/^\d+$/.test(String(seatsRaw))) {
+      return new Response(
+        JSON.stringify({ error: "Invalid seat count. Must be a positive integer." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    const seatCount = typeof seatsRaw === "number" ? Math.trunc(seatsRaw) : parseInt(seatsRaw, 10);
 
     if (!seatCount || seatCount < 1 || seatCount > 1000) {
       return new Response(

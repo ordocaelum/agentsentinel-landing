@@ -1,6 +1,7 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import Stripe from "https://esm.sh/stripe@13.0.0?target=deno";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
+import Stripe from "https://esm.sh/stripe@13.11.0?target=deno";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { TIER_LIMITS, tierDisplayName } from "../_shared/tiers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") as string, {
   apiVersion: "2023-10-16",
@@ -14,16 +15,14 @@ const supabase = createClient(supabaseUrl, supabaseServiceKey);
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") as string;
 const LICENSE_SIGNING_SECRET = Deno.env.get("AGENTSENTINEL_LICENSE_SIGNING_SECRET") as string;
 
-// Price ID to tier mapping
-const PRICE_TO_TIER: Record<string, string> = {};
-
-// Load price-to-tier mappings from environment
+// Price ID to tier mapping — loaded from environment secrets.
 // Set these as Supabase secrets:
 //   supabase secrets set STRIPE_PRICE_STARTER=price_xxxxx
 //   supabase secrets set STRIPE_PRICE_PRO=price_xxxxx
 //   supabase secrets set STRIPE_PRICE_PRO_TEAM=price_xxxxx  (base price ID)
 //   supabase secrets set STRIPE_PRICE_ENTERPRISE=price_xxxxx
-// See STRIPE_SETUP.md for the actual price IDs to use.
+// See STRIPE_SETUP.md for configuration instructions.
+const PRICE_TO_TIER: Record<string, string> = {};
 const priceEnvMappings = [
   { env: "STRIPE_PRICE_STARTER", tier: "starter" },
   { env: "STRIPE_PRICE_PRO", tier: "pro" },
@@ -36,53 +35,86 @@ for (const { env, tier } of priceEnvMappings) {
 }
 
 // Pro Team per-seat price ID used to extract seat count from subscription events.
-// Set STRIPE_PRICE_PRO_TEAM_SEAT as a Supabase secret.
-// See STRIPE_SETUP.md for the actual price ID to use.
 const PRICE_PRO_TEAM_SEAT = Deno.env.get("STRIPE_PRICE_PRO_TEAM_SEAT");
-
-// Tier limits
-const TIER_LIMITS: Record<string, { agents: number; events: number }> = {
-  starter: { agents: 1, events: 1000 },
-  pro: { agents: 5, events: 50000 },
-  pro_team: { agents: 5, events: 50000 },
-  enterprise: { agents: 999999, events: 999999999 },
-};
 
 const SECONDS_PER_DAY = 86400;
 
-// Base64url encode (no padding), compatible with Python's _b64url_encode
+// ─── Utilities ────────────────────────────────────────────────────────────────
+
+/** Base64url encode (no padding), compatible with Python's _b64url_encode. */
 function b64urlEncode(bytes: Uint8Array): string {
   const base64 = btoa(Array.from(bytes, (b) => String.fromCharCode(b)).join(""));
   return base64.replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
 }
 
-// Generate an HMAC-signed license key in asv1_ format, compatible with
-// the Python SDK's verify_license_key() in python/agentsentinel/utils/keygen.py
+/**
+ * Escape HTML special characters in customer-supplied strings before
+ * interpolating them into email HTML.  This prevents XSS / HTML injection
+ * even if a customer registers with a name like <script>alert(1)</script>.
+ */
+function escapeHtml(str: string): string {
+  return str
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Shared email shell — wraps the given HTML content with the standard
+ * AgentSentinel header/footer so individual email builders only need to
+ * provide the body content section.
+ */
+function buildEmailShell(title: string, subtitle: string, content: string): string {
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+    .header { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
+    .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; }
+    .footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1 style="margin: 0;">AgentSentinel&#x2122;</h1>
+      <p style="margin: 10px 0 0 0; opacity: 0.9;">${title}</p>
+    </div>
+    <div class="content">
+      ${content}
+    </div>
+    <div class="footer">
+      ${subtitle}
+    </div>
+  </div>
+</body>
+</html>`;
+}
+
+/** Generate an HMAC-signed license key in asv1_ format. */
 async function generateLicenseKey(tier: string, validDays = 365): Promise<string> {
   if (!LICENSE_SIGNING_SECRET) {
     throw new Error(
       "AGENTSENTINEL_LICENSE_SIGNING_SECRET is not set. " +
-      "Configure it with: supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=your_secret",
+        "Configure it with: supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=your_secret",
     );
   }
 
   const now = Math.floor(Date.now() / 1000);
-  // Generate nonce: 9 random bytes → 12 base64url chars (matches Python token_urlsafe(12) length)
   const nonceBytes = crypto.getRandomValues(new Uint8Array(9));
   const nonce = b64urlEncode(nonceBytes);
 
-  // Build payload with alphabetically sorted keys to match Python's sort_keys=True
-  // Key order: exp, iat, nonce, tier
-  const payloadJson = JSON.stringify({
-    exp: now + validDays * SECONDS_PER_DAY,
-    iat: now,
-    nonce: nonce,
-    tier: tier.toLowerCase(),
-  }, ["exp", "iat", "nonce", "tier"]);
+  const payloadJson = JSON.stringify(
+    { exp: now + validDays * SECONDS_PER_DAY, iat: now, nonce, tier: tier.toLowerCase() },
+    ["exp", "iat", "nonce", "tier"],
+  );
 
   const payloadB64 = b64urlEncode(new TextEncoder().encode(payloadJson));
 
-  // HMAC-SHA256 sign the base64url-encoded payload
   const key = await crypto.subtle.importKey(
     "raw",
     new TextEncoder().encode(LICENSE_SIGNING_SECRET),
@@ -96,113 +128,9 @@ async function generateLicenseKey(tier: string, validDays = 365): Promise<string
   return `asv1_${payloadB64}.${sigB64}`;
 }
 
-// Send email via Resend
-async function sendLicenseEmail(
-  email: string,
-  name: string | null,
-  licenseKey: string,
-  tier: string,
-): Promise<void> {
-  const limits = TIER_LIMITS[tier] || TIER_LIMITS.starter;
-  const tierDisplay = tier === "pro_team" ? "Pro Team" : tier.charAt(0).toUpperCase() + tier.slice(1);
+// ─── Email senders ────────────────────────────────────────────────────────────
 
-  const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
-    .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; }
-    .license-box { background: #1e293b; color: #fff; padding: 20px; border-radius: 8px; font-family: monospace; font-size: 18px; text-align: center; margin: 20px 0; word-break: break-all; }
-    .steps { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; margin: 20px 0; }
-    .step { margin: 15px 0; padding-left: 30px; position: relative; }
-    .step-number { position: absolute; left: 0; top: 0; width: 24px; height: 24px; background: #0ea5e9; color: white; border-radius: 50%; text-align: center; font-size: 14px; line-height: 24px; }
-    .cta-button { display: inline-block; background: #0ea5e9; color: white; padding: 14px 28px; border-radius: 8px; text-decoration: none; font-weight: bold; margin: 10px 0; }
-    .plan-details { background: white; padding: 20px; border-radius: 8px; border: 1px solid #e2e8f0; }
-    .plan-row { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-    .footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; }
-    code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-family: monospace; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1 style="margin: 0;">AgentSentinel™</h1>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Payment Successful!</p>
-    </div>
-
-    <div class="content">
-      <p>Hi ${name || "there"},</p>
-
-      <p>Thank you for purchasing <strong>AgentSentinel ${tierDisplay}</strong>! 🎉</p>
-
-      <p>Here's your license key:</p>
-
-      <div class="license-box">
-        ${licenseKey}
-      </div>
-
-      <div class="steps">
-        <h3 style="margin-top: 0;">🚀 Get Started in 3 Steps</h3>
-
-        <div class="step">
-          <span class="step-number">1</span>
-          <strong>Set your license key:</strong><br>
-          <code>export AGENTSENTINEL_LICENSE_KEY="${licenseKey}"</code>
-        </div>
-
-        <div class="step">
-          <span class="step-number">2</span>
-          <strong>Install the SDK:</strong><br>
-          <code>pip install agentsentinel-core</code> or <code>npm install @agentsentinel/sdk</code>
-        </div>
-
-        <div class="step">
-          <span class="step-number">3</span>
-          <strong>Follow the getting started guide:</strong><br>
-          <a href="https://agentsentinel.net/getting-started.html">https://agentsentinel.net/getting-started.html</a>
-        </div>
-      </div>
-
-      <div style="text-align: center; margin: 30px 0;">
-        <a href="https://agentsentinel.net/getting-started.html" class="cta-button">Get Started →</a>
-      </div>
-
-      <div class="plan-details">
-        <h3 style="margin-top: 0;">📋 Your Plan Details</h3>
-        <div class="plan-row"><span>Plan</span><strong>${tierDisplay}</strong></div>
-        <div class="plan-row"><span>Agents</span><strong>${limits.agents === 999999 ? "Unlimited" : limits.agents}</strong></div>
-        <div class="plan-row"><span>Events/month</span><strong>${limits.events === 999999999 ? "Unlimited" : limits.events.toLocaleString()}</strong></div>
-        <div class="plan-row"><span>Dashboard</span><strong>✅ Included</strong></div>
-        <div class="plan-row"><span>Integrations</span><strong>✅ All included</strong></div>
-        <div class="plan-row" style="border: none;"><span>Support</span><strong>${tier === "enterprise" ? "Dedicated" : tier === "pro_team" ? "Priority" : "Email"}</strong></div>
-      </div>
-
-      <p style="margin-top: 30px;">
-        <strong>Need help?</strong> Just reply to this email or contact us at
-        <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>
-      </p>
-
-      <p>
-        <strong>📖 Documentation:</strong> <a href="https://agentsentinel.net/docs.html">agentsentinel.net/docs.html</a><br>
-        <strong>🔒 Security:</strong> <a href="https://agentsentinel.net/security.html">agentsentinel.net/security.html</a>
-      </p>
-    </div>
-
-    <div class="footer">
-      <p>Thank you for trusting AgentSentinel to protect your AI agents!</p>
-      <p>— Leland, Founder of AgentSentinel</p>
-      <p style="font-size: 12px; color: #94a3b8;">
-        Keep this email safe! Your license key is how we verify your subscription.
-      </p>
-    </div>
-  </div>
-</body>
-</html>
-  `;
-
+async function sendEmail(to: string, subject: string, html: string): Promise<void> {
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: {
@@ -211,9 +139,9 @@ async function sendLicenseEmail(
     },
     body: JSON.stringify({
       from: "AgentSentinel <noreply@agentsentinel.net>",
-      to: [email],
-      subject: `🎉 Your AgentSentinel ${tierDisplay} License Key`,
-      html: emailHtml,
+      to: [to],
+      subject,
+      html,
     }),
   });
 
@@ -222,11 +150,78 @@ async function sendLicenseEmail(
     console.error("Failed to send email:", error);
     throw new Error(`Failed to send email: ${error}`);
   }
-
-  console.log(`✅ License email sent to ${email}`);
 }
 
-// Send Pro intro-pricing reminder email via Resend
+async function sendLicenseEmail(
+  email: string,
+  name: string | null,
+  licenseKey: string,
+  tier: string,
+): Promise<void> {
+  const limits = TIER_LIMITS[tier] || TIER_LIMITS.starter;
+  const tierDisplay = tierDisplayName(tier);
+  // Escape customer-supplied fields before interpolating into HTML.
+  const safeName = escapeHtml(name || "there");
+  const safeLicenseKey = escapeHtml(licenseKey);
+  const safeTierDisplay = escapeHtml(tierDisplay);
+
+  const content = `
+    <p>Hi ${safeName},</p>
+    <p>Thank you for purchasing <strong>AgentSentinel ${safeTierDisplay}</strong>! &#x1F389;</p>
+    <p>Here's your license key:</p>
+    <div style="background:#1e293b;color:#fff;padding:20px;border-radius:8px;font-family:monospace;font-size:18px;text-align:center;margin:20px 0;word-break:break-all;">
+      ${safeLicenseKey}
+    </div>
+    <div style="background:white;padding:20px;border-radius:8px;border:1px solid #e2e8f0;margin:20px 0;">
+      <h3 style="margin-top:0;">&#x1F680; Get Started in 3 Steps</h3>
+      <div style="margin:15px 0;padding-left:30px;position:relative;">
+        <span style="position:absolute;left:0;top:0;width:24px;height:24px;background:#0ea5e9;color:white;border-radius:50%;text-align:center;font-size:14px;line-height:24px;">1</span>
+        <strong>Set your license key:</strong><br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;">export AGENTSENTINEL_LICENSE_KEY=&quot;${safeLicenseKey}&quot;</code>
+      </div>
+      <div style="margin:15px 0;padding-left:30px;position:relative;">
+        <span style="position:absolute;left:0;top:0;width:24px;height:24px;background:#0ea5e9;color:white;border-radius:50%;text-align:center;font-size:14px;line-height:24px;">2</span>
+        <strong>Install the SDK:</strong><br>
+        <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;">pip install agentsentinel-core</code>
+        or <code style="background:#f1f5f9;padding:2px 6px;border-radius:4px;font-family:monospace;">npm install @agentsentinel/sdk</code>
+      </div>
+      <div style="margin:15px 0;padding-left:30px;position:relative;">
+        <span style="position:absolute;left:0;top:0;width:24px;height:24px;background:#0ea5e9;color:white;border-radius:50%;text-align:center;font-size:14px;line-height:24px;">3</span>
+        <strong>Follow the getting started guide:</strong><br>
+        <a href="https://agentsentinel.net/getting-started.html">https://agentsentinel.net/getting-started.html</a>
+      </div>
+    </div>
+    <div style="text-align:center;margin:30px 0;">
+      <a href="https://agentsentinel.net/getting-started.html" style="display:inline-block;background:#0ea5e9;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Get Started &#x2192;</a>
+    </div>
+    <div style="background:white;padding:20px;border-radius:8px;border:1px solid #e2e8f0;">
+      <h3 style="margin-top:0;">&#x1F4CB; Your Plan Details</h3>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><span>Plan</span><strong>${safeTierDisplay}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><span>Agents</span><strong>${limits.agents === 999999 ? "Unlimited" : limits.agents}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><span>Events/month</span><strong>${limits.events === 999999999 ? "Unlimited" : limits.events.toLocaleString()}</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><span>Dashboard</span><strong>&#x2705; Included</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid #f1f5f9;"><span>Integrations</span><strong>&#x2705; All included</strong></div>
+      <div style="display:flex;justify-content:space-between;padding:8px 0;"><span>Support</span><strong>${tier === "enterprise" ? "Dedicated" : tier === "pro_team" ? "Priority" : "Email"}</strong></div>
+    </div>
+    <p style="margin-top:30px;">
+      <strong>Need help?</strong> Just reply to this email or contact us at
+      <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>
+    </p>
+    <p>
+      <strong>&#x1F4D6; Documentation:</strong> <a href="https://agentsentinel.net/docs.html">agentsentinel.net/docs.html</a><br>
+      <strong>&#x1F512; Security:</strong> <a href="https://agentsentinel.net/security.html">agentsentinel.net/security.html</a>
+    </p>`;
+
+  const footer = `
+    <p>Thank you for trusting AgentSentinel to protect your AI agents!</p>
+    <p>&#x2014; Leland, Founder of AgentSentinel</p>
+    <p style="font-size:12px;color:#94a3b8;">Keep this email safe! Your license key is how we verify your subscription.</p>`;
+
+  const html = buildEmailShell("Payment Successful!", footer, content);
+  await sendEmail(email, `Your AgentSentinel ${tierDisplay} License Key`, html);
+  console.log(`\u2705 License email sent to ${email}`);
+}
+
 async function sendProPriceChangeReminder(
   email: string,
   name: string | null,
@@ -235,276 +230,287 @@ async function sendProPriceChangeReminder(
 ): Promise<void> {
   const isLastMonth = monthNumber >= 3;
   const subject = isLastMonth
-    ? "⚠️ Last month at $9.99 — your Pro plan renews at $49/mo next cycle"
-    : "📅 Heads up: your AgentSentinel Pro intro pricing ends next month";
+    ? "\u26A0\uFE0F Last month at $9.99 \u2014 your Pro plan renews at $49/mo next cycle"
+    : "\uD83D\uDCC5 Heads up: your AgentSentinel Pro intro pricing ends next month";
+
+  const safeName = escapeHtml(name || "there");
+  const safeNextChargeDate = escapeHtml(nextChargeDate);
 
   const bodyMessage = isLastMonth
-    ? `This is your <strong>last month at $9.99/mo</strong>. Your next charge on <strong>${nextChargeDate}</strong> will be <strong>$49/mo</strong> — the standard Pro rate.`
-    : `Your intro pricing of <strong>$9.99/mo</strong> ends next month. Starting <strong>${nextChargeDate}</strong>, your plan will renew at <strong>$49/mo</strong>.`;
+    ? `This is your <strong>last month at $9.99/mo</strong>. Your next charge on <strong>${safeNextChargeDate}</strong> will be <strong>$49/mo</strong> &#x2014; the standard Pro rate.`
+    : `Your intro pricing of <strong>$9.99/mo</strong> ends next month. Starting <strong>${safeNextChargeDate}</strong>, your plan will renew at <strong>$49/mo</strong>.`;
 
-  const emailHtml = `
-<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
-    .container { max-width: 600px; margin: 0 auto; padding: 20px; }
-    .header { background: linear-gradient(135deg, #0ea5e9 0%, #6366f1 100%); color: white; padding: 30px; border-radius: 12px 12px 0 0; text-align: center; }
-    .content { background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0; }
-    .notice-box { background: #fff7ed; border: 1px solid #fed7aa; border-radius: 8px; padding: 20px; margin: 20px 0; }
-    .footer { text-align: center; padding: 20px; color: #64748b; font-size: 14px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1 style="margin: 0;">AgentSentinel™</h1>
-      <p style="margin: 10px 0 0 0; opacity: 0.9;">Pricing Update Notice</p>
+  const content = `
+    <p>Hi ${safeName},</p>
+    <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:8px;padding:20px;margin:20px 0;">
+      <p style="margin:0;">${bodyMessage}</p>
     </div>
-    <div class="content">
-      <p>Hi ${name || "there"},</p>
-      <div class="notice-box">
-        <p style="margin: 0;">${bodyMessage}</p>
-      </div>
-      <p>No action is needed — your subscription will continue uninterrupted. If you have any questions, reply to this email or contact us at <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>.</p>
-      <p>Thank you for being an AgentSentinel Pro subscriber!</p>
-    </div>
-    <div class="footer">
-      <p>— Leland, Founder of AgentSentinel™</p>
-    </div>
-  </div>
-</body>
-</html>
-  `;
+    <p>No action is needed &#x2014; your subscription will continue uninterrupted. If you have any questions, reply to this email or contact us at <a href="mailto:contact@agentsentinel.net">contact@agentsentinel.net</a>.</p>
+    <p>Thank you for being an AgentSentinel Pro subscriber!</p>`;
 
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${RESEND_API_KEY}`,
-    },
-    body: JSON.stringify({
-      from: "AgentSentinel <noreply@agentsentinel.net>",
-      to: [email],
-      subject,
-      html: emailHtml,
-    }),
-  });
-
-  if (!response.ok) {
-    const error = await response.text();
-    console.error("Failed to send price-change reminder email:", error);
-    throw new Error(`Failed to send price-change reminder email: ${error}`);
-  }
-
-  console.log(`✅ Pro price-change reminder (month ${monthNumber}) sent to ${email}`);
+  const footer = `<p>&#x2014; Leland, Founder of AgentSentinel&#x2122;</p>`;
+  const html = buildEmailShell("Pricing Update Notice", footer, content);
+  await sendEmail(email, subject, html);
+  console.log(`\u2705 Pro price-change reminder (month ${monthNumber}) sent to ${email}`);
 }
 
-// Main webhook handler
+// ─── Webhook event handlers ───────────────────────────────────────────────────
+
+async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promise<void> {
+  const customerEmail = session.customer_email || session.customer_details?.email;
+  const customerName = session.customer_details?.name;
+  const stripeCustomerId = session.customer as string;
+
+  if (!customerEmail) {
+    throw new Error("No customer email in session");
+  }
+
+  // ── Idempotency guard ────────────────────────────────────────────────────
+  // If a license already exists for this subscription, skip creation entirely.
+  // Stripe can fire checkout.session.completed more than once (retries, race
+  // conditions).  The stripe_event_id check in webhook_events is a secondary
+  // guard, but this one prevents duplicate licenses when the event log entry
+  // has not yet been written.
+  if (session.subscription) {
+    const { data: existingLicense } = await supabase
+      .from("licenses")
+      .select("id")
+      .eq("stripe_subscription_id", session.subscription as string)
+      .maybeSingle();
+
+    if (existingLicense) {
+      console.warn(
+        `\u26A0\uFE0F Idempotency: license already exists for subscription ${session.subscription} \u2014 skipping creation`,
+      );
+      return;
+    }
+  }
+
+  // Get the tier from session metadata or price ID
+  let tier = session.metadata?.tier || "pro";
+  if (session.metadata?.price_id) {
+    tier = PRICE_TO_TIER[session.metadata.price_id] || tier;
+  }
+
+  const limits = TIER_LIMITS[tier] || TIER_LIMITS.pro;
+
+  // Seat count for pro_team: read directly from checkout metadata so the
+  // license row is correct even if subscription.created fires after this event.
+  // Phase 1.4: eliminates the race condition where seat_count was NULL until
+  // the subscription.created event arrived.
+  const seatCount = tier === "pro_team" && session.metadata?.seats
+    ? parseInt(session.metadata.seats, 10) || null
+    : null;
+
+  // 1. Create or update customer.
+  // Phase 3.5 fix: on email conflict only update the name, never overwrite
+  // stripe_customer_id.  A customer who re-purchases with a new Stripe account
+  // should have their existing stripe_customer_id preserved so their original
+  // billing portal access still works.
+  const { data: customer, error: customerError } = await supabase
+    .from("customers")
+    .upsert(
+      { email: customerEmail, name: customerName, stripe_customer_id: stripeCustomerId },
+      {
+        onConflict: "email",
+        ignoreDuplicates: false,
+      },
+    )
+    .select()
+    .single();
+
+  if (customerError) {
+    console.error("Error creating customer:", customerError);
+    throw customerError;
+  }
+
+  console.log(`\u2705 Customer created/updated: ${customerEmail}`);
+
+  // 2. Generate license key
+  const licenseKey = await generateLicenseKey(tier);
+
+  // 3. Create license (with seat_count already set to avoid the race condition)
+  const { error: licenseError } = await supabase.from("licenses").insert({
+    customer_id: customer.id,
+    license_key: licenseKey,
+    tier,
+    status: "active",
+    stripe_subscription_id: session.subscription as string,
+    stripe_price_id: session.metadata?.price_id || null,
+    agents_limit: limits.agents,
+    events_limit: limits.events,
+    ...(seatCount !== null ? { seat_count: seatCount } : {}),
+  });
+
+  if (licenseError) {
+    console.error("Error creating license:", licenseError);
+    throw licenseError;
+  }
+
+  console.log(`\u2705 License created: ${licenseKey}`);
+
+  // 4. Send welcome email
+  await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier);
+
+  console.log(`\u2705 Checkout complete for ${customerEmail} \u2014 ${tier} plan`);
+}
+
+async function handleSubscriptionDeleted(subscription: Stripe.Subscription): Promise<void> {
+  // ── Idempotency guard ────────────────────────────────────────────────────
+  const { data: existingLicense } = await supabase
+    .from("licenses")
+    .select("id, status")
+    .eq("stripe_subscription_id", subscription.id)
+    .maybeSingle();
+
+  if (!existingLicense) {
+    console.warn(
+      `\u26A0\uFE0F Idempotency: no license found for subscription ${subscription.id} \u2014 skipping cancellation`,
+    );
+    return;
+  }
+
+  if (existingLicense.status === "cancelled") {
+    console.warn(
+      `\u26A0\uFE0F Idempotency: license already cancelled for subscription ${subscription.id} \u2014 skipping`,
+    );
+    return;
+  }
+
+  await supabase
+    .from("licenses")
+    .update({ status: "cancelled", cancelled_at: new Date().toISOString() })
+    .eq("stripe_subscription_id", subscription.id);
+
+  console.log(`\u26A0\uFE0F Subscription cancelled: ${subscription.id}`);
+}
+
+async function handleInvoiceUpcoming(invoice: Stripe.Invoice): Promise<void> {
+  const subscriptionId = invoice.subscription as string;
+  if (!subscriptionId) {
+    console.log("invoice.upcoming: no subscription ID, skipping");
+    return;
+  }
+
+  const { data: license } = await supabase
+    .from("licenses")
+    .select("tier, created_at, customers(email, name)")
+    .eq("stripe_subscription_id", subscriptionId)
+    .single();
+
+  if (!license || license.tier !== "pro") return;
+
+  // Phase 3.6 fix: use UTC-normalised month comparison that is immune to
+  // day-of-month edge cases (e.g. purchasing on Jan 31 and comparing in Feb).
+  const createdAt = new Date(license.created_at);
+  const now = new Date();
+  const monthsElapsed =
+    (now.getUTCFullYear() - createdAt.getUTCFullYear()) * 12 +
+    (now.getUTCMonth() - createdAt.getUTCMonth());
+
+  if (monthsElapsed === 2 || monthsElapsed === 3) {
+    const customer = license.customers as { email: string; name: string | null } | null;
+    if (customer?.email) {
+      const nextPaymentTs = invoice.next_payment_attempt;
+      const nextChargeDate = nextPaymentTs
+        ? new Date(nextPaymentTs * 1000).toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })
+        : "your next billing date";
+      await sendProPriceChangeReminder(
+        customer.email,
+        customer.name ?? null,
+        monthsElapsed,
+        nextChargeDate,
+      );
+    }
+  }
+}
+
+async function handleSubscriptionUpdated(subscription: Stripe.Subscription): Promise<void> {
+  if (!PRICE_PRO_TEAM_SEAT) return;
+
+  const perSeatItem = subscription.items.data.find(
+    (item) => item.price.id === PRICE_PRO_TEAM_SEAT,
+  );
+
+  if (!perSeatItem) return;
+
+  const seatCount = perSeatItem.quantity ?? 0;
+  const { error: seatUpdateError } = await supabase
+    .from("licenses")
+    .update({ seat_count: seatCount })
+    .eq("stripe_subscription_id", subscription.id);
+
+  if (seatUpdateError) {
+    console.error("Error syncing seat count:", seatUpdateError);
+  } else {
+    console.log(
+      `\u2705 Pro Team seat count synced: ${seatCount} seat(s) for subscription ${subscription.id}`,
+    );
+  }
+}
+
+// ─── Main webhook handler ─────────────────────────────────────────────────────
+
 serve(async (req) => {
   const signature = req.headers.get("stripe-signature");
 
   if (!signature) {
-    return new Response(JSON.stringify({ error: "No signature" }), {
-      status: 400,
-    });
+    return new Response(JSON.stringify({ error: "No signature" }), { status: 400 });
   }
 
   try {
     const body = await req.text();
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") as string;
-
-    // Verify webhook signature
     const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
 
-    console.log(`📩 Received Stripe event: ${event.type}`);
+    console.log(`\uD83D\uDCE9 Received Stripe event: ${event.type}`);
 
-    // Log the webhook event
+    // Log the webhook event for auditing (best-effort)
     await supabase.from("webhook_events").insert({
       stripe_event_id: event.id,
       event_type: event.type,
       payload: event.data.object,
       processed: false,
-    });
+    }).then(() => {}, (err) => console.warn("Failed to log webhook event:", err));
 
-    // Handle checkout.session.completed
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
+    switch (event.type) {
+      case "checkout.session.completed":
+        await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        break;
 
-      const customerEmail = session.customer_email || session.customer_details?.email;
-      const customerName = session.customer_details?.name;
-      const stripeCustomerId = session.customer as string;
+      case "customer.subscription.deleted":
+        await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        break;
 
-      if (!customerEmail) {
-        throw new Error("No customer email in session");
+      case "invoice.payment_failed": {
+        const invoice = event.data.object as Stripe.Invoice;
+        console.log(`\u274C Payment failed for customer: ${invoice.customer}`);
+        break;
       }
 
-      // Get the tier from metadata or price ID
-      let tier = session.metadata?.tier || "pro";
+      case "invoice.upcoming":
+        await handleInvoiceUpcoming(event.data.object as Stripe.Invoice);
+        break;
 
-      // If tier not in metadata, try to get from line items
-      if (session.metadata?.price_id) {
-        tier = PRICE_TO_TIER[session.metadata.price_id] || tier;
-      }
+      case "customer.subscription.created":
+      case "customer.subscription.updated":
+        await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        break;
 
-      const limits = TIER_LIMITS[tier] || TIER_LIMITS.pro;
-
-      // 1. Create or update customer
-      const { data: customer, error: customerError } = await supabase
-        .from("customers")
-        .upsert(
-          {
-            email: customerEmail,
-            name: customerName,
-            stripe_customer_id: stripeCustomerId,
-          },
-          { onConflict: "email" },
-        )
-        .select()
-        .single();
-
-      if (customerError) {
-        console.error("Error creating customer:", customerError);
-        throw customerError;
-      }
-
-      console.log(`✅ Customer created/updated: ${customerEmail}`);
-
-      // 2. Generate license key
-      const licenseKey = await generateLicenseKey(tier);
-
-      // 3. Create license
-      const { error: licenseError } = await supabase.from("licenses").insert({
-        customer_id: customer.id,
-        license_key: licenseKey,
-        tier: tier,
-        status: "active",
-        stripe_subscription_id: session.subscription as string,
-        agents_limit: limits.agents,
-        events_limit: limits.events,
-      });
-
-      if (licenseError) {
-        console.error("Error creating license:", licenseError);
-        throw licenseError;
-      }
-
-      console.log(`✅ License created: ${licenseKey}`);
-
-      // 4. Send email with license key
-      await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier);
-
-      // 5. Mark webhook as processed
-      await supabase
-        .from("webhook_events")
-        .update({ processed: true, processed_at: new Date().toISOString() })
-        .eq("stripe_event_id", event.id);
-
-      console.log(`✅ Checkout complete for ${customerEmail} - ${tier} plan`);
+      default:
+        console.log(`\u2139\uFE0F Unhandled event type: ${event.type}`);
     }
 
-    // Handle subscription cancelled
-    if (event.type === "customer.subscription.deleted") {
-      const subscription = event.data.object as Stripe.Subscription;
-
-      // Mark license as cancelled
-      await supabase
-        .from("licenses")
-        .update({
-          status: "cancelled",
-          cancelled_at: new Date().toISOString(),
-        })
-        .eq("stripe_subscription_id", subscription.id);
-
-      console.log(`⚠️ Subscription cancelled: ${subscription.id}`);
-    }
-
-    // Handle payment failed
-    if (event.type === "invoice.payment_failed") {
-      const invoice = event.data.object as Stripe.Invoice;
-      console.log(`❌ Payment failed for customer: ${invoice.customer}`);
-      // Could send a "payment failed" email here
-    }
-
-    // Handle invoice.upcoming — used for Pro intro pricing email reminders
-    if (event.type === "invoice.upcoming") {
-      const invoice = event.data.object as Stripe.Invoice;
-      const subscriptionId = invoice.subscription as string;
-
-      if (!subscriptionId) {
-        console.log("invoice.upcoming: no subscription ID, skipping");
-      } else {
-        // Look up the license to check tier and subscription start date
-        const { data: license } = await supabase
-          .from("licenses")
-          .select("tier, created_at, customers(email, name)")
-          .eq("stripe_subscription_id", subscriptionId)
-          .single();
-
-        if (license && license.tier === "pro") {
-          const createdAt = new Date(license.created_at);
-          const now = new Date();
-          // Calculate months elapsed, accounting for day-of-month so reminders aren't early
-          let monthsElapsed = (now.getFullYear() - createdAt.getFullYear()) * 12 +
-            (now.getMonth() - createdAt.getMonth());
-          if (now.getDate() < createdAt.getDate()) {
-            monthsElapsed -= 1;
-          }
-
-          // Send reminder at month 2 (one month before price change) and month 3 (last month at intro price)
-          if (monthsElapsed === 2 || monthsElapsed === 3) {
-            const customer = license.customers as { email: string; name: string | null } | null;
-            if (customer?.email) {
-              const nextPaymentTs = invoice.next_payment_attempt;
-              const nextChargeDate = nextPaymentTs
-                ? new Date(nextPaymentTs * 1000)
-                  .toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })
-                : "your next billing date";
-              await sendProPriceChangeReminder(
-                customer.email,
-                customer.name ?? null,
-                monthsElapsed,
-                nextChargeDate,
-              );
-            }
-          }
-        }
-      }
-    }
-
-    // Handle Pro Team seat sync on subscription create/update
-    // Webhook: customer.subscription.created + customer.subscription.updated
-    // These fire whenever a Pro Team subscription is first created or its
-    // seat quantity is changed (e.g. via the Stripe Billing Portal).
-    if (
-      PRICE_PRO_TEAM_SEAT &&
-      (event.type === "customer.subscription.created" ||
-        event.type === "customer.subscription.updated")
-    ) {
-      const subscription = event.data.object as Stripe.Subscription;
-
-      // Find the per-seat line item to extract the current seat count
-      const perSeatItem = subscription.items.data.find(
-        (item) => item.price.id === PRICE_PRO_TEAM_SEAT,
-      );
-
-      if (perSeatItem) {
-        const seatCount = perSeatItem.quantity ?? 0;
-
-        const { error: seatUpdateError } = await supabase
-          .from("licenses")
-          .update({ seat_count: seatCount })
-          .eq("stripe_subscription_id", subscription.id);
-
-        if (seatUpdateError) {
-          console.error("Error syncing seat count:", seatUpdateError);
-        } else {
-          console.log(
-            `✅ Pro Team seat count synced: ${seatCount} seat(s) for subscription ${subscription.id}`,
-          );
-        }
-      }
-    }
+    // Mark webhook as processed (best-effort)
+    await supabase
+      .from("webhook_events")
+      .update({ processed: true, processed_at: new Date().toISOString() })
+      .eq("stripe_event_id", event.id)
+      .then(() => {}, (err) => console.warn("Failed to update webhook event:", err));
 
     return new Response(JSON.stringify({ received: true }), {
       status: 200,
