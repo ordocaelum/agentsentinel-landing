@@ -9,13 +9,14 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 10
+    labels:
+      - "dependencies"
+      - "security"
     # Group patch-level bumps into a single PR to reduce noise.
     groups:
       patch-updates:
         update-types:
           - patch
-    # Automatically approve (but not merge) dependabot PRs for patch updates.
-    # Merging still requires a passing CI run and reviewer sign-off.
 
   # Keep GitHub Actions up-to-date.
   - package-ecosystem: github-actions
@@ -24,3 +25,6 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 5
+    labels:
+      - "dependencies"
+      - "security"
