@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import fnmatch
 import functools
+import threading
 import time
 import uuid
 import warnings
@@ -103,6 +104,9 @@ class AgentGuard:
 
         # Cost accumulators — reset on each new day/hour in a real system;
         # here we reset at construction time for simplicity.
+        # _spend_lock guards _daily_spent and _hourly_spent to prevent data
+        # races when the guard is shared across threads.
+        self._spend_lock = threading.Lock()
         self._daily_spent: float = 0.0
         self._hourly_spent: float = 0.0
         self._hourly_reset_at: float = time.time()
@@ -245,41 +249,42 @@ class AgentGuard:
                 invocation_cost = cost if cost is not None else self._estimate_cost(resolved_name, kwargs)
 
                 # --- Budget checks (pre-execution) ---
-                self._reset_hourly_if_needed()
+                with self._spend_lock:
+                    self._reset_hourly_if_needed()
 
-                if self._hourly_spent + invocation_cost > self.policy.hourly_budget:
-                    event = AuditEvent.now(
-                        tool_name=resolved_name,
-                        status="blocked",
-                        cost=invocation_cost,
-                        decision="blocked_budget",
-                        reason="hourly_budget_exceeded",
-                    )
-                    self.audit_logger.record(event)
-                    raise BudgetExceededError(
-                        f"Hourly budget exceeded for '{resolved_name}'. "
-                        f"Budget: ${self.policy.hourly_budget:.2f}, "
-                        f"spent this hour: ${self._hourly_spent:.2f}.",
-                        budget=self.policy.hourly_budget,
-                        spent=self._hourly_spent,
-                    )
+                    if self._hourly_spent + invocation_cost > self.policy.hourly_budget:
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=invocation_cost,
+                            decision="blocked_budget",
+                            reason="hourly_budget_exceeded",
+                        )
+                        self.audit_logger.record(event)
+                        raise BudgetExceededError(
+                            f"Hourly budget exceeded for '{resolved_name}'. "
+                            f"Budget: ${self.policy.hourly_budget:.2f}, "
+                            f"spent this hour: ${self._hourly_spent:.2f}.",
+                            budget=self.policy.hourly_budget,
+                            spent=self._hourly_spent,
+                        )
 
-                if self._daily_spent + invocation_cost > self.policy.daily_budget:
-                    event = AuditEvent.now(
-                        tool_name=resolved_name,
-                        status="blocked",
-                        cost=invocation_cost,
-                        decision="blocked_budget",
-                        reason="daily_budget_exceeded",
-                    )
-                    self.audit_logger.record(event)
-                    raise BudgetExceededError(
-                        f"Daily budget exceeded for '{resolved_name}'. "
-                        f"Budget: ${self.policy.daily_budget:.2f}, "
-                        f"spent today: ${self._daily_spent:.2f}.",
-                        budget=self.policy.daily_budget,
-                        spent=self._daily_spent,
-                    )
+                    if self._daily_spent + invocation_cost > self.policy.daily_budget:
+                        event = AuditEvent.now(
+                            tool_name=resolved_name,
+                            status="blocked",
+                            cost=invocation_cost,
+                            decision="blocked_budget",
+                            reason="daily_budget_exceeded",
+                        )
+                        self.audit_logger.record(event)
+                        raise BudgetExceededError(
+                            f"Daily budget exceeded for '{resolved_name}'. "
+                            f"Budget: ${self.policy.daily_budget:.2f}, "
+                            f"spent today: ${self._daily_spent:.2f}.",
+                            budget=self.policy.daily_budget,
+                            spent=self._daily_spent,
+                        )
 
                 # --- Per-model budget check ---
                 if resolved_model and self.cost_tracker.config.enabled:
@@ -389,8 +394,9 @@ class AgentGuard:
                             )
 
                 # --- Post-execution: record cost + audit event ---
-                self._daily_spent += invocation_cost
-                self._hourly_spent += invocation_cost
+                with self._spend_lock:
+                    self._daily_spent += invocation_cost
+                    self._hourly_spent += invocation_cost
 
                 # Record per-model token/cost usage
                 if resolved_model and self.cost_tracker.config.enabled:
@@ -430,7 +436,8 @@ class AgentGuard:
 
     def reset_costs(self) -> None:
         """Reset all cost accumulators (useful for testing)."""
-        self._daily_spent = 0.0
-        self._hourly_spent = 0.0
-        self._hourly_reset_at = time.time()
+        with self._spend_lock:
+            self._daily_spent = 0.0
+            self._hourly_spent = 0.0
+            self._hourly_reset_at = time.time()
         self.cost_tracker.reset()
