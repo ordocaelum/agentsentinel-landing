@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import Stripe from "https://esm.sh/stripe@13.11.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { TIER_LIMITS, tierDisplayName } from "../_shared/tiers.ts";
+import { TIER_LIMITS, VALID_TIERS, tierDisplayName } from "../_shared/tiers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") as string, {
   apiVersion: "2023-10-16",
@@ -292,6 +292,12 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     tier = PRICE_TO_TIER[session.metadata.price_id] || tier;
   }
 
+  // Guard against unknown or tampered tier values from Stripe metadata.
+  if (!VALID_TIERS.has(tier)) {
+    console.warn(`⚠️ Unknown tier "${tier}" in session metadata — falling back to "pro"`);
+    tier = "pro";
+  }
+
   const limits = TIER_LIMITS[tier] || TIER_LIMITS.pro;
 
   // Seat count for pro_team: read directly from checkout metadata so the
@@ -519,7 +525,7 @@ serve(async (req) => {
   } catch (err) {
     console.error("Webhook error:", err);
     return new Response(
-      JSON.stringify({ error: (err as Error).message }),
+      JSON.stringify({ error: "Webhook processing failed" }),
       { status: 400 },
     );
   }

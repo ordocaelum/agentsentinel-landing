@@ -119,7 +119,7 @@ serve(async (req) => {
     if (!stripeRes.ok) {
       console.error("Stripe API error:", session);
       return new Response(
-        JSON.stringify({ error: session?.error?.message || "Failed to create checkout session" }),
+        JSON.stringify({ error: "Failed to create checkout session. Please contact support." }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

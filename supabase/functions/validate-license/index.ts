@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { VALID_TIERS } from "../_shared/tiers.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
@@ -143,6 +144,23 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ valid: false, error: "License has expired" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // Strict enum check: reject licenses whose tier is not in the recognised set.
+    // This guards against stale or corrupted DB records returning unexpected values.
+    if (!license.tier) {
+      console.error(`Missing tier in license record ${license.id}`);
+      return new Response(
+        JSON.stringify({ valid: false, error: "Invalid license configuration" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+    if (!VALID_TIERS.has(license.tier)) {
+      console.error(`Unrecognised tier value "${license.tier}" in license record ${license.id}`);
+      return new Response(
+        JSON.stringify({ valid: false, error: "Invalid license configuration" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
 
