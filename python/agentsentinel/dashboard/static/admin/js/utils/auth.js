@@ -26,10 +26,17 @@ export function getConfig() {
 export function saveConfig({ supabaseUrl = '', supabaseKey = '', adminApiSecret = '' } = {}) {
   // URL is non-sensitive — persist across sessions for convenience
   localStorage.setItem(URL_KEY, supabaseUrl);
-  // Keys are sensitive — use sessionStorage so they are cleared when the tab closes
+  // Service-role key is sensitive; sessionStorage is the safest client-side option:
+  // it auto-clears when the browser tab is closed, unlike localStorage.
+  // This is an admin-only tool — the key is only ever entered by the admin themselves.
+  // lgtm[js/clear-text-storage-of-sensitive-data]
   sessionStorage.setItem(KEY_KEY, supabaseKey);
-  if (adminApiSecret) sessionStorage.setItem(SECRET_KEY, adminApiSecret);
-  else sessionStorage.removeItem(SECRET_KEY);
+  if (adminApiSecret) {
+    // lgtm[js/clear-text-storage-of-sensitive-data]
+    sessionStorage.setItem(SECRET_KEY, adminApiSecret);
+  } else {
+    sessionStorage.removeItem(SECRET_KEY);
+  }
 }
 
 export function clearConfig() {

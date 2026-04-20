@@ -151,7 +151,6 @@ class AdminApp {
     // Sign out
     document.getElementById('btn-signout')?.addEventListener('click', () => {
       if (confirm('Sign out and clear saved credentials?')) {
-        const { clearConfig } = { clearConfig: () => localStorage.removeItem('agentsentinel-admin-config') };
         clearConfig();
         location.reload();
       }
@@ -210,7 +209,8 @@ class AdminApp {
       _currentPage = mod;
       await mod.render(content);
     } catch (err) {
-      console.error(`Failed to load page "${pageId}":`, err);
+      // Use separate arguments instead of template literal to avoid tainted format string
+      console.error('Failed to load admin page:', pageId, err);
       // Escape the error message before injecting into DOM to prevent XSS
       const safeMsg = String(err.message || 'Unknown error')
         .replace(/&/g, '&amp;')
@@ -225,7 +225,7 @@ class AdminApp {
           <div class="empty-desc">${safeMsg}</div>
         </div>
       `;
-      notify.error(`Page failed to load`, safeMsg);
+      notify.error('Page failed to load', safeMsg);
     }
   }
 }
