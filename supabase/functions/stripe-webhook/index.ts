@@ -332,6 +332,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       .eq("id", existingCustomer.id)
       .select("id")
       .single();
+    if (result.error || !result.data) {
+      console.error("Error updating customer:", result.error);
+      throw result.error ?? new Error("Customer update returned no data");
+    }
     customer = result.data as { id: string };
     customerError = result.error;
   } else {
@@ -341,6 +345,10 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
       .insert({ email: customerEmail, name: customerName, stripe_customer_id: stripeCustomerId })
       .select("id")
       .single();
+    if (result.error || !result.data) {
+      console.error("Error inserting customer:", result.error);
+      throw result.error ?? new Error("Customer insert returned no data");
+    }
     customer = result.data as { id: string };
     customerError = result.error;
   }
@@ -457,14 +465,15 @@ async function handlePaymentFailed(invoice: Stripe.Invoice): Promise<void> {
   }
 
   const safeName = escapeHtml(customer.name || "there");
-  const portalUrl = "https://billing.stripe.com/p/login/";
+  // Direct customers to the self-serve portal where they can update payment details.
+  const portalUrl = "https://agentsentinel.net/portal.html";
 
   const content = `
     <p>Hi ${safeName},</p>
     <div style="background:#fff1f2;border:1px solid #fca5a5;border-radius:8px;padding:20px;margin:20px 0;">
       <p style="margin:0;color:#991b1b;font-weight:bold;">&#x26A0;&#xFE0F; Payment failed — your access has been suspended</p>
     </div>
-    <p>We were unable to process your latest payment for AgentSentinel. To restore access to your license, please update your payment method.</p>
+    <p>We were unable to process your latest payment for AgentSentinel. To restore access to your license, please update your payment method via the customer portal.</p>
     <div style="text-align:center;margin:30px 0;">
       <a href="${portalUrl}" style="display:inline-block;background:#dc2626;color:white;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:bold;">Update Payment Method &#x2192;</a>
     </div>
@@ -606,7 +615,9 @@ serve(async (req) => {
             .update({ status: "active" })
             .eq("stripe_subscription_id", subId)
             .eq("status", "suspended");
-          if (!reactivateError) {
+          if (reactivateError) {
+            console.error(`Failed to reactivate license for subscription ${subId}:`, reactivateError);
+          } else {
             console.log(`\u2705 License reactivated for subscription ${subId}`);
           }
         }
