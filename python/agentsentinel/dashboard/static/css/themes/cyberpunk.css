@@ -1,0 +1,34 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AgentSentinel Dashboard — Cyberpunk Theme (Stub)
+   Neon-on-dark, high contrast. Coming soon.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Requires: theme-variables.css loaded first */
+
+[data-theme="cyberpunk"] body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="cyberpunk"] header {
+  background: rgba(4, 0, 10, 0.95) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+}
+
+[data-theme="cyberpunk"] header::after {
+  background: linear-gradient(90deg, transparent 0%, var(--header-glow-color) 50%, transparent 100%);
+}
+
+[data-theme="cyberpunk"] .card-glow {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
+}
+
+[data-theme="cyberpunk"] .card-glow:hover {
+  border-color: var(--card-hover-border) !important;
+  box-shadow: var(--card-hover-shadow) !important;
+}
+
+/* TODO: Full Cyberpunk implementation */

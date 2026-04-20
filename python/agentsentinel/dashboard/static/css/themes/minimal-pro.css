@@ -1,0 +1,35 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AgentSentinel Dashboard — Minimal Pro Theme (Stub)
+   Clean, minimal aesthetic. Coming soon.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Requires: theme-variables.css loaded first */
+
+[data-theme="minimal-pro"] body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="minimal-pro"] header {
+  background: rgba(9, 9, 11, 0.94) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(12px);
+}
+
+[data-theme="minimal-pro"] header::after {
+  display: none;
+}
+
+[data-theme="minimal-pro"] .card-glow {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
+}
+
+[data-theme="minimal-pro"] .card-glow:hover {
+  border-color: var(--card-hover-border) !important;
+  box-shadow: var(--card-hover-shadow) !important;
+}
+
+/* TODO: Full Minimal Pro implementation */

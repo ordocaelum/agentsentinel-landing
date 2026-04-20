@@ -1,0 +1,36 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   AgentSentinel Dashboard — Arctic Theme (Stub)
+   Clean light mode, icy blue accent. Coming soon.
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* Requires: theme-variables.css loaded first */
+
+[data-theme="arctic"] body {
+  background: var(--bg-base);
+  color: var(--text-primary);
+}
+
+[data-theme="arctic"] header {
+  background: rgba(240, 249, 255, 0.92) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  backdrop-filter: blur(12px);
+}
+
+[data-theme="arctic"] header::after {
+  background: linear-gradient(90deg, transparent 0%, var(--header-glow-color) 50%, transparent 100%);
+}
+
+[data-theme="arctic"] .card-glow {
+  background: var(--card-bg) !important;
+  border: 1px solid var(--border-color) !important;
+  box-shadow: var(--card-shadow) !important;
+  border-radius: var(--card-radius) !important;
+  color: var(--text-primary);
+}
+
+[data-theme="arctic"] .card-glow:hover {
+  border-color: var(--card-hover-border) !important;
+  box-shadow: var(--card-hover-shadow) !important;
+}
+
+/* TODO: Full Arctic implementation */
