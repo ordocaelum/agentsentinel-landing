@@ -126,9 +126,17 @@ serve(async (req) => {
       .eq("license_key", license_key)
       .single();
 
+    // Hash the license key for safe storage in the audit log.
+    // Never store the plaintext key in license_validations (see migration 007).
+    const licenseKeyHash = await (async () => {
+      const data = new TextEncoder().encode(license_key);
+      const buf = await crypto.subtle.digest("SHA-256", data);
+      return Array.from(new Uint8Array(buf)).map((b) => b.toString(16).padStart(2, "0")).join("");
+    })();
+
     // Log the validation attempt (best-effort)
     await supabase.from("license_validations").insert({
-      license_key,
+      license_key_hash: licenseKeyHash,
       license_id: license?.id || null,
       is_valid: !!license && license.status === "active",
       validation_source: req.headers.get("x-validation-source") || "api",

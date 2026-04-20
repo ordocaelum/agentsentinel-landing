@@ -245,12 +245,18 @@ class LicenseManager:
                     validation_error=result.get("error", "Invalid license key"),
                 )
 
-            tier_str = result.get("tier", "free")
+            tier_value = result.get("tier", "free")
             try:
-                tier = LicenseTier(tier_str)
+                tier = LicenseTier(tier_value)
             except ValueError:
-                # Unrecognised tier from API — safest fallback is FREE.
-                tier = LicenseTier.FREE
+                # Unknown tier from API — reject rather than silently downgrade to FREE.
+                return LicenseInfo(
+                    tier=LicenseTier.FREE,
+                    limits=TIER_LIMITS[LicenseTier.FREE],
+                    license_key=self._license_key,
+                    is_valid=False,
+                    validation_error=f"Unknown license tier returned by API: {tier_value!r}",
+                )
             return LicenseInfo(
                 tier=tier,
                 limits=TIER_LIMITS[tier],
@@ -274,16 +280,17 @@ class LicenseManager:
 
         verification = verify_license_key(self._license_key)
         if verification.get("valid"):
+            tier_value = verification.get("tier", "free")
             try:
-                tier = LicenseTier(verification["tier"])
+                tier = LicenseTier(tier_value)
             except ValueError:
-                # Unrecognised tier in signed key — treat as invalid.
+                # Unknown tier in signed payload — reject rather than silently downgrade.
                 return LicenseInfo(
                     tier=LicenseTier.FREE,
                     limits=TIER_LIMITS[LicenseTier.FREE],
                     license_key=self._license_key,
                     is_valid=False,
-                    validation_error="Invalid tier in license key",
+                    validation_error=f"Unknown license tier in signed key: {tier_value!r}",
                 )
             return LicenseInfo(
                 tier=tier,

@@ -15,6 +15,55 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// ─── OTP verification rate limiting (per email, on failure) ──────────────────
+// Sliding-window: max 5 failed OTP attempts per 15 minutes per email address.
+// Prevents brute-forcing the 6-digit OTP (only 1,000,000 possibilities).
+//
+// Note: this is in-memory, best-effort protection within a single isolate
+// lifetime.  It does not persist across cold starts or scale across multiple
+// function instances.  For production-grade multi-instance rate limiting, back
+// this with a Supabase table or an external store (same caveat as validate-license).
+const OTP_VERIFY_RATE_LIMIT_MAX = 5;
+const OTP_VERIFY_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+interface RateLimitEntry {
+  failTimestamps: number[];
+}
+
+const otpVerifyRateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Check whether the email is currently rate-limited for failed OTP attempts.
+ * Returns true when the caller should be allowed, false when rate-limited.
+ */
+function checkOtpVerifyRateLimit(email: string): boolean {
+  const now = Date.now();
+  const windowStart = now - OTP_VERIFY_RATE_LIMIT_WINDOW_MS;
+
+  let entry = otpVerifyRateLimitStore.get(email);
+  if (!entry) {
+    return true;
+  }
+
+  entry.failTimestamps = entry.failTimestamps.filter((t) => t > windowStart);
+  return entry.failTimestamps.length < OTP_VERIFY_RATE_LIMIT_MAX;
+}
+
+/** Record a failed OTP attempt for an email address. */
+function recordOtpFailure(email: string): void {
+  let entry = otpVerifyRateLimitStore.get(email);
+  if (!entry) {
+    entry = { failTimestamps: [] };
+    otpVerifyRateLimitStore.set(email, entry);
+  }
+  entry.failTimestamps.push(Date.now());
+}
+
+/** Clear failure record for an email after a successful OTP verification. */
+function clearOtpFailures(email: string): void {
+  otpVerifyRateLimitStore.delete(email);
+}
+
 /** Basic RFC-5322-approximate email format check. */
 function isValidEmail(email: string): boolean {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -26,6 +75,32 @@ async function hashOtp(otp: string): Promise<string> {
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
+
+/**
+ * Constant-time comparison of two SHA-256 hex-encoded hash strings.
+ *
+ * Using `===` on hash strings is vulnerable to timing attacks: JavaScript
+ * string comparison short-circuits on the first differing byte, leaking prefix
+ * information to an attacker who can measure response time.  This function
+ * always reads every byte of both strings regardless of where they differ.
+ *
+ * SHA-256 hex strings are always exactly 64 characters (256 bits).
+ * Any input that deviates from that length is immediately invalid and we
+ * return false without processing further — the attacker cannot infer useful
+ * information from a simple length check on obviously-malformed input.
+ */
+function timingSafeEqualHex(a: string, b: string): boolean {
+  // SHA-256 hex strings are always 64 characters; reject anything else upfront.
+  const SHA256_HEX_LEN = 64;
+  if (a.length !== SHA256_HEX_LEN || b.length !== SHA256_HEX_LEN) return false;
+
+  // Accumulate XOR differences over the entire string without short-circuiting.
+  let diff = 0;
+  for (let i = 0; i < SHA256_HEX_LEN; i++) {
+    diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
+  }
+  return diff === 0;
 }
 
 /** Base64url encode (no padding). */
@@ -128,6 +203,24 @@ serve(async (req) => {
       );
     }
 
+    // ── OTP brute-force rate limiting ────────────────────────────────────
+    if (!checkOtpVerifyRateLimit(email)) {
+      console.warn(`customer-portal: OTP rate limit exceeded for ${email}`);
+      return new Response(
+        JSON.stringify({
+          error: "Too many failed attempts. Please wait 15 minutes before trying again.",
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": "900",
+          },
+        },
+      );
+    }
+
     // ── OTP verification ─────────────────────────────────────────────────
     const otpHash = await hashOtp(otp);
     const now = new Date().toISOString();
@@ -143,12 +236,21 @@ serve(async (req) => {
       console.error("OTP lookup error:", otpError);
     }
 
-    if (!otpRow || otpRow.otp_hash !== otpHash) {
+    // Constant-time comparison to prevent timing-based OTP prefix leakage.
+    const otpValid = otpRow !== null && timingSafeEqualHex(otpRow.otp_hash, otpHash);
+
+    if (!otpValid) {
+      // Record failure for rate limiting regardless of whether a row was found
+      // (prevents enumeration of which emails have active OTPs).
+      recordOtpFailure(email);
       return new Response(
         JSON.stringify({ error: "Invalid or expired OTP. Please request a new code." }),
         { status: 401, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
+
+    // OTP verified — clear the failure counter for this email.
+    clearOtpFailures(email);
 
     // Delete the OTP row — it's single-use.
     await supabase
