@@ -3,7 +3,7 @@
 [![PyPI version](https://badge.fury.io/py/agentsentinel-core.svg)](https://pypi.org/project/agentsentinel-core/)
 [![npm version](https://badge.fury.io/js/@agentsentinel%2Fsdk.svg)](https://www.npmjs.com/package/@agentsentinel/sdk)
 [![CI](https://github.com/ordocaelum/agentsentinel-landing/actions/workflows/ci.yml/badge.svg)](https://github.com/ordocaelum/agentsentinel-landing/actions/workflows/ci.yml)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: BSL 1.1](https://img.shields.io/badge/License-BSL%201.1-blue.svg)](LICENSE.md)
 
 Safety controls, spend limits, and audit logging for AI agents.
 
@@ -199,6 +199,60 @@ const result = await searchWeb("AI safety best practices");
 `index.html` and `docs.html` are static GitHub Pages files. They serve as the public face of the project and contain real SDK API examples matching the code in this repo.
 
 No build step is required for the site — it uses Tailwind CSS via CDN and vanilla JavaScript.
+
+---
+
+## Local Development
+
+### Python SDK
+
+```bash
+cd python
+pip install -e ".[dev]"
+pytest -v
+```
+
+### TypeScript SDK
+
+```bash
+cd typescript
+npm install
+npm run build
+npm test
+```
+
+### Supabase Edge Functions
+
+1. Install the [Supabase CLI](https://supabase.com/docs/guides/cli).
+2. Copy `supabase/.env.example` to `supabase/.env` and fill in the required secrets.
+3. Start the local Supabase stack:
+   ```bash
+   supabase start
+   ```
+4. Serve edge functions locally:
+   ```bash
+   supabase functions serve --env-file supabase/.env
+   ```
+5. Forward Stripe webhooks to the local function using the Stripe CLI:
+   ```bash
+   stripe listen --forward-to http://localhost:54321/functions/v1/stripe-webhook
+   ```
+
+### Required Secrets
+
+See `supabase/.env.example` and `STRIPE_SETUP.md` for the full list of secrets.
+Key variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `SUPABASE_URL` | Your Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | Service role key (server-side only) |
+| `STRIPE_SECRET_KEY` | Stripe secret API key |
+| `STRIPE_WEBHOOK_SECRET` | Stripe webhook signing secret |
+| `AGENTSENTINEL_LICENSE_SIGNING_SECRET` | HMAC secret for license key signing |
+| `RESEND_API_KEY` | API key for sending transactional emails |
+
+> **Note:** Never commit secrets to source control. Use environment variables or a secrets manager.
 
 ---
 

@@ -60,25 +60,36 @@ supabase secrets set STRIPE_PRICE_PRO_TEAM_SEAT=<per_seat_price_id>
 
 **URL:** `https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/stripe-webhook`
 
-> **Note:** This URL is specific to the AgentSentinel Supabase project. Replace with your
-> project's URL if redeploying to a different Supabase project.
+> ⚠️ **Project-specific URL:** This URL is specific to the AgentSentinel Supabase project.
+> **Replace `hjjeowbgqyabpacxqbww` with your own project reference** if redeploying to a
+> different Supabase project.  Find your project reference in:
+> Supabase Dashboard → Settings → API → Reference ID.
 
 ### Registered Events
 
 | Event | Purpose |
 |-------|---------|
-| `checkout.session.completed` | Create customer, generate & email license key |
-| `customer.subscription.created` | Set initial `seat_count` on the license |
+| `checkout.session.completed` | Create customer, generate & email license key (idempotent) |
+| `customer.subscription.created` | Sync initial `seat_count` if not already set by checkout handler |
 | `customer.subscription.updated` | Sync `seat_count` when team size changes |
-| `customer.subscription.deleted` | Mark license as cancelled |
+| `customer.subscription.deleted` | Mark license as cancelled (idempotent) |
 | `invoice.payment_failed` | Log payment failure |
 | `invoice.upcoming` | Send Pro intro-pricing reminder emails |
+
+### Webhook Idempotency
+
+The `checkout.session.completed` handler checks for an existing license row with the same
+`stripe_subscription_id` before creating a new license.  If one already exists, the event is
+acknowledged and processing is skipped.  This prevents duplicate licenses if Stripe retries the
+event.
+
+Similarly, `customer.subscription.deleted` checks the current license status before cancelling.
 
 ### Registering the Webhook
 
 1. Go to [Stripe Dashboard → Webhooks](https://dashboard.stripe.com/webhooks)
 2. Click **+ Add endpoint**
-3. Endpoint URL: `https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1/stripe-webhook`
+3. Endpoint URL: `https://<YOUR_PROJECT_REF>.supabase.co/functions/v1/stripe-webhook`
 4. Select the events listed above
 5. Copy the **Signing secret** (`whsec_…`) and add it as a Supabase secret:
 
@@ -285,3 +296,47 @@ stripe listen --forward-to https://hjjeowbgqyabpacxqbww.supabase.co/functions/v1
 Test card numbers:
 - `4242 4242 4242 4242` — succeeds
 - `4000 0000 0000 9995` — declines
+
+---
+
+## Troubleshooting
+
+### `pro_team` or `starter` tier causes a database error
+
+**Symptom:** License insert fails with a constraint violation like
+`new row for relation "licenses" violates check constraint "licenses_tier_check"`.
+
+**Cause:** The initial schema (`001_initial_schema.sql`) only allowed `free`, `pro`, `team`,
+and `enterprise` as valid tier values.
+
+**Fix:** Run migration `004_fix_tier_constraint.sql` to add `starter` and `pro_team` to the
+constraint:
+
+```bash
+supabase db push
+# or apply manually in the Supabase SQL editor
+```
+
+### `portal.html` shows "Unable to connect" immediately
+
+**Cause:** The `SUPABASE_URL` constant in `portal.html` still contains the placeholder
+`YOUR_PROJECT_REF` and has not been replaced with your actual Supabase project URL.
+
+**Fix:** Replace `YOUR_PROJECT_REF` in `portal.html` with your Supabase project reference:
+
+```html
+<!-- Before -->
+const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
+
+<!-- After -->
+const SUPABASE_URL = 'https://abcdefghijklmnop.supabase.co';
+```
+
+### Duplicate licenses created for the same subscription
+
+**Cause:** Stripe may fire `checkout.session.completed` more than once in rare cases.
+
+**Fix:** The webhook handler now performs an idempotency check: if a license already exists
+for the given `stripe_subscription_id`, the duplicate event is acknowledged and skipped.
+Ensure migration `004_fix_tier_constraint.sql` has been applied so the initial insert succeeds.
+

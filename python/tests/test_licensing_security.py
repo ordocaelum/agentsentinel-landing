@@ -105,3 +105,32 @@ def test_stripe_webhook_rejects_invalid_signature():
     )
     assert code == 400
     assert "signature" in body["error"].lower()
+
+
+def test_offline_validation_accepts_pro_team_key(monkeypatch):
+    monkeypatch.setenv("AGENTSENTINEL_LICENSE_SIGNING_SECRET", "test-signing-secret")
+    key = generate_license_key("pro_team", valid_days=1)
+    from agentsentinel.utils.keygen import verify_license_key
+    result = verify_license_key(key, secret="test-signing-secret")
+    assert result["valid"] is True
+    assert result["tier"] == "pro_team"
+    assert result["valid_until"] > time.time()
+
+
+def test_offline_validation_accepts_starter_key(monkeypatch):
+    monkeypatch.setenv("AGENTSENTINEL_LICENSE_SIGNING_SECRET", "test-signing-secret")
+    key = generate_license_key("starter", valid_days=1)
+    from agentsentinel.utils.keygen import verify_license_key
+    result = verify_license_key(key, secret="test-signing-secret")
+    assert result["valid"] is True
+    assert result["tier"] == "starter"
+    assert result["valid_until"] > time.time()
+
+
+def test_offline_validation_rejects_unknown_tier(monkeypatch):
+    monkeypatch.setenv("AGENTSENTINEL_LICENSE_SIGNING_SECRET", "test-signing-secret")
+    key = generate_license_key("ultra_mega", valid_days=1)
+    from agentsentinel.utils.keygen import verify_license_key
+    result = verify_license_key(key, secret="test-signing-secret")
+    assert result["valid"] is False
+    assert "invalid tier" in result["error"].lower()

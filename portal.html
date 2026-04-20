@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Customer Portal | AgentSentinel</title>
   <meta name="description" content="Manage your AgentSentinel license, view usage stats, and manage your subscription." />
+  <!-- Content Security Policy -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co; img-src 'self' data:;" />
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -125,34 +127,80 @@
           <svg class="w-12 h-12 mx-auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 2L4 6v6c0 4.4 3.4 8.2 8 9.9 4.6-1.7 8-5.5 8-9.9V6L12 2z" fill="rgba(56,189,248,0.15)" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/><line x1="7.5" y1="12" x2="16.5" y2="12" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/><line x1="9.5" y1="10" x2="9.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/><line x1="14.5" y1="10" x2="14.5" y2="14" stroke="#6366f1" stroke-width="1" stroke-linecap="round"/><circle cx="12" cy="12" r="1.3" fill="#38bdf8"/><circle cx="7.5" cy="12" r="0.9" fill="#6366f1"/><circle cx="16.5" cy="12" r="0.9" fill="#6366f1"/><circle cx="9.5" cy="12" r="0.7" fill="#38bdf8"/><circle cx="14.5" cy="12" r="0.7" fill="#38bdf8"/></svg>
           <h1 class="text-2xl font-black tracking-tight mt-3 mb-2">Access Your Portal</h1>
           <p class="text-slate-400 text-sm leading-relaxed">
-            Enter your email address to view your license details, usage stats, and manage your subscription.
+            Enter your email address to receive a one-time sign-in code.
           </p>
         </div>
 
-        <form id="login-form" class="space-y-4">
-          <div>
-            <label for="email-input" class="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
-            <input
-              type="email"
-              id="email-input"
-              required
-              placeholder="you@company.com"
-              class="w-full bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-colors"
-            />
-          </div>
+        <!-- Step 1: Email entry -->
+        <div id="step-email">
+          <form id="email-form" class="space-y-4">
+            <div>
+              <label for="email-input" class="block text-sm font-medium text-slate-300 mb-1.5">Email Address</label>
+              <input
+                type="email"
+                id="email-input"
+                required
+                placeholder="you@company.com"
+                class="w-full bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-colors"
+              />
+            </div>
 
-          <!-- Error message -->
-          <div id="login-error" class="hidden bg-red-950/60 border border-red-800/60 text-red-300 text-sm rounded-lg px-4 py-3"></div>
+            <!-- Error message -->
+            <div id="email-error" class="hidden bg-red-950/60 border border-red-800/60 text-red-300 text-sm rounded-lg px-4 py-3"></div>
 
-          <button
-            type="submit"
-            id="login-btn"
-            class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
-          >
-            <span id="login-btn-text">View My License →</span>
-            <div id="login-spinner" class="spinner hidden"></div>
-          </button>
-        </form>
+            <button
+              type="submit"
+              id="email-btn"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
+            >
+              <span id="email-btn-text">Send Sign-In Code →</span>
+              <div id="email-spinner" class="spinner hidden"></div>
+            </button>
+          </form>
+        </div>
+
+        <!-- Step 2: OTP entry (hidden until email is submitted) -->
+        <div id="step-otp" class="hidden">
+          <p class="text-slate-400 text-sm mb-5 text-center">
+            A 6-digit code was sent to <strong id="otp-email-display" class="text-white"></strong>.
+            Check your inbox (and spam folder).
+          </p>
+          <form id="otp-form" class="space-y-4">
+            <div>
+              <label for="otp-input" class="block text-sm font-medium text-slate-300 mb-1.5">One-Time Code</label>
+              <input
+                type="text"
+                id="otp-input"
+                required
+                placeholder="123456"
+                maxlength="6"
+                inputmode="numeric"
+                autocomplete="one-time-code"
+                class="w-full bg-slate-800/60 border border-slate-700/60 text-white placeholder-slate-500 rounded-lg px-4 py-3 text-sm text-center tracking-[0.3em] text-lg font-mono focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-colors"
+              />
+            </div>
+
+            <!-- Error message -->
+            <div id="otp-error" class="hidden bg-red-950/60 border border-red-800/60 text-red-300 text-sm rounded-lg px-4 py-3"></div>
+
+            <button
+              type="submit"
+              id="otp-btn"
+              class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors shadow-lg shadow-blue-900/30 flex items-center justify-center gap-2"
+            >
+              <span id="otp-btn-text">Verify Code →</span>
+              <div id="otp-spinner" class="spinner hidden"></div>
+            </button>
+
+            <button
+              type="button"
+              id="resend-btn"
+              class="w-full text-sm text-slate-400 hover:text-white transition-colors py-2"
+            >
+              ← Change email / Resend code
+            </button>
+          </form>
+        </div>
 
         <p class="text-center text-xs text-slate-500 mt-6">
           Don't have a license? <a href="/index.html#pricing" class="text-blue-400 hover:text-blue-300 transition-colors">View pricing →</a>
@@ -256,17 +304,18 @@
 
         <!-- Quick Start commands -->
         <div class="mt-5">
-          <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-3">Quick Start</p>
+          <p class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Quick Start</p>
+          <p class="text-xs text-slate-500 mb-3">Click the copy button — the full key is copied to your clipboard automatically.</p>
           <div class="space-y-2">
             <div class="bg-slate-950/60 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
               <code id="cmd-export" class="license-key-text text-slate-300 text-xs flex-1 min-w-0 break-all">export AGENTSENTINEL_LICENSE_KEY=...</code>
-              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-export', this)" title="Copy">
+              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-export', this)" title="Copy full key">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               </button>
             </div>
             <div class="bg-slate-950/60 border border-slate-700/40 rounded-lg px-4 py-3 flex items-center justify-between gap-3">
               <code id="cmd-powershell" class="license-key-text text-slate-300 text-xs flex-1 min-w-0 break-all">$env:AGENTSENTINEL_LICENSE_KEY = "..."</code>
-              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-powershell', this)" title="Copy">
+              <button class="copy-btn text-slate-500 hover:text-white transition-colors flex-shrink-0" onclick="copyCommand('cmd-powershell', this)" title="Copy full key">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
               </button>
             </div>
@@ -382,29 +431,56 @@
   </footer>
 
   <script>
-    // ── Configuration ──────────────────────────────────────────────────────
-    // REQUIRED: Replace with your Supabase project URL before deploying.
-    // Find it in: Supabase Dashboard → Settings → API → Project URL
-    // e.g. https://abcdefghijklmnop.supabase.co
-    const SUPABASE_URL = 'https://YOUR_PROJECT_REF.supabase.co';
-    const CUSTOMER_PORTAL_FN  = `${SUPABASE_URL}/functions/v1/customer-portal`;
-    const BILLING_SESSION_FN  = `${SUPABASE_URL}/functions/v1/create-billing-session`;
+    // ── Configuration ─────────────────────────────────────────────────────────
+    // REQUIRED: Replace YOUR_PROJECT_REF with your Supabase project reference
+    // before deploying.  Find it in: Supabase Dashboard → Settings → API →
+    // Project URL (e.g. https://abcdefghijklmnop.supabase.co).
+    //
+    // ⚠️  If this value still contains "YOUR_PROJECT_REF", all API calls will
+    //     fail.  A visible error banner is shown below to catch this at runtime.
+    const SUPABASE_URL          = 'https://YOUR_PROJECT_REF.supabase.co';
+    const SEND_OTP_FN           = `${SUPABASE_URL}/functions/v1/send-portal-otp`;
+    const CUSTOMER_PORTAL_FN    = `${SUPABASE_URL}/functions/v1/customer-portal`;
+    const BILLING_SESSION_FN    = `${SUPABASE_URL}/functions/v1/create-billing-session`;
 
-    // ── State ──────────────────────────────────────────────────────────────
-    let currentData = null;
+    // ── Startup configuration check ───────────────────────────────────────────
+    // Show a visible error if the placeholder URL has not been replaced.
+    if (SUPABASE_URL.includes('YOUR_PROJECT_REF')) {
+      document.addEventListener('DOMContentLoaded', () => {
+        const banner = document.createElement('div');
+        banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#dc2626;color:#fff;padding:12px 20px;text-align:center;font-family:monospace;font-size:14px;font-weight:bold;';
+        banner.textContent = '⚠️ CONFIGURATION ERROR: Replace YOUR_PROJECT_REF in portal.html with your Supabase project URL before deploying.';
+        document.body.prepend(banner);
+      });
+    }
+
+    // ── State ─────────────────────────────────────────────────────────────────
+    let currentData    = null;  // full portal data from customer-portal response
+    let portalToken    = null;  // HMAC-signed token for billing session calls
+    let currentEmail   = '';    // email carried from step 1 to step 2
     let licenseRevealed = false;
 
-    // ── DOM refs ───────────────────────────────────────────────────────────
+    // ── DOM refs ───────────────────────────────────────────────────────────────
     const loginSection     = document.getElementById('login-section');
     const dashboardSection = document.getElementById('dashboard-section');
-    const loginForm        = document.getElementById('login-form');
     const emailInput       = document.getElementById('email-input');
-    const loginBtn         = document.getElementById('login-btn');
-    const loginBtnText     = document.getElementById('login-btn-text');
-    const loginSpinner     = document.getElementById('login-spinner');
-    const loginError       = document.getElementById('login-error');
+    const emailForm        = document.getElementById('email-form');
+    const emailBtn         = document.getElementById('email-btn');
+    const emailBtnText     = document.getElementById('email-btn-text');
+    const emailSpinner     = document.getElementById('email-spinner');
+    const emailError       = document.getElementById('email-error');
+    const stepEmail        = document.getElementById('step-email');
+    const stepOtp          = document.getElementById('step-otp');
+    const otpForm          = document.getElementById('otp-form');
+    const otpInput         = document.getElementById('otp-input');
+    const otpBtn           = document.getElementById('otp-btn');
+    const otpBtnText       = document.getElementById('otp-btn-text');
+    const otpSpinner       = document.getElementById('otp-spinner');
+    const otpError         = document.getElementById('otp-error');
+    const otpEmailDisplay  = document.getElementById('otp-email-display');
+    const resendBtn        = document.getElementById('resend-btn');
 
-    // ── Helpers ────────────────────────────────────────────────────────────
+    // ── Helpers ────────────────────────────────────────────────────────────────
     function formatDate(iso) {
       if (!iso) return '—';
       return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
@@ -412,9 +488,8 @@
 
     function maskKey(key) {
       if (!key) return '';
-      // Show first 12 and last 4 chars, mask the rest
       if (key.length <= 20) return key;
-      return key.slice(0, 12) + '••••••••••••••••••••••••' + key.slice(-4);
+      return key.slice(0, 12) + '•'.repeat(key.length - 16) + key.slice(-4);
     }
 
     function fmtNumber(n) {
@@ -422,51 +497,110 @@
       return n.toLocaleString();
     }
 
-    function showError(msg) {
-      loginError.textContent = msg;
-      loginError.classList.remove('hidden');
+    function showEmailError(msg) {
+      emailError.textContent = msg;
+      emailError.classList.remove('hidden');
+    }
+    function hideEmailError() { emailError.classList.add('hidden'); }
+
+    function showOtpError(msg) {
+      otpError.textContent = msg;
+      otpError.classList.remove('hidden');
+    }
+    function hideOtpError() { otpError.classList.add('hidden'); }
+
+    function setEmailLoading(loading) {
+      emailBtn.disabled = loading;
+      emailBtnText.textContent = loading ? 'Sending…' : 'Send Sign-In Code →';
+      emailSpinner.classList.toggle('hidden', !loading);
     }
 
-    function hideError() {
-      loginError.classList.add('hidden');
+    function setOtpLoading(loading) {
+      otpBtn.disabled = loading;
+      otpBtnText.textContent = loading ? 'Verifying…' : 'Verify Code →';
+      otpSpinner.classList.toggle('hidden', !loading);
     }
 
-    function setLoginLoading(loading) {
-      loginBtn.disabled = loading;
-      loginBtnText.textContent = loading ? 'Looking up…' : 'View My License →';
-      loginSpinner.classList.toggle('hidden', !loading);
-    }
-
-    // ── Login / Lookup ─────────────────────────────────────────────────────
-    loginForm.addEventListener('submit', async (e) => {
+    // ── Step 1: Email → send OTP ───────────────────────────────────────────────
+    emailForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      hideError();
+      hideEmailError();
       const email = emailInput.value.trim();
       if (!email) return;
 
-      setLoginLoading(true);
+      setEmailLoading(true);
       try {
-        const res = await fetch(`${CUSTOMER_PORTAL_FN}?email=${encodeURIComponent(email)}`);
-        const data = await res.json();
-
+        const res = await fetch(SEND_OTP_FN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
+        });
+        // Always returns 200 (even for unknown emails) to prevent enumeration.
         if (!res.ok) {
-          showError(data.error || 'Something went wrong. Please try again.');
+          const data = await res.json().catch(() => ({}));
+          showEmailError(data.error || 'Something went wrong. Please try again.');
           return;
         }
 
-        currentData = data;
+        // Advance to OTP step
+        currentEmail = email;
+        otpEmailDisplay.textContent = email;
+        stepEmail.classList.add('hidden');
+        stepOtp.classList.remove('hidden');
+        otpInput.focus();
+      } catch {
+        showEmailError('Unable to connect. Please check your connection and try again.');
+      } finally {
+        setEmailLoading(false);
+      }
+    });
+
+    // ── Step 2: OTP → verify and load portal ──────────────────────────────────
+    otpForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideOtpError();
+      const otp = otpInput.value.trim();
+      if (!otp) return;
+
+      setOtpLoading(true);
+      try {
+        const res = await fetch(CUSTOMER_PORTAL_FN, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: currentEmail, otp }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+          showOtpError(data.error || 'Something went wrong. Please try again.');
+          return;
+        }
+
+        // Store portal data and token in memory (never in localStorage).
+        currentData  = data;
+        portalToken  = data.portal_token || null;
         renderDashboard(data);
         loginSection.classList.add('hidden');
         dashboardSection.classList.remove('hidden');
         window.scrollTo(0, 0);
-      } catch (err) {
-        showError('Unable to connect. Please check your connection and try again.');
+      } catch {
+        showOtpError('Unable to connect. Please check your connection and try again.');
       } finally {
-        setLoginLoading(false);
+        setOtpLoading(false);
       }
     });
 
-    // ── Render Dashboard ───────────────────────────────────────────────────
+    // ── Resend / change email ──────────────────────────────────────────────────
+    resendBtn.addEventListener('click', () => {
+      hideOtpError();
+      hideEmailError();
+      otpInput.value = '';
+      stepOtp.classList.add('hidden');
+      stepEmail.classList.remove('hidden');
+      emailInput.focus();
+    });
+
+    // ── Render Dashboard ───────────────────────────────────────────────────────
     function renderDashboard(data) {
       const { customer, license } = data;
 
@@ -497,12 +631,16 @@
         document.getElementById('plan-expiry').textContent = formatDate(license.expires_at);
       }
 
-      // License key
-      renderLicenseKey(license.license_key, false);
+      // License key — show masked version initially; full key is in memory only
+      const fullKey = license.license_key_full || license.license_key;
+      renderLicenseKey(fullKey, false);
 
-      // Quick start commands
-      document.getElementById('cmd-export').textContent     = `export AGENTSENTINEL_LICENSE_KEY="${license.license_key}"`;
-      document.getElementById('cmd-powershell').textContent = `$env:AGENTSENTINEL_LICENSE_KEY = "${license.license_key}"`;
+      // Quick start commands show masked key in the DOM; Copy always uses full key
+      document.getElementById('cmd-export').textContent     = `export AGENTSENTINEL_LICENSE_KEY="${maskKey(fullKey)}"`;
+      document.getElementById('cmd-powershell').textContent = `$env:AGENTSENTINEL_LICENSE_KEY = "${maskKey(fullKey)}"`;
+
+      // Store full key in memory for Reveal/Copy (never written to DOM unless revealed)
+      currentData._fullLicenseKey = fullKey;
 
       // Usage stats
       const agentsLimit  = license.agents_limit;
@@ -529,9 +667,9 @@
       setFeature('integrations', intEnabled);
       setFeature('multiagent',  multiEnabled);
 
-      // Manage subscription button
+      // Manage subscription button — use portal_token instead of raw stripe_customer_id
       const manageBtn = document.getElementById('manage-sub-btn');
-      if (data.stripe_customer_id) {
+      if (portalToken) {
         manageBtn.disabled = false;
         manageBtn.addEventListener('click', handleManageSubscription);
       } else {
@@ -548,18 +686,18 @@
       document.getElementById('license-key-display').textContent = revealed ? key : maskKey(key);
     }
 
-    // ── Reveal toggle ──────────────────────────────────────────────────────
+    // ── Reveal toggle ──────────────────────────────────────────────────────────
     document.getElementById('reveal-btn').addEventListener('click', () => {
       if (!currentData) return;
       licenseRevealed = !licenseRevealed;
-      renderLicenseKey(currentData.license.license_key, licenseRevealed);
+      renderLicenseKey(currentData._fullLicenseKey, licenseRevealed);
       document.getElementById('reveal-btn').textContent = licenseRevealed ? '🙈 Hide' : '👁 Reveal';
     });
 
-    // ── Copy license key ───────────────────────────────────────────────────
+    // ── Copy license key ───────────────────────────────────────────────────────
     document.getElementById('copy-key-btn').addEventListener('click', () => {
       if (!currentData) return;
-      navigator.clipboard.writeText(currentData.license.license_key).then(() => {
+      navigator.clipboard.writeText(currentData._fullLicenseKey).then(() => {
         const btn = document.getElementById('copy-key-btn');
         btn.textContent = '✅ Copied!';
         btn.classList.add('copied');
@@ -567,10 +705,15 @@
       });
     });
 
-    // ── Copy command helper ────────────────────────────────────────────────
+    // ── Copy command helper ────────────────────────────────────────────────────
     function copyCommand(elemId, btn) {
-      const text = document.getElementById(elemId).textContent;
-      navigator.clipboard.writeText(text).then(() => {
+      if (!currentData) return;
+      // For the quick-start commands, always copy the real key (not the masked text)
+      const elemText = document.getElementById(elemId).textContent;
+      const textToCopy = elemId === 'cmd-export'
+        ? `export AGENTSENTINEL_LICENSE_KEY="${currentData._fullLicenseKey}"`
+        : `$env:AGENTSENTINEL_LICENSE_KEY = "${currentData._fullLicenseKey}"`;
+      navigator.clipboard.writeText(textToCopy).then(() => {
         btn.innerHTML = '<svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>';
         setTimeout(() => {
           btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>';
@@ -578,7 +721,7 @@
       });
     }
 
-    // ── Manage Subscription ────────────────────────────────────────────────
+    // ── Manage Subscription ────────────────────────────────────────────────────
     async function handleManageSubscription() {
       const manageBtn = document.getElementById('manage-sub-btn');
       const original  = manageBtn.innerHTML;
@@ -589,7 +732,8 @@
         const res = await fetch(BILLING_SESSION_FN, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ stripe_customer_id: currentData.stripe_customer_id }),
+          // Send portal_token (HMAC-signed) rather than the raw stripe_customer_id.
+          body: JSON.stringify({ portal_token: portalToken }),
         });
         const data = await res.json();
         if (res.ok && data.url) {
@@ -606,12 +750,18 @@
       }
     }
 
-    // ── Sign out ───────────────────────────────────────────────────────────
+    // ── Sign out ───────────────────────────────────────────────────────────────
     document.getElementById('logout-btn').addEventListener('click', () => {
-      currentData = null;
+      currentData     = null;
+      portalToken     = null;
+      currentEmail    = '';
       licenseRevealed = false;
       emailInput.value = '';
-      hideError();
+      otpInput.value   = '';
+      hideEmailError();
+      hideOtpError();
+      stepOtp.classList.add('hidden');
+      stepEmail.classList.remove('hidden');
       dashboardSection.classList.add('hidden');
       loginSection.classList.remove('hidden');
       window.scrollTo(0, 0);

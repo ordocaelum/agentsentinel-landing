@@ -1,19 +1,80 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+// SDK calls are server-to-server and do not require CORS, but restricting the
+// header to our own domain prevents browser-based abuse of this endpoint.
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Origin": "https://agentsentinel.net",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+// ─── In-memory rate limiting ──────────────────────────────────────────────────
+// 20 requests per minute per IP, implemented as a sliding-window counter.
+// Because Deno Edge Function isolates are short-lived and stateless, this
+// provides best-effort protection within a single isolate lifetime.
+// For production-grade, multi-instance rate limiting, back this with a
+// Supabase table or an external store.
+
+const RATE_LIMIT_MAX = 20;
+const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
+
+interface RateLimitEntry {
+  timestamps: number[];
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Returns true when the caller should be allowed, false when rate-limited.
+ * Prunes timestamps older than the window before checking.
+ */
+function checkRateLimit(ip: string): boolean {
+  const now = Date.now();
+  const windowStart = now - RATE_LIMIT_WINDOW_MS;
+
+  let entry = rateLimitStore.get(ip);
+  if (!entry) {
+    entry = { timestamps: [] };
+    rateLimitStore.set(ip, entry);
+  }
+
+  // Remove timestamps outside the sliding window.
+  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
+
+  if (entry.timestamps.length >= RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  entry.timestamps.push(now);
+  return true;
+}
+
+// POST /functions/v1/validate-license
+// Body: { license_key: string }
 serve(async (req) => {
   // Handle CORS preflight
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
+  }
+
+  // ── Rate limiting ────────────────────────────────────────────────────────
+  const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
+  if (!checkRateLimit(clientIp)) {
+    return new Response(
+      JSON.stringify({ valid: false, error: "Too many requests. Please retry later." }),
+      {
+        status: 429,
+        headers: {
+          ...corsHeaders,
+          "Content-Type": "application/json",
+          "Retry-After": "60",
+        },
+      },
+    );
   }
 
   try {
@@ -27,9 +88,7 @@ serve(async (req) => {
     }
 
     // Accept both legacy `as_<tier>_*` keys and new HMAC-signed `asv1_*` keys.
-    // Both formats are stored as plain strings in the licenses table, so a
-    // simple equality lookup handles both without any format-specific logic here.
-    const isLegacyFormat = /^as_(pro|pro_team|starter|enterprise)_/.test(license_key);
+    const isLegacyFormat = /^as_(free|starter|pro|pro_team|team|enterprise)_/.test(license_key);
     const isSignedFormat = license_key.startsWith("asv1_");
     if (!isLegacyFormat && !isSignedFormat) {
       return new Response(
@@ -51,15 +110,15 @@ serve(async (req) => {
       .eq("license_key", license_key)
       .single();
 
-    // Log the validation attempt
+    // Log the validation attempt (best-effort)
     await supabase.from("license_validations").insert({
-      license_key: license_key,
+      license_key,
       license_id: license?.id || null,
       is_valid: !!license && license.status === "active",
       validation_source: req.headers.get("x-validation-source") || "api",
-      ip_address: req.headers.get("x-forwarded-for") || "unknown",
+      ip_address: clientIp,
       user_agent: req.headers.get("user-agent") || "unknown",
-    });
+    }).then(() => {}, (err) => console.warn("Failed to log validation:", err));
 
     if (error || !license) {
       return new Response(
@@ -87,7 +146,6 @@ serve(async (req) => {
       );
     }
 
-    // License is valid!
     return new Response(
       JSON.stringify({
         valid: true,
