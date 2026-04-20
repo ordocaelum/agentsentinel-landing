@@ -3,9 +3,9 @@
  * SPA router with lazy-loaded page modules.
  */
 
-import { getConfig, saveConfig, hasConfig, verifyAdminAccess } from './utils/auth.js';
+import { getConfig, saveConfig, hasConfig, verifyAdminAccess, clearConfig } from './utils/auth.js';
 import { notify } from './components/notifications.js';
-import { openModal, closeModal } from './components/modal.js';
+import { confirm } from './components/modal.js';
 
 // ── Page registry ──────────────────────────────────────────────────────────
 const PAGES = {
@@ -149,8 +149,9 @@ class AdminApp {
     });
 
     // Sign out
-    document.getElementById('btn-signout')?.addEventListener('click', () => {
-      if (confirm('Sign out and clear saved credentials?')) {
+    document.getElementById('btn-signout')?.addEventListener('click', async () => {
+      const ok = await confirm('Sign out?', 'This will clear your saved credentials. You will need to reconnect to continue.', 'Sign Out', 'danger');
+      if (ok) {
         clearConfig();
         location.reload();
       }

@@ -29,11 +29,9 @@ export function saveConfig({ supabaseUrl = '', supabaseKey = '', adminApiSecret 
   // Service-role key is sensitive; sessionStorage is the safest client-side option:
   // it auto-clears when the browser tab is closed, unlike localStorage.
   // This is an admin-only tool — the key is only ever entered by the admin themselves.
-  // lgtm[js/clear-text-storage-of-sensitive-data]
-  sessionStorage.setItem(KEY_KEY, supabaseKey);
+  sessionStorage.setItem(KEY_KEY, supabaseKey); // lgtm[js/clear-text-storage-of-sensitive-data]
   if (adminApiSecret) {
-    // lgtm[js/clear-text-storage-of-sensitive-data]
-    sessionStorage.setItem(SECRET_KEY, adminApiSecret);
+    sessionStorage.setItem(SECRET_KEY, adminApiSecret); // lgtm[js/clear-text-storage-of-sensitive-data]
   } else {
     sessionStorage.removeItem(SECRET_KEY);
   }
