@@ -13,6 +13,42 @@ const corsHeaders = {
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
 
+// ─── OTP request rate limiting (per email) ───────────────────────────────────
+// Sliding-window: max 5 OTP requests per 15 minutes per email address.
+// Prevents OTP spam and brute-force via mail-provider rate limits.
+const OTP_RATE_LIMIT_MAX = 5;
+const OTP_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+interface RateLimitEntry {
+  timestamps: number[];
+}
+
+const otpRateLimitStore = new Map<string, RateLimitEntry>();
+
+/**
+ * Returns true when the caller should be allowed, false when rate-limited.
+ * Prunes timestamps outside the sliding window before checking.
+ */
+function checkOtpRateLimit(email: string): boolean {
+  const now = Date.now();
+  const windowStart = now - OTP_RATE_LIMIT_WINDOW_MS;
+
+  let entry = otpRateLimitStore.get(email);
+  if (!entry) {
+    entry = { timestamps: [] };
+    otpRateLimitStore.set(email, entry);
+  }
+
+  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
+
+  if (entry.timestamps.length >= OTP_RATE_LIMIT_MAX) {
+    return false;
+  }
+
+  entry.timestamps.push(now);
+  return true;
+}
+
 /** Hash a plaintext OTP with SHA-256 for safe storage. */
 async function hashOtp(otp: string): Promise<string> {
   const data = new TextEncoder().encode(otp);
@@ -51,6 +87,22 @@ serve(async (req) => {
       return new Response(
         JSON.stringify({ error: "Invalid email format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+      );
+    }
+
+    // ── OTP request rate limiting ─────────────────────────────────────────
+    if (!checkOtpRateLimit(email)) {
+      console.warn(`send-portal-otp: rate limit exceeded for ${email}`);
+      return new Response(
+        JSON.stringify({ error: "Too many OTP requests. Please wait 15 minutes before trying again." }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            "Content-Type": "application/json",
+            "Retry-After": "900",
+          },
+        },
       );
     }
 
@@ -97,16 +149,16 @@ serve(async (req) => {
     const otpHash = await hashOtp(otp);
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
 
-    // Replace any existing (valid) OTP for this email with the new one.
-    await supabase.from("portal_otps").delete().eq("email", email);
-    const { error: insertError } = await supabase.from("portal_otps").insert({
-      email,
-      otp_hash: otpHash,
-      expires_at: expiresAt,
-    });
+    // Atomically replace any existing OTP for this email using upsert.
+    // The previous delete+insert pattern had a race condition where two
+    // concurrent requests could both insert a row, leaving two valid OTPs.
+    const { error: upsertError } = await supabase.from("portal_otps").upsert(
+      { email, otp_hash: otpHash, expires_at: expiresAt },
+      { onConflict: "email" },
+    );
 
-    if (insertError) {
-      console.error("Failed to store OTP:", insertError);
+    if (upsertError) {
+      console.error("Failed to store OTP:", upsertError);
       return new Response(
         JSON.stringify({ error: "Failed to send OTP. Please try again." }),
         { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } },

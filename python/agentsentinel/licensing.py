@@ -23,7 +23,9 @@ from .utils.keygen import verify_license_key
 class LicenseTier(Enum):
     """License tiers with associated limits."""
     FREE = "free"
+    STARTER = "starter"
     PRO = "pro"
+    PRO_TEAM = "pro_team"
     TEAM = "team"
     ENTERPRISE = "enterprise"
 
@@ -51,6 +53,15 @@ TIER_LIMITS: Dict[LicenseTier, LicenseLimits] = {
         policy_editor="none",
         watermark_required=True,
     ),
+    LicenseTier.STARTER: LicenseLimits(
+        max_agents=1,
+        max_events_per_month=1_000,
+        dashboard_enabled=True,
+        integrations_enabled=False,
+        multi_agent_enabled=False,
+        policy_editor="basic",
+        watermark_required=False,
+    ),
     LicenseTier.PRO: LicenseLimits(
         max_agents=5,
         max_events_per_month=50_000,
@@ -58,6 +69,15 @@ TIER_LIMITS: Dict[LicenseTier, LicenseLimits] = {
         integrations_enabled=True,
         multi_agent_enabled=False,
         policy_editor="basic",
+        watermark_required=False,
+    ),
+    LicenseTier.PRO_TEAM: LicenseLimits(
+        max_agents=5,
+        max_events_per_month=50_000,
+        dashboard_enabled=True,
+        integrations_enabled=True,
+        multi_agent_enabled=True,
+        policy_editor="full",
         watermark_required=False,
     ),
     LicenseTier.TEAM: LicenseLimits(
@@ -220,7 +240,18 @@ class LicenseManager:
                     validation_error=result.get("error", "Invalid license key"),
                 )
 
-            tier = LicenseTier(result.get("tier", "free"))
+            tier_value = result.get("tier", "free")
+            try:
+                tier = LicenseTier(tier_value)
+            except ValueError:
+                # Unknown tier from API — reject rather than silently downgrade to FREE.
+                return LicenseInfo(
+                    tier=LicenseTier.FREE,
+                    limits=TIER_LIMITS[LicenseTier.FREE],
+                    license_key=self._license_key,
+                    is_valid=False,
+                    validation_error=f"Unknown license tier returned by API: {tier_value!r}",
+                )
             return LicenseInfo(
                 tier=tier,
                 limits=TIER_LIMITS[tier],
@@ -244,7 +275,18 @@ class LicenseManager:
 
         verification = verify_license_key(self._license_key)
         if verification.get("valid"):
-            tier = LicenseTier(verification["tier"])
+            tier_value = verification.get("tier", "free")
+            try:
+                tier = LicenseTier(tier_value)
+            except ValueError:
+                # Unknown tier in signed payload — reject rather than silently downgrade.
+                return LicenseInfo(
+                    tier=LicenseTier.FREE,
+                    limits=TIER_LIMITS[LicenseTier.FREE],
+                    license_key=self._license_key,
+                    is_valid=False,
+                    validation_error=f"Unknown license tier in signed key: {tier_value!r}",
+                )
             return LicenseInfo(
                 tier=tier,
                 limits=TIER_LIMITS[tier],

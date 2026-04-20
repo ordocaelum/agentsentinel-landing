@@ -50,6 +50,15 @@ function b64urlEncode(bytes: Uint8Array): string {
 }
 
 /**
+ * Mask a license key for safe logging — show first 12 chars + "...".
+ * Never log the full key to prevent exposure in log aggregation services.
+ */
+function maskLicenseKey(key: string): string {
+  if (key.length <= 12) return "***";
+  return key.slice(0, 12) + "...";
+}
+
+/**
  * Escape HTML special characters in customer-supplied strings before
  * interpolating them into email HTML.  This prevents XSS / HTML injection
  * even if a customer registers with a name like <script>alert(1)</script>.
@@ -315,17 +324,35 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   // stripe_customer_id.  A customer who re-purchases with a new Stripe account
   // should have their existing stripe_customer_id preserved so their original
   // billing portal access still works.
-  const { data: customer, error: customerError } = await supabase
+  const { data: existingCustomer } = await supabase
     .from("customers")
-    .upsert(
-      { email: customerEmail, name: customerName, stripe_customer_id: stripeCustomerId },
-      {
-        onConflict: "email",
-        ignoreDuplicates: false,
-      },
-    )
-    .select()
-    .single();
+    .select("id, name, email, stripe_customer_id, created_at")
+    .eq("email", customerEmail)
+    .maybeSingle();
+
+  let customer: { id: string; [key: string]: unknown } | null;
+  let customerError: unknown;
+
+  if (existingCustomer) {
+    // Customer exists: update name only; preserve stripe_customer_id.
+    const { data, error } = await supabase
+      .from("customers")
+      .update({ name: customerName })
+      .eq("email", customerEmail)
+      .select()
+      .single();
+    customer = data;
+    customerError = error;
+  } else {
+    // New customer: insert with all fields including stripe_customer_id.
+    const { data, error } = await supabase
+      .from("customers")
+      .insert({ email: customerEmail, name: customerName, stripe_customer_id: stripeCustomerId })
+      .select()
+      .single();
+    customer = data;
+    customerError = error;
+  }
 
   if (customerError) {
     console.error("Error creating customer:", customerError);
@@ -355,7 +382,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     throw licenseError;
   }
 
-  console.log(`\u2705 License created: ${licenseKey}`);
+  console.log(`\u2705 License created: ${maskLicenseKey(licenseKey)}`);
 
   // 4. Send welcome email
   await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier);
