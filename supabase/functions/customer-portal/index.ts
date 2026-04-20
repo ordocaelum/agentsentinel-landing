@@ -18,6 +18,11 @@ const corsHeaders = {
 // ─── OTP verification rate limiting (per email, on failure) ──────────────────
 // Sliding-window: max 5 failed OTP attempts per 15 minutes per email address.
 // Prevents brute-forcing the 6-digit OTP (only 1,000,000 possibilities).
+//
+// Note: this is in-memory, best-effort protection within a single isolate
+// lifetime.  It does not persist across cold starts or scale across multiple
+// function instances.  For production-grade multi-instance rate limiting, back
+// this with a Supabase table or an external store (same caveat as validate-license).
 const OTP_VERIFY_RATE_LIMIT_MAX = 5;
 const OTP_VERIFY_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
@@ -73,19 +78,26 @@ async function hashOtp(otp: string): Promise<string> {
 }
 
 /**
- * Constant-time comparison of two hex-encoded hash strings.
+ * Constant-time comparison of two SHA-256 hex-encoded hash strings.
  *
  * Using `===` on hash strings is vulnerable to timing attacks: JavaScript
  * string comparison short-circuits on the first differing byte, leaking prefix
  * information to an attacker who can measure response time.  This function
  * always reads every byte of both strings regardless of where they differ.
  *
- * Both inputs must be hex strings of the same length (SHA-256 → 64 chars).
+ * SHA-256 hex strings are always exactly 64 characters (256 bits).
+ * Any input that deviates from that length is immediately invalid and we
+ * return false without processing further — the attacker cannot infer useful
+ * information from a simple length check on obviously-malformed input.
  */
 function timingSafeEqualHex(a: string, b: string): boolean {
-  if (a.length !== b.length) return false;
+  // SHA-256 hex strings are always 64 characters; reject anything else upfront.
+  const SHA256_HEX_LEN = 64;
+  if (a.length !== SHA256_HEX_LEN || b.length !== SHA256_HEX_LEN) return false;
+
+  // Accumulate XOR differences over the entire string without short-circuiting.
   let diff = 0;
-  for (let i = 0; i < a.length; i++) {
+  for (let i = 0; i < SHA256_HEX_LEN; i++) {
     diff |= a.charCodeAt(i) ^ b.charCodeAt(i);
   }
   return diff === 0;

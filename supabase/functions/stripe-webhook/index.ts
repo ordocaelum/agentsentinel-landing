@@ -319,40 +319,23 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     ? parseInt(session.metadata.seats, 10) || null
     : null;
 
-  // 1. Create or update customer.
+  // 1. Create or update customer (atomic).
   // Phase 3.5 fix: on email conflict only update the name, never overwrite
   // stripe_customer_id.  A customer who re-purchases with a new Stripe account
   // should have their existing stripe_customer_id preserved so their original
   // billing portal access still works.
-  const { data: existingCustomer } = await supabase
-    .from("customers")
-    .select("id, name, email, stripe_customer_id, created_at")
-    .eq("email", customerEmail)
-    .maybeSingle();
+  //
+  // We use an RPC function (upsert_customer_preserve_stripe_id) that resolves
+  // the conflict in a single atomic INSERT ... ON CONFLICT DO UPDATE, avoiding
+  // the TOCTOU race condition that a select-then-insert pattern would introduce.
+  const { data: customerRows, error: customerError } = await supabase
+    .rpc("upsert_customer_preserve_stripe_id", {
+      p_email: customerEmail,
+      p_name: customerName,
+      p_stripe_customer_id: stripeCustomerId,
+    });
 
-  let customer: { id: string; [key: string]: unknown } | null;
-  let customerError: unknown;
-
-  if (existingCustomer) {
-    // Customer exists: update name only; preserve stripe_customer_id.
-    const { data, error } = await supabase
-      .from("customers")
-      .update({ name: customerName })
-      .eq("email", customerEmail)
-      .select()
-      .single();
-    customer = data;
-    customerError = error;
-  } else {
-    // New customer: insert with all fields including stripe_customer_id.
-    const { data, error } = await supabase
-      .from("customers")
-      .insert({ email: customerEmail, name: customerName, stripe_customer_id: stripeCustomerId })
-      .select()
-      .single();
-    customer = data;
-    customerError = error;
-  }
+  const customer = Array.isArray(customerRows) ? customerRows[0] : customerRows;
 
   if (customerError) {
     console.error("Error creating customer:", customerError);
