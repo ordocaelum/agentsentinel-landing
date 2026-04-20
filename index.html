@@ -806,6 +806,31 @@
         <p class="text-slate-500 text-center max-w-lg mx-auto">Start with a free trial, scale as you grow</p>
       </div>
 
+      <!-- Promo Code Section -->
+      <div class="mb-12">
+        <div class="max-w-md mx-auto">
+          <label class="block text-sm font-semibold text-slate-300 mb-2">
+            Have a promo code? <span class="text-slate-500 font-normal">(Optional)</span>
+          </label>
+          <div class="flex gap-2">
+            <input
+              id="promo-input"
+              type="text"
+              placeholder="Enter code"
+              maxlength="64"
+              class="flex-1 bg-slate-800 border border-slate-700 rounded-lg px-4 py-2 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500/60 focus:border-blue-500/60 transition-colors text-sm"
+            />
+            <button
+              onclick="validatePromo()"
+              class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-6 py-2 rounded-lg transition-colors text-sm"
+            >
+              Apply
+            </button>
+          </div>
+          <div id="promo-status" class="mt-2 text-sm min-h-[1.25rem]"></div>
+        </div>
+      </div>
+
       <!-- Primary Tiers: Starter & Pro (most users) -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
@@ -1247,6 +1272,70 @@
     document.querySelectorAll('#mobile-menu a[href^="#"]').forEach(function(link) {
       link.addEventListener('click', closeMobileMenu);
     });
+
+    // ── Promo Code Validation ──────────────────────────────────────────
+    // REQUIRED: Replace YOUR_PROJECT_REF with your actual Supabase project reference.
+    // Find it in: Supabase Dashboard → Settings → API → Project URL.
+    var PROMO_VALIDATE_URL = 'https://YOUR_PROJECT_REF.supabase.co/functions/v1/validate-promo';
+
+    var appliedPromo = null;
+
+    async function validatePromo() {
+      var input = document.getElementById('promo-input');
+      var statusDiv = document.getElementById('promo-status');
+      var code = input ? input.value.trim() : '';
+
+      if (!code) {
+        if (statusDiv) statusDiv.innerHTML = '<span class="text-slate-400">Enter a promo code</span>';
+        return;
+      }
+
+      if (statusDiv) statusDiv.innerHTML = '<span class="text-slate-400">Validating…</span>';
+
+      try {
+        var response = await fetch(PROMO_VALIDATE_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ promo_code: code })
+        });
+
+        var result = await response.json();
+
+        if (result.valid) {
+          appliedPromo = result;
+          if (statusDiv) statusDiv.innerHTML = '<span class="text-emerald-400">\u2713 ' + result.message + '</span>';
+          try { sessionStorage.setItem('appliedPromo', JSON.stringify(result)); } catch(e) {}
+        } else {
+          appliedPromo = null;
+          if (statusDiv) statusDiv.innerHTML = '<span class="text-red-400">\u2717 ' + (result.message || 'Invalid promo code') + '</span>';
+          try { sessionStorage.removeItem('appliedPromo'); } catch(e) {}
+        }
+      } catch (err) {
+        if (statusDiv) statusDiv.innerHTML = '<span class="text-red-400">Error validating code. Please try again.</span>';
+      }
+    }
+
+    // Allow pressing Enter in the promo input field to trigger validation
+    var promoInput = document.getElementById('promo-input');
+    if (promoInput) {
+      promoInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); validatePromo(); }
+      });
+    }
+
+    // Restore promo from sessionStorage on page load
+    try {
+      var savedPromo = sessionStorage.getItem('appliedPromo');
+      if (savedPromo) {
+        appliedPromo = JSON.parse(savedPromo);
+        var statusDiv = document.getElementById('promo-status');
+        var promoInp = document.getElementById('promo-input');
+        if (appliedPromo && appliedPromo.code && promoInp) promoInp.value = appliedPromo.code;
+        if (appliedPromo && appliedPromo.message && statusDiv) {
+          statusDiv.innerHTML = '<span class="text-emerald-400">\u2713 ' + appliedPromo.message + '</span>';
+        }
+      }
+    } catch(e) {}
   </script>
 </body>
 </html>

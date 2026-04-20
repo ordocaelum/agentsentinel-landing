@@ -348,7 +348,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
   const licenseKey = await generateLicenseKey(tier);
 
   // 3. Create license (with seat_count already set to avoid the race condition)
-  const { error: licenseError } = await supabase.from("licenses").insert({
+  const { data: licenseRow, error: licenseError } = await supabase.from("licenses").insert({
     customer_id: customer.id,
     license_key: licenseKey,
     tier,
@@ -358,7 +358,7 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     agents_limit: limits.agents,
     events_limit: limits.events,
     ...(seatCount !== null ? { seat_count: seatCount } : {}),
-  });
+  }).select("id").single();
 
   if (licenseError) {
     console.error("Error creating license:", licenseError);
@@ -367,7 +367,40 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   console.log(`\u2705 License created: ${maskLicenseKey(licenseKey)}`);
 
-  // 4. Send welcome email
+  // 4. Apply promo code if present in session metadata
+  const promoCodeId = session.metadata?.promo_code_id;
+  if (promoCodeId && licenseRow?.id) {
+    const { data: promo } = await supabase
+      .from("promo_codes")
+      .select("*")
+      .eq("id", promoCodeId)
+      .eq("active", true)
+      .maybeSingle();
+
+    if (promo) {
+      await supabase
+        .from("licenses")
+        .update({
+          promo_code_id: promo.id,
+          discount_type: promo.type,
+          discount_value: promo.value,
+          promo_applied_at: new Date().toISOString(),
+        })
+        .eq("id", licenseRow.id);
+
+      // Increment promo usage
+      await supabase
+        .from("promo_codes")
+        .update({ used_count: promo.used_count + 1 })
+        .eq("id", promo.id);
+
+      console.log(`\u2705 Promo code applied: ${promo.code} (${promo.type}, value=${promo.value})`);
+    } else {
+      console.warn(`\u26A0\uFE0F Promo code ID ${promoCodeId} not found or inactive — skipping`);
+    }
+  }
+
+  // 5. Send welcome email
   await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier);
 
   console.log(`\u2705 Checkout complete for ${customerEmail} \u2014 ${tier} plan`);

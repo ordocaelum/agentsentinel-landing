@@ -225,6 +225,18 @@
     document.getElementById('modal-settings').classList.remove('hidden');
     settingsOpen = true;
     refreshThemeCards();
+    // Allow license-manager.js to inject its section if loaded after modal build
+    if (window.licenseManager && typeof window.licenseManager.updateLicenseDisplay === 'function') {
+      setTimeout(function () {
+        // Inject license section if not yet present
+        var body = document.querySelector('.mc-settings-body');
+        if (body && !document.getElementById('settings-license-section')) {
+          if (window._licenseManagerInject) window._licenseManagerInject();
+        } else if (body && document.getElementById('settings-license-section')) {
+          window.licenseManager.updateLicenseDisplay();
+        }
+      }, 20);
+    }
   }
 
   function closeSettings() {

@@ -414,6 +414,29 @@
         </a>
       </div>
 
+      <!-- Getting Started + Promo Info row -->
+      <div class="glass-card rounded-2xl p-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <h2 class="text-xs font-bold uppercase tracking-widest text-slate-500 mb-1">Next Steps</h2>
+            <p class="text-sm text-slate-400">Ready to protect your first agent?</p>
+          </div>
+          <a
+            href="/getting-started.html"
+            class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-semibold px-5 py-2.5 rounded-lg transition-colors text-sm shadow-lg shadow-blue-900/30"
+          >
+            → Get Started with SDK
+          </a>
+        </div>
+        <!-- Promo info (shown only if promo was applied) -->
+        <div id="portal-promo-info" class="hidden mt-4 pt-4 border-t border-slate-700/60">
+          <p class="text-sm text-blue-400">
+            ✓ Promo applied: <strong id="portal-promo-code" class="text-white"></strong>
+            <span id="portal-promo-desc" class="text-slate-400 ml-1"></span>
+          </p>
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -674,6 +697,25 @@
         manageBtn.addEventListener('click', handleManageSubscription);
       } else {
         manageBtn.disabled = true;
+      }
+
+      // Promo info (if applicable)
+      if (license.promo_code_id) {
+        const promoInfoEl = document.getElementById('portal-promo-info');
+        const promoCodeEl = document.getElementById('portal-promo-code');
+        const promoDescEl = document.getElementById('portal-promo-desc');
+        if (promoInfoEl) promoInfoEl.classList.remove('hidden');
+        if (promoCodeEl && license.promo_code) promoCodeEl.textContent = license.promo_code;
+        if (promoDescEl && license.discount_type) {
+          const desc = license.discount_type === 'discount_percent'
+            ? `(${license.discount_value}% off)`
+            : license.discount_type === 'discount_fixed'
+            ? `($${(license.discount_value / 100).toFixed(2)} off)`
+            : license.discount_type === 'trial_extension'
+            ? `(+${license.discount_value} trial days)`
+            : '';
+          promoDescEl.textContent = desc;
+        }
       }
     }
 
