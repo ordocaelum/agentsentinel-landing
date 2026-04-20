@@ -42,16 +42,27 @@ serve(async (req) => {
   try {
     const body = await req.json();
     // Phase 3.3: reject non-integer values like "5abc" or "5.7" that parseInt
-    // would silently accept.  Only a plain integer string (no whitespace, no
-    // decimal point, no extra characters) is accepted.
+    // would silently accept.  Only a plain integer string or a safe integer
+    // number is accepted; all other types (null, undefined, objects, floats
+    // with decimal parts) are rejected immediately.
     const seatsRaw = body.seats;
-    if (typeof seatsRaw !== "number" && !/^\d+$/.test(String(seatsRaw))) {
+    let seatCount: number;
+    if (typeof seatsRaw === "number") {
+      if (!Number.isInteger(seatsRaw)) {
+        return new Response(
+          JSON.stringify({ error: "Invalid seat count. Must be a positive integer." }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
+        );
+      }
+      seatCount = seatsRaw;
+    } else if (typeof seatsRaw === "string" && /^\d+$/.test(seatsRaw)) {
+      seatCount = parseInt(seatsRaw, 10);
+    } else {
       return new Response(
         JSON.stringify({ error: "Invalid seat count. Must be a positive integer." }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
-    const seatCount = typeof seatsRaw === "number" ? Math.trunc(seatsRaw) : parseInt(seatsRaw, 10);
 
     if (!seatCount || seatCount < 1 || seatCount > 1000) {
       return new Response(

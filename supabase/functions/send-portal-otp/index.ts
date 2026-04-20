@@ -78,8 +78,22 @@ serve(async (req) => {
       );
     }
 
-    // Generate a 6-digit numeric OTP.
-    const otp = String(Math.floor(100000 + crypto.getRandomValues(new Uint32Array(1))[0] % 900000));
+    // Generate a 6-digit numeric OTP using rejection sampling to avoid
+    // modulo bias (CodeQL: js/biased-cryptographic-random).
+    // The range 100000–999999 has 900000 values; we sample 32-bit random
+    // values and reject those that would introduce bias.
+    function generateOtp(): string {
+      const range = 900000; // 999999 - 100000 + 1
+      // 2^32 = 4294967296; max unbiased value = floor(4294967296 / range) * range - 1
+      const maxUnbiased = Math.floor(4294967296 / range) * range;
+      let value: number;
+      do {
+        value = crypto.getRandomValues(new Uint32Array(1))[0];
+      } while (value >= maxUnbiased);
+      return String(100000 + (value % range));
+    }
+
+    const otp = generateOtp();
     const otpHash = await hashOtp(otp);
     const expiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString(); // 15 minutes
 
