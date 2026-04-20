@@ -89,7 +89,11 @@ serve(async (req) => {
     }
 
     // Accept both legacy `as_<tier>_*` keys and new HMAC-signed `asv1_*` keys.
-    const isLegacyFormat = /^as_(free|starter|pro|pro_team|team|enterprise)_/.test(license_key);
+    // Legacy format: check for a recognised `as_<valid_tier>_` prefix using
+    // the canonical VALID_TIERS set (handles multi-word tiers like "pro_team").
+    const isLegacyFormat = [...VALID_TIERS].some((t) =>
+      license_key.startsWith(`as_${t}_`)
+    );
     const isSignedFormat = license_key.startsWith("asv1_");
     if (!isLegacyFormat && !isSignedFormat) {
       return new Response(
