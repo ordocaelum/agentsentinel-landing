@@ -288,7 +288,7 @@
         </div>
 
         <!-- Current Key Display -->
-        <div id="active-key-section" style="${currentLicense ? '' : 'display:none'}margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(51,65,85,0.4)">
+        <div id="active-key-section" style="${currentLicense ? '' : 'display:none;'}margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(51,65,85,0.4)">
           <p style="font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:6px">Current License Key</p>
           <div style="display:flex;gap:6px">
             <input
@@ -313,7 +313,7 @@
         </div>
 
         <!-- Usage Stats -->
-        <div id="usage-section" style="${currentLicense ? '' : 'display:none'}margin-bottom:12px">
+        <div id="usage-section" style="${currentLicense ? '' : 'display:none;'}margin-bottom:12px">
           <p style="font-size:.7rem;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px">Usage This Month</p>
           <div style="display:flex;justify-content:space-between;font-size:.75rem;margin-bottom:4px">
             <span style="color:#94a3b8">Calls</span>
