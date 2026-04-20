@@ -138,7 +138,8 @@
       <div class="hidden md:flex items-center gap-7 text-slate-400 text-sm font-medium">
         <a href="#features"    class="hover:text-white transition-colors">Features</a>
         <a href="#security"    class="hover:text-white transition-colors">Security</a>
-        <a href="#how-it-works" class="hover:text-white transition-colors">SDK</a>
+        <a href="#how-it-works" class="hover:text-white transition-colors">How It Works</a>
+        <a href="#quick-start" class="hover:text-white transition-colors">SDK</a>
         <a href="#pricing"     class="hover:text-white transition-colors">Pricing</a>
         <a href="#faq"         class="hover:text-white transition-colors">FAQ</a>
         <a href="docs.html"    class="hover:text-white transition-colors">Docs</a>
@@ -147,7 +148,7 @@
       </div>
       <div class="flex items-center gap-3">
         <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hidden sm:block text-sm text-slate-400 hover:text-white transition-colors font-medium">GitHub</a>
-        <a href="#how-it-works" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
+        <a href="#quick-start" class="bg-blue-600 hover:bg-blue-500 text-white text-sm font-semibold px-4 py-2 rounded-lg transition-colors shadow-lg shadow-blue-900/30">
           Get Started
         </a>
         <!-- Mobile hamburger -->
@@ -161,7 +162,8 @@
       <div class="max-w-6xl mx-auto px-6 py-5 flex flex-col gap-4 text-slate-300 text-sm font-medium">
         <a href="#features"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Features</a>
         <a href="#security"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Security</a>
-        <a href="#how-it-works" onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">SDK / Quick Start</a>
+        <a href="#how-it-works" onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">How It Works</a>
+        <a href="#quick-start"  onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">SDK / Quick Start</a>
         <a href="#pricing"      onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Pricing</a>
         <a href="#faq"          onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">FAQ</a>
         <a href="docs.html"     onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Docs</a>
@@ -169,7 +171,7 @@
         <a href="/portal.html"          onclick="closeMobileMenu()" class="hover:text-white transition-colors py-1">Portal</a>
         <div class="border-t border-slate-800/60 pt-4 flex flex-col gap-3">
           <a href="https://github.com/ordocaelum/agentsentinel-landing" target="_blank" rel="noopener" class="hover:text-white transition-colors py-1">GitHub</a>
-          <a href="#how-it-works" onclick="closeMobileMenu()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-center">Get Started</a>
+          <a href="#quick-start" onclick="closeMobileMenu()" class="bg-blue-600 hover:bg-blue-500 text-white font-semibold px-4 py-2.5 rounded-lg transition-colors text-center">Get Started</a>
         </div>
       </div>
     </div>
@@ -204,7 +206,7 @@
 
       <!-- CTAs -->
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-12">
-        <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">
+        <a href="#quick-start" class="inline-flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white font-bold px-8 py-4 rounded-xl text-base transition-colors shadow-xl shadow-blue-900/40">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
           Install the SDK
         </a>
@@ -230,18 +232,24 @@
   ════════════════════════════════════════════════════════════════ -->
   <div class="border-y border-slate-800 bg-slate-900/80" style="background-color:#070f1e">
     <div class="max-w-4xl mx-auto px-6 py-12 grid grid-cols-1 sm:grid-cols-3 gap-8 text-center">
-      <div>
-        <p class="text-4xl mb-3">📦</p>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-xl bg-blue-900/50 border border-blue-800/50 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 01-2.247 2.118H6.622a2.25 2.25 0 01-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z"/></svg>
+        </div>
         <p class="text-slate-200 font-semibold">Open Source SDK</p>
         <p class="text-slate-500 text-sm mt-1">MIT license — read, fork, and contribute</p>
       </div>
-      <div>
-        <p class="text-4xl mb-3">🔌</p>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-xl bg-cyan-900/50 border border-cyan-800/50 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.25 6.087c0-.355.186-.676.401-.959.221-.29.349-.634.349-1.003 0-1.036-1.007-1.875-2.25-1.875s-2.25.84-2.25 1.875c0 .369.128.713.349 1.003.215.283.401.604.401.959v0a.64.64 0 01-.657.643 48.39 48.39 0 01-4.163-.3c.186 1.613.293 3.25.315 4.907a.656.656 0 01-.658.663v0c-.355 0-.676-.186-.959-.401a1.647 1.647 0 00-1.003-.349c-1.036 0-1.875 1.007-1.875 2.25s.84 2.25 1.875 2.25c.369 0 .713-.128 1.003-.349.283-.215.604-.401.959-.401v0c.31 0 .555.26.532.57a48.039 48.039 0 01-.642 5.056c1.518.19 3.058.309 4.616.354a.64.64 0 00.657-.643v0c0-.355-.186-.676-.401-.959a1.647 1.647 0 01-.349-1.003c0-1.035 1.008-1.875 2.25-1.875 1.243 0 2.25.84 2.25 1.875 0 .369-.128.713-.349 1.003-.215.283-.4.604-.4.959v0c0 .333.277.599.61.58a48.1 48.1 0 005.427-.63 48.05 48.05 0 00.582-4.717.532.532 0 00-.533-.57v0c-.355 0-.676.186-.959.401-.29.221-.634.349-1.003.349-1.035 0-1.875-1.007-1.875-2.25s.84-2.25 1.875-2.25c.37 0 .713.128 1.003.349.283.215.604.401.96.401v0a.656.656 0 00.658-.663 48.422 48.422 0 00-.37-5.36c-1.886.342-3.81.574-5.766.689a.578.578 0 01-.61-.58v0z"/></svg>
+        </div>
         <p class="text-slate-200 font-semibold">Framework Agnostic</p>
         <p class="text-slate-500 text-sm mt-1">Wraps any Python or TypeScript function</p>
       </div>
-      <div>
-        <p class="text-4xl mb-3">🚀</p>
+      <div class="flex flex-col items-center">
+        <div class="w-10 h-10 rounded-xl bg-emerald-900/50 border border-emerald-800/50 flex items-center justify-center mb-3">
+          <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z"/></svg>
+        </div>
         <p class="text-slate-200 font-semibold">Zero Infrastructure</p>
         <p class="text-slate-500 text-sm mt-1">Pure SDK — no proxies, sidecars, or cloud required</p>
       </div>
@@ -249,9 +257,9 @@
   </div>
 
   <!-- ════════════════════════════════════════════════════════════════
-       PROBLEM
+       PROBLEM VALIDATION
   ════════════════════════════════════════════════════════════════ -->
-  <section class="py-24 px-6">
+  <section id="problem-validation" class="py-24 px-6">
     <div class="max-w-5xl mx-auto">
       <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Sound Familiar?</p>
       <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Has your agent ever…</h2>
@@ -263,7 +271,9 @@
 
         <!-- Problem 1 -->
         <div class="card-hover rounded-2xl p-7 border" style="background-color:#0f0a0a; border-color:#3b1a1a;">
-          <div class="w-10 h-10 rounded-xl bg-red-900/40 border border-red-800/50 flex items-center justify-center text-lg mb-5">💸</div>
+          <div class="w-10 h-10 rounded-xl bg-red-900/40 border border-red-800/50 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-red-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
           <h3 class="text-lg font-bold mb-2 text-red-400">Burned through your budget overnight</h3>
           <p class="text-slate-400 text-sm leading-relaxed mb-4">
             A retry loop ran for 6 hours while you slept. You woke up to a
@@ -276,7 +286,9 @@
 
         <!-- Problem 2 -->
         <div class="card-hover rounded-2xl p-7 border" style="background-color:#0f0e08; border-color:#3b3010;">
-          <div class="w-10 h-10 rounded-xl bg-amber-900/40 border border-amber-800/50 flex items-center justify-center text-lg mb-5">😱</div>
+          <div class="w-10 h-10 rounded-xl bg-amber-900/40 border border-amber-800/50 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-amber-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"/></svg>
+          </div>
           <h3 class="text-lg font-bold mb-2 text-amber-400">Embarrassed you in front of everyone</h3>
           <p class="text-slate-400 text-sm leading-relaxed mb-4">
             Your customer-facing bot sent <strong class="text-slate-200">47 Slack messages at 3am</strong>,
@@ -289,7 +301,9 @@
 
         <!-- Problem 3 -->
         <div class="card-hover rounded-2xl p-7 border" style="background-color:#0f0b08; border-color:#3b2210;">
-          <div class="w-10 h-10 rounded-xl bg-orange-900/40 border border-orange-800/50 flex items-center justify-center text-lg mb-5">🔥</div>
+          <div class="w-10 h-10 rounded-xl bg-orange-900/40 border border-orange-800/50 flex items-center justify-center mb-5">
+            <svg class="w-5 h-5 text-orange-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z"/></svg>
+          </div>
           <h3 class="text-lg font-bold mb-2 text-orange-400">Did something irreversible</h3>
           <p class="text-slate-400 text-sm leading-relaxed mb-4">
             You gave an agent database access to "clean up old records."
@@ -532,7 +546,7 @@
   <!-- ════════════════════════════════════════════════════════════════
        CODE EXAMPLE
   ════════════════════════════════════════════════════════════════ -->
-  <section id="how-it-works" class="py-24 px-6">
+  <section id="quick-start" class="py-24 px-6">
     <div class="max-w-5xl mx-auto">
       <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Quick Start</p>
       <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Up and running in 60 seconds</h2>
@@ -681,54 +695,89 @@
   </section>
 
   <!-- ════════════════════════════════════════════════════════════════
-       WHY AGENTSENTINEL
+       HOW IT WORKS
   ════════════════════════════════════════════════════════════════ -->
-  <section class="section-alt py-24 px-6">
+  <section id="how-it-works" class="section-alt py-24 px-6">
     <div class="max-w-5xl mx-auto">
-      <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Why AgentSentinel?</p>
-      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Built for the problems you'll hit in production</h2>
-      <p class="text-slate-500 text-center max-w-lg mx-auto mb-14">
-        Every team running AI agents in production eventually discovers these problems the hard way.
-        AgentSentinel is designed to prevent them.
+      <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">How It Works</p>
+      <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Up and running in three steps</h2>
+      <p class="text-slate-500 text-center max-w-lg mx-auto mb-16">
+        One line of code. Complete control. No infrastructure changes required.
       </p>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
 
-        <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-7 flex flex-col">
-          <div class="w-10 h-10 rounded-xl bg-blue-900/50 border border-blue-800/50 flex items-center justify-center text-lg mb-5">💸</div>
-          <h3 class="text-lg font-bold mb-3">Budget enforcement that actually works</h3>
-          <p class="text-slate-400 text-sm leading-relaxed flex-1">
-            Set daily and hourly limits as dataclass fields. When a limit is hit the SDK raises
-            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">BudgetExceededError</code>
-            and stops execution cleanly — before the invoice arrives.
-          </p>
-          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-            <span>✓</span> Implemented in v1.0.0
-          <p class="text-slate-400 text-sm leading-relaxed flex-1">
-            Declare which tool names require human sign-off using exact names or
-            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">delete_*</code> wildcards.
-            Ships with <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">DenyAllApprover</code> and
-            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">InMemoryApprover</code>.
-            Extend the interface for Slack / email in future releases.
-          </p>
-          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-            <span>✓</span> Implemented in v1.0.0
+        <!-- Step 1 -->
+        <div class="relative">
+          <div class="card-hover bg-slate-900 border border-slate-800 hover:border-blue-700/60 rounded-2xl p-7 flex flex-col h-full transition-colors">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-blue-900/50 border border-blue-800/50 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z"/></svg>
+              </div>
+              <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Step 1</span>
+            </div>
+            <h3 class="text-lg font-bold mb-3 text-white">Define your policy</h3>
+            <p class="text-slate-400 text-sm leading-relaxed flex-1">
+              Set your daily budget, hourly limits, approval gates, and rate caps in a single
+              <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AgentPolicy</code> object.
+              No YAML. No config files. Pure code.
+            </p>
+            <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-blue-400 font-semibold flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Works with any LLM provider
+            </div>
+          </div>
+          <!-- Connector arrow (desktop only) -->
+          <div class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
           </div>
         </div>
 
-        <div class="card-hover bg-slate-900 border border-slate-800 rounded-2xl p-7 flex flex-col">
-          <div class="w-10 h-10 rounded-xl bg-emerald-900/50 border border-emerald-800/50 flex items-center justify-center text-lg mb-5">📋</div>
-          <h3 class="text-lg font-bold mb-3">Structured audit trail from day one</h3>
-          <p class="text-slate-400 text-sm leading-relaxed flex-1">
-            Every invocation produces a typed
-            <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditEvent</code>
-            (timestamp, tool name, decision, cost, status).
-            Ships with <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">ConsoleAuditSink</code>
-            and <code class="text-blue-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">InMemoryAuditSink</code>.
-            Add your own sink for persistence.
-          </p>
-          <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
-            <span>✓</span> Implemented in v1.0.0
+        <!-- Step 2 -->
+        <div class="relative">
+          <div class="card-hover bg-slate-900 border border-slate-800 hover:border-emerald-700/60 rounded-2xl p-7 flex flex-col h-full transition-colors">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-emerald-900/50 border border-emerald-800/50 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>
+              </div>
+              <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Step 2</span>
+            </div>
+            <h3 class="text-lg font-bold mb-3 text-white">Protect your tools</h3>
+            <p class="text-slate-400 text-sm leading-relaxed flex-1">
+              Wrap any function with <code class="text-emerald-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">@guard.protect</code>.
+              The decorator intercepts every call, enforces your policy, and raises structured errors
+              before unsafe actions execute.
+            </p>
+            <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Zero infrastructure changes
+            </div>
+          </div>
+          <!-- Connector arrow (desktop only) -->
+          <div class="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 items-center justify-center text-slate-600">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 4.5l7.5 7.5-7.5 7.5"/></svg>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div>
+          <div class="card-hover bg-slate-900 border border-slate-800 hover:border-violet-700/60 rounded-2xl p-7 flex flex-col h-full transition-colors">
+            <div class="flex items-center gap-3 mb-5">
+              <div class="w-10 h-10 rounded-xl bg-violet-900/50 border border-violet-800/50 flex items-center justify-center shrink-0">
+                <svg class="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" stroke-width="1.75" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6"/></svg>
+              </div>
+              <span class="text-xs font-bold uppercase tracking-widest text-slate-500">Step 3</span>
+            </div>
+            <h3 class="text-lg font-bold mb-3 text-white">Stay in control</h3>
+            <p class="text-slate-400 text-sm leading-relaxed flex-1">
+              Every invocation produces a typed
+              <code class="text-violet-300 bg-slate-800 px-1.5 py-0.5 rounded text-xs">AuditEvent</code> —
+              timestamp, tool name, cost, decision. Review in your dashboard or stream to your own data store.
+            </p>
+            <div class="mt-5 pt-4 border-t border-slate-800/60 text-xs text-violet-400 font-semibold flex items-center gap-1.5">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+              Full audit trail from day one
+            </div>
           </div>
         </div>
 
@@ -743,7 +792,6 @@
         </p>
       </div>
 
-
     </div>
   </section>
 
@@ -751,23 +799,24 @@
        PRICING
   ════════════════════════════════════════════════════════════════ -->
   <section id="pricing" class="py-24 bg-slate-900/50 px-6">
-    <div class="max-w-7xl mx-auto">
+    <div class="max-w-5xl mx-auto">
       <div class="text-center mb-16">
         <p class="text-center text-blue-400 font-semibold tracking-widest text-xs uppercase mb-4">Pricing</p>
         <h2 class="text-4xl font-black text-center mb-3 tracking-tight">Simple, Transparent Pricing</h2>
         <p class="text-slate-500 text-center max-w-lg mx-auto">Start with a free trial, scale as you grow</p>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-8 items-stretch">
+      <!-- Primary Tiers: Starter & Pro (most users) -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
 
         <!-- Starter Tier -->
         <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col relative">
           <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-emerald-900/50">
             7-DAY FREE TRIAL
           </div>
-          <h3 class="text-lg font-semibold text-emerald-400 mb-2 mt-2">Starter</h3>
+          <h3 class="text-xl font-semibold text-emerald-400 mb-2 mt-2">Starter</h3>
           <div class="mb-1">
-            <span class="text-4xl font-bold text-white">$7.99</span>
+            <span class="text-5xl font-bold text-white">$7.99</span>
             <span class="text-slate-500">/mo</span>
           </div>
           <p class="text-slate-500 text-xs mb-6">after 7-day free trial</p>
@@ -787,11 +836,11 @@
         <!-- Pro Tier -->
         <div class="plan-featured rounded-2xl p-8 flex flex-col relative">
           <div class="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-gradient-to-r from-sky-500 to-indigo-500 text-white text-xs font-bold px-4 py-1.5 rounded-full shadow-lg shadow-blue-900/50">
-            POPULAR
+            MOST POPULAR
           </div>
-          <h3 class="text-lg font-semibold text-sky-400 mb-2 mt-2">Pro</h3>
+          <h3 class="text-xl font-semibold text-sky-400 mb-2 mt-2">Pro</h3>
           <div class="mb-1">
-            <span class="text-4xl font-bold text-white">$39</span>
+            <span class="text-5xl font-bold text-white">$39</span>
             <span class="text-slate-500">/mo</span>
           </div>
           <p class="text-slate-500 text-xs mb-6">flat monthly rate</p>
@@ -801,7 +850,7 @@
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Full dashboard</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> All integrations</li>
             <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Policy editor</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Email support</li>
+            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Priority email support</li>
           </ul>
           <!-- Pro plan: links to Stripe checkout for $39/mo flat subscription -->
           <a href="https://buy.stripe.com/00wdR90nL3Cw7oh9iScjS06" class="block text-center bg-blue-500 hover:bg-blue-400 text-white font-bold py-3.5 rounded-xl text-sm transition-colors shadow-lg shadow-blue-900/30">
@@ -809,74 +858,68 @@
           </a>
         </div>
 
-        <!-- Pro Team Tier -->
-        <!--
-          STRIPE PER-SEAT SETUP (Option A: base product + per-seat line item)
-          ─────────────────────────────────────────────────────────────────────
-          Step 1: In the Stripe Dashboard (https://dashboard.stripe.com/products),
-                  create TWO products:
-                    a) "Pro Team Base" – Recurring, $49/month  → note the Price ID (price_BASE_xxxx)
-                    b) "Pro Team Seat" – Recurring, $29/month per seat → note the Price ID (price_SEAT_xxxx)
-
-          Step 2: When the customer submits pricing-team.html, your backend
-                  creates a Stripe Checkout Session with both line items:
-                    line_items: [
-                      { price: 'price_BASE_xxxx', quantity: 1 },
-                      { price: 'price_SEAT_xxxx', quantity: <selected_seat_count> }
-                    ]
-
-          Step 3: To update seats later, use stripe.subscriptions.update() to
-                  change the quantity on the per-seat item only.
-
-          Step 4: Listen for "customer.subscription.updated" webhooks to sync
-                  seat count with your application database.
-
-          The "Get Started" button below redirects to /pricing-team.html where
-          customers choose their initial seat count before proceeding to checkout.
-        -->
-        <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
-          <h3 class="text-lg font-semibold text-violet-400 mb-2">Pro Team</h3>
-          <div class="mb-1">
-            <span class="text-4xl font-bold text-white">$49</span>
-            <span class="text-slate-500">/mo</span>
-          </div>
-          <p class="text-slate-500 text-xs mb-6">+ $29/seat per team member</p>
-          <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Everything in Pro</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 5 agents per seat</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> 50,000 events per seat</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Team management</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Per-seat scaling</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Priority support</li>
-          </ul>
-          <!-- Pro Team: redirects to seat customization form before Stripe checkout.
-               Backend integration required to create a Checkout Session with
-               base ($49) + per-seat ($29 × quantity) line items. -->
-          <a href="/pricing-team.html" class="block text-center border border-violet-700 hover:border-violet-500 hover:bg-violet-900/30 text-violet-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
-            Get Started
-          </a>
-        </div>
-
-        <!-- Enterprise Tier -->
-        <div class="card-hover bg-slate-900 border border-slate-700 rounded-2xl p-8 flex flex-col">
-          <h3 class="text-lg font-semibold text-amber-400 mb-2">Enterprise</h3>
-          <div class="mb-6">
-            <span class="text-4xl font-bold text-white">Contact Us</span>
-          </div>
-          <ul class="space-y-3 mb-8 text-sm text-slate-300 flex-1">
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Unlimited agents</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Unlimited events</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> SSO / SAML</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> On-premise option</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Dedicated support</li>
-            <li class="flex items-start gap-2"><span class="text-emerald-400 shrink-0">✓</span> Custom SLA</li>
-          </ul>
-          <a href="mailto:contact@agentsentinel.net" class="block text-center border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 font-bold py-3.5 rounded-xl text-sm transition-colors">
-            Contact Us
-          </a>
-        </div>
-
       </div>
+
+      <!-- Secondary Tiers: Pro Team & Enterprise (B2B / niche) -->
+      <div class="rounded-2xl border border-slate-800 bg-slate-900/60 px-6 py-5">
+        <p class="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-4">For teams &amp; enterprise</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+
+          <!-- Pro Team compact -->
+          <!--
+            STRIPE PER-SEAT SETUP (Option A: base product + per-seat line item)
+            ─────────────────────────────────────────────────────────────────────
+            Step 1: In the Stripe Dashboard (https://dashboard.stripe.com/products),
+                    create TWO products:
+                      a) "Pro Team Base" – Recurring, $49/month  → note the Price ID (price_BASE_xxxx)
+                      b) "Pro Team Seat" – Recurring, $29/month per seat → note the Price ID (price_SEAT_xxxx)
+
+            Step 2: When the customer submits pricing-team.html, your backend
+                    creates a Stripe Checkout Session with both line items:
+                      line_items: [
+                        { price: 'price_BASE_xxxx', quantity: 1 },
+                        { price: 'price_SEAT_xxxx', quantity: <selected_seat_count> }
+                      ]
+
+            Step 3: To update seats later, use stripe.subscriptions.update() to
+                    change the quantity on the per-seat item only.
+
+            Step 4: Listen for "customer.subscription.updated" webhooks to sync
+                    seat count with your application database.
+
+            The "Configure seats" button below redirects to /pricing-team.html where
+            customers choose their initial seat count before proceeding to checkout.
+          -->
+          <div class="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 px-5 py-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-base font-bold text-violet-400">Pro Team</span>
+                <span class="text-slate-500 text-sm">from $49<span class="text-xs">/mo</span> + $29/seat</span>
+              </div>
+              <p class="text-slate-500 text-xs truncate">Everything in Pro · team management · per-seat scaling</p>
+            </div>
+            <a href="/pricing-team.html" class="shrink-0 border border-violet-700 hover:border-violet-500 hover:bg-violet-900/30 text-violet-300 font-semibold px-4 py-2 rounded-lg text-xs transition-colors whitespace-nowrap">
+              Configure seats →
+            </a>
+          </div>
+
+          <!-- Enterprise compact -->
+          <div class="flex items-center justify-between gap-4 rounded-xl border border-slate-800 bg-slate-950/40 px-5 py-4">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 mb-0.5">
+                <span class="text-base font-bold text-amber-400">Enterprise</span>
+                <span class="text-slate-500 text-sm">custom pricing</span>
+              </div>
+              <p class="text-slate-500 text-xs truncate">Unlimited agents · SSO/SAML · on-premise · dedicated SLA</p>
+            </div>
+            <a href="mailto:contact@agentsentinel.net" class="shrink-0 border border-slate-700 hover:border-slate-500 hover:bg-slate-800 text-slate-300 font-semibold px-4 py-2 rounded-lg text-xs transition-colors whitespace-nowrap">
+              Contact us →
+            </a>
+          </div>
+
+        </div>
+      </div>
+
     </div>
   </section>
 
@@ -1034,7 +1077,7 @@
       </p>
 
       <div class="flex flex-col sm:flex-row gap-3 justify-center mb-8">
-        <a href="#how-it-works" class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-slate-100 transition-colors shadow-2xl">
+        <a href="#quick-start" class="inline-flex items-center justify-center gap-2 bg-white text-slate-900 font-bold px-8 py-4 rounded-xl text-base hover:bg-slate-100 transition-colors shadow-2xl">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
           Install the SDK — free &amp; open source
         </a>
