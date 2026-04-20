@@ -79,7 +79,7 @@ async function generatePortalToken(
  */
 function maskLicenseKey(key: string): string {
   if (key.length <= 20) return key;
-  return key.slice(0, 12) + "••••••••••••••••••••••••" + key.slice(-4);
+  return key.slice(0, 12) + "•".repeat(key.length - 16) + key.slice(-4);
 }
 
 // POST /functions/v1/customer-portal

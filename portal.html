@@ -489,7 +489,7 @@
     function maskKey(key) {
       if (!key) return '';
       if (key.length <= 20) return key;
-      return key.slice(0, 12) + '••••••••••••••••••••••••' + key.slice(-4);
+      return key.slice(0, 12) + '•'.repeat(key.length - 16) + key.slice(-4);
     }
 
     function fmtNumber(n) {
