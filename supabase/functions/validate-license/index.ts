@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { VALID_TIERS } from "../_shared/tiers.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
@@ -88,7 +89,11 @@ serve(async (req) => {
     }
 
     // Accept both legacy `as_<tier>_*` keys and new HMAC-signed `asv1_*` keys.
-    const isLegacyFormat = /^as_(free|starter|pro|pro_team|team|enterprise)_/.test(license_key);
+    // Legacy format: check for a recognised `as_<valid_tier>_` prefix using
+    // the canonical VALID_TIERS set (handles multi-word tiers like "pro_team").
+    const isLegacyFormat = [...VALID_TIERS].some((t) =>
+      license_key.startsWith(`as_${t}_`)
+    );
     const isSignedFormat = license_key.startsWith("asv1_");
     if (!isLegacyFormat && !isSignedFormat) {
       return new Response(

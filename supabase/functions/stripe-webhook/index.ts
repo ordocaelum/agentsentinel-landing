@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
+// stripe@13.11.0 is the latest version compatible with Deno's Fetch API.
+// Check https://esm.sh/stripe for the latest available version.
 import Stripe from "https://esm.sh/stripe@13.11.0?target=deno";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
-import { TIER_LIMITS, tierDisplayName } from "../_shared/tiers.ts";
+import { TIER_LIMITS, VALID_TIERS, tierDisplayName } from "../_shared/tiers.ts";
 
 const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY") as string, {
   apiVersion: "2023-10-16",
@@ -286,13 +288,19 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     }
   }
 
-  // Get the tier from session metadata or price ID
+  // Get the tier from session metadata or price ID, then validate against the
+  // canonical VALID_TIERS set to prevent an unrecognised value from propagating
+  // into the database or email copy.
   let tier = session.metadata?.tier || "pro";
   if (session.metadata?.price_id) {
     tier = PRICE_TO_TIER[session.metadata.price_id] || tier;
   }
+  if (!VALID_TIERS.has(tier)) {
+    console.warn(`⚠️ Unknown tier "${tier}" in session ${session.id} — defaulting to "pro"`);
+    tier = "pro";
+  }
 
-  const limits = TIER_LIMITS[tier] || TIER_LIMITS.pro;
+  const limits = TIER_LIMITS[tier] ?? TIER_LIMITS.pro; // defensive: tier is validated above
 
   // Seat count for pro_team: read directly from checkout metadata so the
   // license row is correct even if subscription.created fires after this event.
@@ -517,9 +525,12 @@ serve(async (req) => {
       headers: { "Content-Type": "application/json" },
     });
   } catch (err) {
+    // Log the full error server-side but never expose internal details to the
+    // caller — this prevents leaking stack traces, secret env var names, or
+    // Stripe API internals through the webhook response body.
     console.error("Webhook error:", err);
     return new Response(
-      JSON.stringify({ error: (err as Error).message }),
+      JSON.stringify({ error: "Webhook processing failed" }),
       { status: 400 },
     );
   }

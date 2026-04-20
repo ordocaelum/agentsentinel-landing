@@ -8,6 +8,9 @@ const STRIPE_SECRET_KEY = Deno.env.get("STRIPE_SECRET_KEY");
 const PRICE_PRO_TEAM_BASE = Deno.env.get("STRIPE_PRICE_PRO_TEAM_BASE");
 const PRICE_PRO_TEAM_SEAT = Deno.env.get("STRIPE_PRICE_PRO_TEAM_SEAT");
 
+// Security headers — CORS is scoped to our own origin only.
+// "Access-Control-Allow-Methods" advertises that only POST and the required
+// OPTIONS preflight are accepted; all other methods are rejected with 405.
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://agentsentinel.net",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -118,8 +121,10 @@ serve(async (req) => {
 
     if (!stripeRes.ok) {
       console.error("Stripe API error:", session);
+      // Do not forward raw Stripe error messages to the client — they may
+      // contain internal price IDs or account details.
       return new Response(
-        JSON.stringify({ error: session?.error?.message || "Failed to create checkout session" }),
+        JSON.stringify({ error: "Failed to create checkout session. Please try again." }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }

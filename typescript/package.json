@@ -48,7 +48,8 @@
     "test:watch": "vitest",
     "lint": "eslint src --ext .ts",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "npm run build"
+    "audit": "npm audit --omit=dev",
+    "prepublishOnly": "npm run build && npm audit --omit=dev --audit-level=high"
   },
   "keywords": [
     "ai", "agents", "safety", "guardrails", "llm", "openai", "anthropic",

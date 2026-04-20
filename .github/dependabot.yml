@@ -1,0 +1,26 @@
+version: 2
+
+updates:
+  # Keep npm dependencies in the TypeScript SDK up-to-date.
+  # Security advisories are surfaced immediately regardless of schedule.
+  - package-ecosystem: npm
+    directory: /typescript
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 10
+    # Group patch-level bumps into a single PR to reduce noise.
+    groups:
+      patch-updates:
+        update-types:
+          - patch
+    # Automatically approve (but not merge) dependabot PRs for patch updates.
+    # Merging still requires a passing CI run and reviewer sign-off.
+
+  # Keep GitHub Actions up-to-date.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
