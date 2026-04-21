@@ -95,6 +95,7 @@ from __future__ import annotations
 import fnmatch
 import http.server
 import json
+import mimetypes
 import os
 import threading
 import time
@@ -107,6 +108,7 @@ from urllib.parse import urlparse, parse_qs
 # ---------------------------------------------------------------------------
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 _INDEX_HTML = os.path.join(_STATIC_DIR, "index.html")
+_ADMIN_DIR = os.path.join(_STATIC_DIR, "admin")
 
 _INF = float("inf")
 
@@ -636,6 +638,10 @@ def _make_handler(guard: Any):  # type: ignore[return]
 
             if path in ("/", "/index.html"):
                 self._serve_index()
+            elif path in ("/admin", "/admin/", "/admin/index.html"):
+                self._serve_admin_index()
+            elif path.startswith("/admin/"):
+                self._serve_admin_static(path[len("/admin/"):])
             elif path == "/api/stats":
                 self._serve_stats()
             elif path == "/api/stats/history":
@@ -846,6 +852,47 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self.wfile.write(content)
             except FileNotFoundError:
                 self.send_error(500, "Dashboard HTML not found")
+
+        def _serve_admin_index(self) -> None:
+            admin_html = os.path.join(_ADMIN_DIR, "index.html")
+            try:
+                with open(admin_html, "rb") as fh:
+                    content = fh.read()
+                self.send_response(200)
+                self.send_header("Content-Type", "text/html; charset=utf-8")
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Admin dashboard not found")
+
+        def _serve_admin_static(self, relative_path: str) -> None:
+            # Guard against path-traversal attacks: resolve to a real path and
+            # verify it sits strictly inside _ADMIN_DIR before opening anything.
+            safe_base = os.path.realpath(_ADMIN_DIR)
+
+            # Strip any leading separators that could anchor to the filesystem root.
+            clean = relative_path.lstrip("/").lstrip("\\")
+            requested = os.path.realpath(os.path.join(_ADMIN_DIR, clean))
+
+            if not requested.startswith(safe_base + os.sep):
+                self.send_error(403, "Forbidden")
+                return
+
+            try:
+                with open(requested, "rb") as fh:
+                    content = fh.read()
+                # Derive MIME type from the *filename only* (not the full path)
+                # to avoid leaking path information and to prevent header injection.
+                mime, _ = mimetypes.guess_type(os.path.basename(requested))
+                safe_mime = (mime or "application/octet-stream").split("\n")[0].split("\r")[0]
+                self.send_response(200)
+                self.send_header("Content-Type", safe_mime)
+                self.send_header("Content-Length", str(len(content)))
+                self.end_headers()
+                self.wfile.write(content)
+            except FileNotFoundError:
+                self.send_error(404, "Not Found")
 
         def _serve_stats(self) -> None:
             data = json.dumps(_collect_stats(guard), indent=2).encode()

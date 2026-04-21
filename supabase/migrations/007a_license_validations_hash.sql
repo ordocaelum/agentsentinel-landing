@@ -1,4 +1,4 @@
--- Migration: 007_license_validations_hash.sql
+-- Migration: 007a_license_validations_hash.sql
 -- Add a license_key_hash column to license_validations so that license keys
 -- are not stored in plaintext.  The hash is SHA-256 of the raw license key
 -- (hex-encoded), matching the hash produced by the validate-license Edge
