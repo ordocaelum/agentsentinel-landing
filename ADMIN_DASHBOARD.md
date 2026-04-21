@@ -281,7 +281,7 @@ Browser receives created promo code → refreshes promo table
 
 | Type | `value` meaning | Example |
 |---|---|---|
-| `discount_percent` | Percentage off (0–100) | `LAUNCH20` → 20 % off |
+| `discount_percent` | Percentage off (0-100) | `LAUNCH20` -> 20% off |
 | `discount_fixed` | Amount off in cents | `SAVE500` → $5.00 off |
 | `trial_extension` | Extra trial days | `EXTRA14` → +14 days |
 | `unlimited_trial` | Removes trial limits | `VIPACCESS` |
@@ -637,7 +637,7 @@ Navigate to `http://localhost:8000/admin`. You will see the setup screen on firs
 
 Enter:
 - **Supabase URL:** Your project URL, e.g. `https://your-project-ref.supabase.co`
-- **Service-Role Key:** Found in Supabase Dashboard → Project Settings → API
+- **Service-Role Key:** Found in Supabase Dashboard -> Project Settings -> API
 - **Admin API Secret:** The value you set with `supabase secrets set ADMIN_API_SECRET=...`
 
 Click **🚀 Connect & Enter Dashboard**.
