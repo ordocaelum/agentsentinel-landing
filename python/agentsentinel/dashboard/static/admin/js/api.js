@@ -112,6 +112,9 @@ export const promoAPI = {
   /** Create a promo code via the admin Edge Function */
   async create(payload) {
     const { supabaseUrl, adminApiSecret } = cfg();
+    if (!adminApiSecret) {
+      throw new Error('Admin API Secret is not configured. Open Settings and enter your ADMIN_API_SECRET.');
+    }
     const fnUrl = `${supabaseUrl}/functions/v1/admin-generate-promo`;
 
     // Normalise code
@@ -124,7 +127,7 @@ export const promoAPI = {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${adminApiSecret || cfg().supabaseKey}`,
+        Authorization: `Bearer ${adminApiSecret}`,
       },
       body: JSON.stringify(body),
     });

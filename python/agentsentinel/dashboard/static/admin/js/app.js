@@ -81,6 +81,10 @@ class AdminApp {
         if (errEl) errEl.textContent = 'URL and service key are required';
         return;
       }
+      if (!secret) {
+        if (errEl) errEl.textContent = 'Admin API Secret is required for promo code creation';
+        return;
+      }
 
       const btn = document.getElementById('setup-submit');
       btn.disabled = true;
