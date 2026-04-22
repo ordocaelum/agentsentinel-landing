@@ -40,6 +40,9 @@ jobs:
           python -m pip install --upgrade pip
           pip install -e ".[dev]"
 
-      - name: Run dashboard CLI smoke test
+      - name: Verify console script is installed
+        run: agentsentinel-dashboard --help
+
+      - name: Run dashboard CLI smoke tests
         working-directory: python
-        run: pytest tests/test_dashboard_smoke.py -v
+        run: pytest tests/test_dashboard_smoke.py tests/test_dashboard_cli.py -v
