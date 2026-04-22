@@ -1,0 +1,45 @@
+name: Admin Dashboard Smoke Test
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'python/**'
+      - '.github/workflows/admin-dashboard-smoke.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'python/**'
+      - '.github/workflows/admin-dashboard-smoke.yml'
+
+jobs:
+  smoke-test:
+    name: Dashboard CLI smoke test (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    env:
+      AGENTSENTINEL_DEV: "1"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install package
+        working-directory: python
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Run dashboard CLI smoke test
+        working-directory: python
+        run: pytest tests/test_dashboard_smoke.py -v

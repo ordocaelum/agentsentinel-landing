@@ -256,6 +256,43 @@ Key variables:
 
 ---
 
+## Running the Admin Dashboard
+
+> **Full guide:** [docs/admin-dashboard.md](docs/admin-dashboard.md)
+
+The AgentSentinel admin dashboard is a browser-based SPA served by the Python
+package at `http://localhost:8080/admin`.
+
+### Quick start
+
+```bash
+# 1. Install the package (editable, so it resolves to this repo)
+pip install -e python/
+
+# 2. Start the dashboard in dev mode
+AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard
+```
+
+Open **http://localhost:8080/admin** in your browser.
+
+### One-command scripts
+
+| Platform | Command |
+|----------|---------|
+| macOS / Linux | `bash scripts/run-admin-dashboard.sh` |
+| Windows PowerShell | `.\scripts\run-admin-dashboard.ps1` |
+
+Both scripts set `AGENTSENTINEL_DEV=1` by default, accept `--port` / `--host`
+(bash) or `-Port` / `-BindHost` (PowerShell), and print the access URL before
+starting.
+
+See [docs/admin-dashboard.md](docs/admin-dashboard.md) for:
+- All environment variables
+- Authentication model and security caveats
+- Full troubleshooting guide
+
+---
+
 ## Contributing
 
 This project is in early development. Issues and pull requests are welcome.
