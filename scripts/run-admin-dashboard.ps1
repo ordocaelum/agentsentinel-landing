@@ -58,21 +58,25 @@ Write-Host "  -------------------------------------------------"
 Write-Host ""
 
 # ---------------------------------------------------------------------------
-# Build argument list and launch
+# Build argument list and launch.
+# Prefer the installed console script; fall back to python -m.
 # ---------------------------------------------------------------------------
-$PythonArgs = @("-m", "agentsentinel.dashboard")
 
+# Only pass flags that were explicitly supplied by the caller.
+$DashArgs = @()
 if ($Port -ne 0) {
-    $PythonArgs += "--port", "$Port"
+    $DashArgs += "--port", "$Port"
 }
-
 if ($BindHost -ne "") {
-    $PythonArgs += "--host", "$BindHost"
+    $DashArgs += "--host", "$BindHost"
 }
 
-# Errors propagate immediately: if python exits non-zero, the script exits
-# non-zero too (thanks to $ErrorActionPreference = "Stop" + exit code check).
-python @PythonArgs
+$consoleScript = Get-Command agentsentinel-dashboard -ErrorAction SilentlyContinue
+if ($consoleScript) {
+    & agentsentinel-dashboard @DashArgs
+} else {
+    python -m agentsentinel.dashboard @DashArgs
+}
 if ($LASTEXITCODE -ne 0) {
     exit $LASTEXITCODE
 }

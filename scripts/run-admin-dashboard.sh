@@ -67,6 +67,11 @@ echo "  ────────────────────────
 echo ""
 
 # ---------------------------------------------------------------------------
-# Launch — errors propagate immediately thanks to set -e
+# Launch — prefer the installed console script, fall back to python -m.
+# Errors propagate immediately thanks to set -e.
 # ---------------------------------------------------------------------------
-exec python -m agentsentinel.dashboard "${PASSTHROUGH_ARGS[@]+"${PASSTHROUGH_ARGS[@]}"}"
+if command -v agentsentinel-dashboard &>/dev/null; then
+    exec agentsentinel-dashboard "${PASSTHROUGH_ARGS[@]+"${PASSTHROUGH_ARGS[@]}"}"
+else
+    exec python -m agentsentinel.dashboard "${PASSTHROUGH_ARGS[@]+"${PASSTHROUGH_ARGS[@]}"}"
+fi

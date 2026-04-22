@@ -56,6 +56,9 @@ Changelog = "https://github.com/ordocaelum/agentsentinel-landing/releases"
 
 [tool.hatch.build.targets.wheel]
 packages = ["agentsentinel"]
+include = [
+    "agentsentinel/dashboard/static/**",
+]
 
 [tool.black]
 line-length = 100

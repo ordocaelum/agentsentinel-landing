@@ -61,7 +61,8 @@ cd agentsentinel-landing
 
 # 2. Install the Python package in editable mode
 #    This ensures 'import agentsentinel' resolves to *this* repo,
-#    not a version installed from PyPI.
+#    not a version installed from PyPI, and installs the
+#    'agentsentinel-dashboard' console script.
 pip install -e python/
 
 # 3. Verify the install resolves to the repo
@@ -69,31 +70,41 @@ python -c "import agentsentinel; print(agentsentinel.__file__)"
 # Expected: .../agentsentinel-landing/python/agentsentinel/__init__.py
 
 # 4. Start the dashboard (see Section 4 for all command forms)
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard
+AGENTSENTINEL_DEV=1 agentsentinel-dashboard
 ```
 
 ---
 
 ## 4. Run Commands
 
-### Default (port 8080, localhost)
+### Preferred: console script (after `pip install`)
+
+```bash
+agentsentinel-dashboard
+```
+
+Access at: **http://localhost:8080/admin**
+
+### Alternative: module invocation (works from source without install)
 
 ```bash
 AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard
 ```
 
-Access at: **http://localhost:8080/admin**
-
 ### Explicit port and host
 
 ```bash
+# Console script
+agentsentinel-dashboard --port 8080 --host localhost
+
+# Module
 AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --port 8080 --host localhost
 ```
 
 ### Custom port
 
 ```bash
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --port 9090
+agentsentinel-dashboard --port 9090
 ```
 
 Access at: **http://localhost:9090/admin**
@@ -101,7 +112,7 @@ Access at: **http://localhost:9090/admin**
 ### Non-blocking (background thread)
 
 ```bash
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --background
+agentsentinel-dashboard --background
 ```
 
 Returns immediately; useful when embedding in a larger script.
@@ -110,7 +121,7 @@ Returns immediately; useful when embedding in a larger script.
 
 ```powershell
 $env:AGENTSENTINEL_DEV = "1"
-python -m agentsentinel.dashboard
+agentsentinel-dashboard
 ```
 
 ---
@@ -233,6 +244,12 @@ python -c "import agentsentinel; print(agentsentinel.__file__)"
 # Expected path ends with: .../python/agentsentinel/__init__.py
 ```
 
+**Console script is installed**
+
+```bash
+agentsentinel-dashboard --help
+```
+
 ---
 
 ## 9. Troubleshooting
@@ -256,7 +273,7 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 8080).OwningProcess | Stop-Proc
 Or start on a different port:
 
 ```bash
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --port 8081
+AGENTSENTINEL_DEV=1 agentsentinel-dashboard --port 8081
 ```
 
 ---
@@ -297,18 +314,21 @@ You forgot to set `AGENTSENTINEL_DEV=1`. Either:
 
 ```bash
 # Inline (single command)
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard
+AGENTSENTINEL_DEV=1 agentsentinel-dashboard
 
 # Or export for the session
 export AGENTSENTINEL_DEV=1
-python -m agentsentinel.dashboard
+agentsentinel-dashboard
+
+# If running directly from source (no install):
+AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard
 ```
 
 On Windows PowerShell:
 
 ```powershell
 $env:AGENTSENTINEL_DEV = "1"
-python -m agentsentinel.dashboard
+agentsentinel-dashboard
 ```
 
 ---
