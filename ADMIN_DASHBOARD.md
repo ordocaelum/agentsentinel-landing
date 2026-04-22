@@ -620,29 +620,40 @@ pip install -e python/
 
 #### 2. Start the Python dashboard server
 
-The recommended entry point is `python -m agentsentinel.dashboard`, which accepts
+There are two equivalent ways to start the dashboard server — both accept
 `--port`, `--host`, and `--background` flags:
+
+| Method | Command |
+|---|---|
+| Console script (preferred) | `agentsentinel-dashboard` |
+| Module invocation | `python -m agentsentinel.dashboard` |
 
 **bash / macOS / Linux**
 
 ```bash
 # Default (port 8080, localhost)
-python -m agentsentinel.dashboard
+agentsentinel-dashboard
 
 # Custom port and host
-python -m agentsentinel.dashboard --port 9090 --host 0.0.0.0
+agentsentinel-dashboard --port 9090 --host 0.0.0.0
 
 # Non-blocking (returns immediately; useful in scripts)
-python -m agentsentinel.dashboard --port 8080 --background
+agentsentinel-dashboard --port 8080 --background
+
+# Equivalent module invocation
+python -m agentsentinel.dashboard --port 8080
 ```
 
 **PowerShell (Windows)**
 
 ```powershell
 # Default (port 8080, localhost)
-python -m agentsentinel.dashboard
+agentsentinel-dashboard
 
 # Custom port
+agentsentinel-dashboard --port 9090 --host localhost
+
+# Equivalent module invocation
 python -m agentsentinel.dashboard --port 9090 --host localhost
 ```
 
@@ -659,7 +670,7 @@ The server is zero-dependency (uses Python's built-in `http.server` module) and 
 | `AGENTSENTINEL_DASHBOARD_HOST` | `--host` | `localhost` |
 
 ```bash
-AGENTSENTINEL_DASHBOARD_PORT=9090 python -m agentsentinel.dashboard
+AGENTSENTINEL_DASHBOARD_PORT=9090 agentsentinel-dashboard
 ```
 
 #### 2a. Dev-mode licence bypass
@@ -671,14 +682,14 @@ environment variable:
 **bash / macOS / Linux**
 
 ```bash
-AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --port 8080
+AGENTSENTINEL_DEV=1 agentsentinel-dashboard --port 8080
 ```
 
 **PowerShell (Windows)**
 
 ```powershell
 $env:AGENTSENTINEL_DEV = "1"
-python -m agentsentinel.dashboard --port 8080
+agentsentinel-dashboard --port 8080
 ```
 
 > ⚠️  **Warning:** `AGENTSENTINEL_DEV=1` disables licence enforcement.  Never set
