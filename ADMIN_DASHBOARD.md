@@ -620,10 +620,30 @@ pip install -e python/
 
 #### 2. Start the Python dashboard server
 
+The recommended entry point is `python -m agentsentinel.dashboard`, which accepts
+`--port`, `--host`, and `--background` flags:
+
+**bash / macOS / Linux**
+
 ```bash
-python -m agentsentinel.dashboard.server
-# Dashboard available at: http://localhost:8000
-# Admin SPA available at: http://localhost:8000/admin
+# Default (port 8080, localhost)
+python -m agentsentinel.dashboard
+
+# Custom port and host
+python -m agentsentinel.dashboard --port 9090 --host 0.0.0.0
+
+# Non-blocking (returns immediately; useful in scripts)
+python -m agentsentinel.dashboard --port 8080 --background
+```
+
+**PowerShell (Windows)**
+
+```powershell
+# Default (port 8080, localhost)
+python -m agentsentinel.dashboard
+
+# Custom port
+python -m agentsentinel.dashboard --port 9090 --host localhost
 ```
 
 The server is zero-dependency (uses Python's built-in `http.server` module) and serves:
@@ -631,9 +651,49 @@ The server is zero-dependency (uses Python's built-in `http.server` module) and 
 - The admin SPA at `/admin`
 - All REST API endpoints under `/api/`
 
+**Environment variable overrides** (useful for CI/CD):
+
+| Variable | Overrides | Default |
+|---|---|---|
+| `AGENTSENTINEL_DASHBOARD_PORT` | `--port` | `8080` |
+| `AGENTSENTINEL_DASHBOARD_HOST` | `--host` | `localhost` |
+
+```bash
+AGENTSENTINEL_DASHBOARD_PORT=9090 python -m agentsentinel.dashboard
+```
+
+#### 2a. Dev-mode licence bypass
+
+By default the dashboard requires a paid licence (Pro, Team, or Enterprise).  For
+local development you can bypass the licence gate with the `AGENTSENTINEL_DEV`
+environment variable:
+
+**bash / macOS / Linux**
+
+```bash
+AGENTSENTINEL_DEV=1 python -m agentsentinel.dashboard --port 8080
+```
+
+**PowerShell (Windows)**
+
+```powershell
+$env:AGENTSENTINEL_DEV = "1"
+python -m agentsentinel.dashboard --port 8080
+```
+
+> ⚠️  **Warning:** `AGENTSENTINEL_DEV=1` disables licence enforcement.  Never set
+> this variable in production environments.
+
+When the bypass is active you will see the following warning in the console:
+
+```
+⚠️  [AgentSentinel] DEV MODE ACTIVE — licence check bypassed (AGENTSENTINEL_DEV=1).
+    Do NOT use this setting in production.
+```
+
 #### 3. Open the Admin SPA
 
-Navigate to `http://localhost:8000/admin`. You will see the setup screen on first visit.
+Navigate to `http://localhost:8080/admin`. You will see the setup screen on first visit.
 
 Enter:
 - **Supabase URL:** Your project URL, e.g. `https://your-project-ref.supabase.co`
