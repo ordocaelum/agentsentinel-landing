@@ -1669,6 +1669,17 @@ class DashboardServer:
 # Convenience function
 # ---------------------------------------------------------------------------
 
+def _is_dev_mode() -> bool:
+    """Return ``True`` when ``AGENTSENTINEL_DEV=1`` is set in the environment.
+
+    This activates the local-development licence-gate bypass so that the
+    dashboard can be started without a paid licence key.  It has **no effect**
+    in production (i.e. when the environment variable is absent or set to any
+    value other than ``"1"``).
+    """
+    return os.getenv("AGENTSENTINEL_DEV") == "1"
+
+
 def start_dashboard(
     guard: Any,
     port: int = 8080,
@@ -1708,13 +1719,19 @@ def start_dashboard(
     """
     from agentsentinel.licensing import require_feature, FeatureNotAvailableError
 
-    try:
-        require_feature("dashboard")
-    except FeatureNotAvailableError as e:
-        print(f"\n⚠️  {e}\n")
-        print("The dashboard is available in Pro, Team, and Enterprise plans.")
-        print("Start your free trial at https://agentsentinel.net/pricing\n")
-        return None
+    if _is_dev_mode():
+        print(
+            "\n⚠️  [AgentSentinel] DEV MODE ACTIVE — licence check bypassed "
+            "(AGENTSENTINEL_DEV=1).  Do NOT use this setting in production.\n"
+        )
+    else:
+        try:
+            require_feature("dashboard")
+        except FeatureNotAvailableError as e:
+            print(f"\n⚠️  {e}\n")
+            print("The dashboard is available in Pro, Team, and Enterprise plans.")
+            print("Start your free trial at https://agentsentinel.net/pricing\n")
+            return None
 
     server = DashboardServer(guard, port=port, host=host)
     if background:
