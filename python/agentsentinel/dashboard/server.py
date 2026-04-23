@@ -95,6 +95,7 @@ from __future__ import annotations
 import fnmatch
 import http.server
 import json
+import logging
 import mimetypes
 import os
 import threading
@@ -102,6 +103,11 @@ import time
 import uuid
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse, parse_qs
+
+# Ensure .js files always get the correct MIME type regardless of platform
+# defaults (some systems map .js to text/plain).
+mimetypes.add_type("application/javascript", ".js")
+mimetypes.add_type("text/css", ".css")
 
 # ---------------------------------------------------------------------------
 # Path to the bundled static HTML file
@@ -697,6 +703,8 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_notifications_unread()
             elif path == "/api/notifications/settings":
                 self._serve_notification_settings()
+            elif path == "/api/debug/static-status":
+                self._serve_debug_static_status()
             else:
                 self.send_error(404, "Not Found")
 
@@ -875,6 +883,16 @@ def _make_handler(guard: Any):  # type: ignore[return]
             clean = relative_path.lstrip("/").lstrip("\\")
             requested = os.path.realpath(os.path.join(_ADMIN_DIR, clean))
 
+            if _is_dashboard_debug():
+                logging.getLogger(__name__).debug(
+                    "[admin-static] url=%s relative=%r admin_dir=%r resolved=%r exists=%s",
+                    self.path,
+                    relative_path,
+                    _ADMIN_DIR,
+                    requested,
+                    os.path.exists(requested),
+                )
+
             if not requested.startswith(safe_base + os.sep):
                 self.send_error(403, "Forbidden")
                 return
@@ -893,6 +911,36 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self.wfile.write(content)
             except FileNotFoundError:
                 self.send_error(404, "Not Found")
+
+        def _serve_debug_static_status(self) -> None:
+            """Dev-only endpoint: return JSON with static directory diagnostics."""
+            if not _is_dev_mode():
+                self.send_error(404, "Not Found")
+                return
+
+            admin_index = os.path.join(_ADMIN_DIR, "index.html")
+            admin_css = os.path.join(_ADMIN_DIR, "css", "admin.css")
+            app_js = os.path.join(_ADMIN_DIR, "js", "app.js")
+
+            try:
+                top_level = sorted(os.listdir(_ADMIN_DIR))
+            except OSError:
+                top_level = []
+
+            payload = {
+                "static_dir": _STATIC_DIR,
+                "admin_dir": _ADMIN_DIR,
+                "exists": {
+                    "static_dir": os.path.isdir(_STATIC_DIR),
+                    "admin_dir": os.path.isdir(_ADMIN_DIR),
+                    "admin_index": os.path.isfile(admin_index),
+                    "admin_css": os.path.isfile(admin_css),
+                    "app_js": os.path.isfile(app_js),
+                },
+                "admin_dir_listing": top_level,
+            }
+            data = json.dumps(payload, indent=2).encode()
+            self._send_json(data)
 
         def _serve_stats(self) -> None:
             data = json.dumps(_collect_stats(guard), indent=2).encode()
@@ -1644,10 +1692,11 @@ class DashboardServer:
         host: str = "localhost",
     ) -> None:
         self.guard = guard
-        self.port = port
         self.host = host
         handler_class = _make_handler(guard)
         self._server = http.server.HTTPServer((host, port), handler_class)
+        # Use the actual bound port (important when port=0 for ephemeral binding).
+        self.port = self._server.server_address[1]
 
     def serve_forever(self) -> None:
         """Block and serve requests until :meth:`shutdown` is called."""
@@ -1678,6 +1727,14 @@ def _is_dev_mode() -> bool:
     value other than ``"1"``).
     """
     return os.getenv("AGENTSENTINEL_DEV") == "1"
+
+
+def _is_dashboard_debug() -> bool:
+    """Return ``True`` when debug logging for static serving is enabled.
+
+    Enabled when ``AGENTSENTINEL_DEV=1`` **or** ``AGENTSENTINEL_DASHBOARD_DEBUG=1``.
+    """
+    return _is_dev_mode() or os.getenv("AGENTSENTINEL_DASHBOARD_DEBUG") == "1"
 
 
 def start_dashboard(
