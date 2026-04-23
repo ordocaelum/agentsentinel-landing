@@ -85,12 +85,59 @@ async function count(table, filter = '') {
 }
 
 // ═══════════════════════════════════════════════════════════════════
+// Local dev-mode helpers
+// ═══════════════════════════════════════════════════════════════════
+
+/**
+ * Returns true when running against the local Python dashboard server
+ * (localhost or 127.0.0.1).  In this mode all promo operations use the
+ * local /api/promos* endpoints instead of Supabase.
+ */
+function _isLocalMode() {
+  try {
+    const { hostname } = window.location;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Perform a fetch against the local dashboard server.
+ * Throws on non-OK responses (with the JSON error message if present).
+ */
+async function _localFetch(method, path, body) {
+  const opts = { method, headers: { 'Content-Type': 'application/json' } };
+  if (body !== undefined) opts.body = JSON.stringify(body);
+  const res = await fetch(path, opts);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `${method} ${path} failed: ${res.status}`);
+  }
+  if (res.status === 204) return null;
+  return res.json();
+}
+
+// ═══════════════════════════════════════════════════════════════════
 // PROMO CODES
 // ═══════════════════════════════════════════════════════════════════
 
 export const promoAPI = {
   /** List all promo codes with optional filters */
   async list({ search = '', status = '', type = '', tier = '', page = 1, pageSize = 50 } = {}) {
+    if (_isLocalMode()) {
+      const params = new URLSearchParams();
+      if (search) params.set('search', search);
+      if (status) params.set('status', status);
+      if (type)   params.set('type', type);
+      if (tier)   params.set('tier', tier);
+      params.set('page', page);
+      params.set('page_size', pageSize);
+      const data = await _localFetch('GET', `/api/promos?${params}`);
+      // Local server returns an array directly (mirroring Supabase REST shape)
+      return Array.isArray(data) ? data : (data.promos || []);
+    }
+
     const params = new URLSearchParams();
     params.set('select', '*');
     params.set('order', 'created_at.desc');
@@ -109,8 +156,13 @@ export const promoAPI = {
     return data;
   },
 
-  /** Create a promo code via the admin Edge Function */
+  /** Create a promo code */
   async create(payload) {
+    if (_isLocalMode()) {
+      const data = await _localFetch('POST', '/api/promos', payload);
+      return data.promo;
+    }
+
     const { supabaseUrl, adminApiSecret } = cfg();
     if (!adminApiSecret) {
       throw new Error('Admin API Secret is not configured. Open Settings and enter your ADMIN_API_SECRET.');
@@ -138,21 +190,36 @@ export const promoAPI = {
 
   /** Toggle active status */
   async toggle(id, active) {
+    if (_isLocalMode()) {
+      const action = active ? 'enable' : 'disable';
+      return _localFetch('POST', `/api/promos/${id}/${action}`);
+    }
     return patch('promo_codes', id, { active });
   },
 
   /** Update promo */
   async update(id, payload) {
+    if (_isLocalMode()) {
+      const data = await _localFetch('PUT', `/api/promos/${id}`, payload);
+      return data.promo || data;
+    }
     return patch('promo_codes', id, payload);
   },
 
   /** Delete promo */
   async delete(id) {
+    if (_isLocalMode()) {
+      return _localFetch('DELETE', `/api/promos/${id}`);
+    }
     return del('promo_codes', id);
   },
 
   /** Get usage stats for a promo */
   async getUsage(promoId) {
+    if (_isLocalMode()) {
+      const data = await _localFetch('GET', `/api/promos/${promoId}/usage`);
+      return data.licenses || [];
+    }
     const params = `promo_code_id=eq.${promoId}&select=id,created_at,tier&limit=100`;
     const rows = await get('licenses', params);
     return rows;
@@ -267,6 +334,8 @@ export const auditAPI = {
   },
 
   async log(entry) {
+    // In local dev mode there is no Supabase backend; silently succeed.
+    if (_isLocalMode()) return null;
     return post('admin_logs', {
       admin_id:    entry.adminId || 'admin',
       action:      entry.action,
