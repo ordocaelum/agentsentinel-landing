@@ -71,6 +71,15 @@ The dashboard exposes:
 * ``POST /api/notifications/{id}/snooze``     — snooze
 * ``GET /api/notifications/settings``         — get notification settings
 * ``POST /api/notifications/settings``        — update notification settings
+* ``GET /api/promos``                         — list promo codes (dev mode only)
+* ``GET /api/promos/{id}``                    — get promo code (dev mode only)
+* ``GET /api/promos/stats``                   — promo stats (dev mode only)
+* ``GET /api/promos/{id}/usage``              — promo usage (dev mode only)
+* ``POST /api/promos``                        — create promo code (dev mode only)
+* ``PUT /api/promos/{id}``                    — update promo code (dev mode only)
+* ``DELETE /api/promos/{id}``                 — delete promo code (dev mode only)
+* ``POST /api/promos/{id}/enable``            — enable promo code (dev mode only)
+* ``POST /api/promos/{id}/disable``           — disable promo code (dev mode only)
 
 Usage::
 
@@ -97,9 +106,11 @@ import http.server
 import json
 import mimetypes
 import os
+import re as _re
 import threading
 import time
 import uuid
+from datetime import datetime as _datetime, timezone as _timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse, parse_qs, unquote
 
@@ -201,6 +212,12 @@ _approval_settings: Dict[str, Any] = {
     "push_notifications": False,
     "auto_reject_timeout": 60,
 }
+
+# ---------------------------------------------------------------------------
+# Promo codes (dev mode only)
+# ---------------------------------------------------------------------------
+_promos_lock = threading.Lock()
+_promos: Dict[str, Dict[str, Any]] = {}
 
 # ---------------------------------------------------------------------------
 # Notifications
@@ -623,6 +640,129 @@ def _seed_demo_notifications() -> None:
             }
 
 
+def _seed_demo_promos() -> None:
+    """Populate demo promo codes (dev mode only)."""
+    with _promos_lock:
+        if _promos:
+            return  # already seeded
+
+        now = time.time()
+        future = now + 90 * 86400  # 90 days from now
+        near_future = now + 7 * 86400  # 7 days from now
+
+        def _iso(ts: float) -> str:
+            return _datetime.fromtimestamp(ts, tz=_timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+
+        demo: List[Dict[str, Any]] = [
+            {
+                "id": "demo-launch20",
+                "code": "LAUNCH20",
+                "type": "discount_percent",
+                "value": 20,
+                "description": "Launch promotion — 20% off for early adopters",
+                "tier": None,
+                "active": True,
+                "used_count": 47,
+                "max_uses": 100,
+                "expires_at": _iso(future),
+                "created_at": now - 30 * 86400,
+                "created_by": "admin",
+                "tags": ["launch", "promo"],
+            },
+            {
+                "id": "demo-student50",
+                "code": "STUDENTLIFE",
+                "type": "discount_percent",
+                "value": 50,
+                "description": "50% student discount — requires .edu email",
+                "tier": "pro",
+                "active": True,
+                "used_count": 12,
+                "max_uses": None,
+                "expires_at": None,
+                "created_at": now - 15 * 86400,
+                "created_by": "admin",
+                "tags": ["students"],
+            },
+            {
+                "id": "demo-extend14",
+                "code": "EXTEND14",
+                "type": "trial_extension",
+                "value": 14,
+                "description": "+14 extra trial days for conference attendees",
+                "tier": None,
+                "active": True,
+                "used_count": 8,
+                "max_uses": 50,
+                "expires_at": _iso(near_future),
+                "created_at": now - 5 * 86400,
+                "created_by": "admin",
+                "tags": ["conference"],
+            },
+            {
+                "id": "demo-vip500",
+                "code": "VIP500",
+                "type": "discount_fixed",
+                "value": 500,
+                "description": "VIP $5 off coupon (500 cents)",
+                "tier": "enterprise",
+                "active": False,
+                "used_count": 3,
+                "max_uses": 10,
+                "expires_at": None,
+                "created_at": now - 60 * 86400,
+                "created_by": "admin",
+                "tags": ["vip"],
+            },
+        ]
+        for p in demo:
+            _promos[p["id"]] = p
+
+
+# ---------------------------------------------------------------------------
+# Validation helpers for promo codes
+# ---------------------------------------------------------------------------
+
+_PROMO_CODE_RE = _re.compile(r"^[A-Z0-9_-]{3,20}$")
+_VALID_PROMO_TYPES = {"discount_percent", "discount_fixed", "trial_extension", "unlimited_trial"}
+
+
+def _validate_promo(body: Dict[str, Any], require_code: bool = True) -> Optional[str]:
+    """Validate promo code fields.  Returns an error message or ``None``."""
+    if require_code:
+        code = body.get("code", "")
+        if not code:
+            return "code is required"
+        if not _PROMO_CODE_RE.match(code):
+            return "code must be 3-20 uppercase letters, digits, dash, or underscore"
+
+    ptype = body.get("type", "")
+    if ptype and ptype not in _VALID_PROMO_TYPES:
+        return f"type must be one of: {', '.join(sorted(_VALID_PROMO_TYPES))}"
+
+    value = body.get("value")
+    if value is not None:
+        try:
+            value = float(value)
+        except (TypeError, ValueError):
+            return "value must be a number"
+        if value < 0:
+            return "value must be non-negative"
+        if ptype == "discount_percent" and value > 100:
+            return "value must be 0-100 for discount_percent"
+
+    max_uses = body.get("max_uses")
+    if max_uses is not None:
+        try:
+            max_uses = int(max_uses)
+        except (TypeError, ValueError):
+            return "max_uses must be a positive integer or null"
+        if max_uses <= 0:
+            return "max_uses must be positive"
+
+    return None
+
+
 # ---------------------------------------------------------------------------
 # HTTP request handler
 # ---------------------------------------------------------------------------
@@ -697,6 +837,28 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_notifications_unread()
             elif path == "/api/notifications/settings":
                 self._serve_notification_settings()
+            # Promos (dev mode only)
+            elif path == "/api/promos":
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                self._serve_promos()
+            elif path == "/api/promos/stats":
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                self._serve_promo_stats()
+            elif path.startswith("/api/promos/"):
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                parts = path.split("/")
+                if len(parts) == 4:
+                    self._serve_promo_detail(parts[3])
+                elif len(parts) == 5 and parts[4] == "usage":
+                    self._serve_promo_usage(parts[3])
+                else:
+                    self.send_error(404, "Not Found")
             # Dev-only debug endpoint
             elif path == "/api/debug/static-status":
                 if _is_dev_mode() or os.getenv("AGENTSENTINEL_DASHBOARD_DEBUG") == "1":
@@ -833,6 +995,38 @@ def _make_handler(guard: Any):  # type: ignore[return]
                         self.send_error(404, "Not Found")
                 else:
                     self.send_error(404, "Not Found")
+            # Promos (dev mode only)
+            elif path == "/api/promos":
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                self._handle_create_promo(body)
+            elif path.startswith("/api/promos/"):
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                parts = path.split("/")
+                if len(parts) == 5 and parts[4] in ("enable", "disable"):
+                    self._handle_promo_toggle(parts[3], parts[4] == "enable")
+                else:
+                    self.send_error(404, "Not Found")
+            else:
+                self.send_error(404, "Not Found")
+
+        def do_PUT(self) -> None:  # noqa: N802
+            parsed = urlparse(self.path)
+            path = parsed.path
+            body = self._read_body()
+
+            if path.startswith("/api/promos/"):
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                parts = path.split("/")
+                if len(parts) == 4:
+                    self._handle_update_promo(parts[3], body)
+                else:
+                    self.send_error(404, "Not Found")
             else:
                 self.send_error(404, "Not Found")
 
@@ -843,6 +1037,14 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 parts = path.split("/")
                 if len(parts) == 4:
                     self._handle_remove_agent(parts[3])
+                    return
+            elif path.startswith("/api/promos/"):
+                if not _is_dev_mode():
+                    self.send_error(404, "Not Found")
+                    return
+                parts = path.split("/")
+                if len(parts) == 4:
+                    self._handle_delete_promo(parts[3])
                     return
             self.send_error(404, "Not Found")
 
@@ -1625,6 +1827,198 @@ def _make_handler(guard: Any):  # type: ignore[return]
             data = json.dumps({"ok": True}).encode()
             self._send_json(data)
 
+        # --- Promos (dev mode only) ---
+
+        def _serve_promos(self) -> None:
+            """GET /api/promos — list promos with optional filters."""
+            _seed_demo_promos()
+            parsed = urlparse(self.path)
+            qs = parse_qs(parsed.query)
+            search = (qs.get("search") or [""])[0].upper()
+            status_filter = (qs.get("status") or [""])[0]
+            type_filter = (qs.get("type") or [""])[0]
+            tier_filter = (qs.get("tier") or [""])[0]
+
+            with _promos_lock:
+                rows = list(_promos.values())
+
+            if search:
+                rows = [p for p in rows if search in p.get("code", "").upper()
+                        or search.lower() in p.get("description", "").lower()]
+            if status_filter == "active":
+                rows = [p for p in rows if p.get("active")]
+            elif status_filter == "inactive":
+                rows = [p for p in rows if not p.get("active")]
+            if type_filter:
+                rows = [p for p in rows if p.get("type") == type_filter]
+            if tier_filter:
+                rows = [p for p in rows if p.get("tier") == tier_filter]
+
+            rows.sort(key=lambda p: p.get("created_at", 0), reverse=True)
+            data = json.dumps(rows, indent=2).encode()
+            self._send_json(data)
+
+        def _serve_promo_detail(self, promo_id: str) -> None:
+            """GET /api/promos/{id} — get a single promo."""
+            _seed_demo_promos()
+            with _promos_lock:
+                promo = _promos.get(promo_id)
+            if not promo:
+                self.send_error(404, "Promo not found")
+                return
+            data = json.dumps(promo, indent=2).encode()
+            self._send_json(data)
+
+        def _serve_promo_stats(self) -> None:
+            """GET /api/promos/stats — aggregate stats."""
+            _seed_demo_promos()
+            with _promos_lock:
+                rows = list(_promos.values())
+            total = len(rows)
+            active = sum(1 for p in rows if p.get("active"))
+            total_uses = sum(p.get("used_count", 0) for p in rows)
+            by_type: Dict[str, int] = {}
+            for p in rows:
+                ptype = p.get("type", "unknown")
+                by_type[ptype] = by_type.get(ptype, 0) + 1
+            data = json.dumps({
+                "total": total,
+                "active": active,
+                "inactive": total - active,
+                "total_uses": total_uses,
+                "by_type": by_type,
+            }, indent=2).encode()
+            self._send_json(data)
+
+        def _serve_promo_usage(self, promo_id: str) -> None:
+            """GET /api/promos/{id}/usage — stub usage (no real licenses in dev)."""
+            _seed_demo_promos()
+            with _promos_lock:
+                if promo_id not in _promos:
+                    self.send_error(404, "Promo not found")
+                    return
+            data = json.dumps({"licenses": []}, indent=2).encode()
+            self._send_json(data)
+
+        def _handle_create_promo(self, body: Dict[str, Any]) -> None:
+            """POST /api/promos — create a new promo code."""
+            _seed_demo_promos()
+
+            err = _validate_promo(body, require_code=True)
+            if err:
+                payload = json.dumps({"ok": False, "error": err}).encode()
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self._add_cors()
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+
+            code = body["code"].strip().upper().replace(" ", "")
+            ptype = body["type"]
+            value = float(body.get("value", 0))
+            description = body.get("description") or ""
+            tier = body.get("tier") or None
+            max_uses = body.get("max_uses")
+            if max_uses is not None:
+                max_uses = int(max_uses)
+            expires_at = body.get("expires_at") or None
+            active = bool(body.get("active", True))
+            tags = body.get("tags") or []
+
+            with _promos_lock:
+                # Uniqueness check
+                for existing in _promos.values():
+                    if existing.get("code") == code:
+                        payload = json.dumps({"ok": False, "error": f"Promo code '{code}' already exists"}).encode()
+                        self.send_response(409)
+                        self.send_header("Content-Type", "application/json")
+                        self.send_header("Content-Length", str(len(payload)))
+                        self._add_cors()
+                        self.end_headers()
+                        self.wfile.write(payload)
+                        return
+
+                promo_id = "promo-" + str(uuid.uuid4())[:8]
+                promo: Dict[str, Any] = {
+                    "id": promo_id,
+                    "code": code,
+                    "type": ptype,
+                    "value": value,
+                    "description": description,
+                    "tier": tier,
+                    "active": active,
+                    "used_count": 0,
+                    "max_uses": max_uses,
+                    "expires_at": expires_at,
+                    "created_at": time.time(),
+                    "created_by": "admin",
+                    "tags": tags,
+                }
+                _promos[promo_id] = promo
+
+            payload = json.dumps({"ok": True, "promo": promo}, indent=2).encode()
+            self.send_response(201)
+            self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(payload)))
+            self._add_cors()
+            self.end_headers()
+            self.wfile.write(payload)
+
+        def _handle_update_promo(self, promo_id: str, body: Dict[str, Any]) -> None:
+            """PUT /api/promos/{id} — update an existing promo."""
+            _seed_demo_promos()
+
+            err = _validate_promo(body, require_code=False)
+            if err:
+                payload = json.dumps({"ok": False, "error": err}).encode()
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self.send_header("Content-Length", str(len(payload)))
+                self._add_cors()
+                self.end_headers()
+                self.wfile.write(payload)
+                return
+
+            with _promos_lock:
+                if promo_id not in _promos:
+                    self.send_error(404, "Promo not found")
+                    return
+                promo = _promos[promo_id]
+                updatable = ("type", "value", "description", "tier", "max_uses",
+                             "expires_at", "active", "tags")
+                for field in updatable:
+                    if field in body:
+                        promo[field] = body[field]
+                promo = dict(promo)
+
+            data = json.dumps({"ok": True, "promo": promo}, indent=2).encode()
+            self._send_json(data)
+
+        def _handle_delete_promo(self, promo_id: str) -> None:
+            """DELETE /api/promos/{id} — remove a promo code."""
+            _seed_demo_promos()
+            with _promos_lock:
+                if promo_id not in _promos:
+                    self.send_error(404, "Promo not found")
+                    return
+                del _promos[promo_id]
+            data = json.dumps({"ok": True, "removed": promo_id}).encode()
+            self._send_json(data)
+
+        def _handle_promo_toggle(self, promo_id: str, enabled: bool) -> None:
+            """POST /api/promos/{id}/enable|disable."""
+            _seed_demo_promos()
+            with _promos_lock:
+                if promo_id not in _promos:
+                    self.send_error(404, "Promo not found")
+                    return
+                _promos[promo_id]["active"] = enabled
+                promo = dict(_promos[promo_id])
+            data = json.dumps({"ok": True, "promo": promo}, indent=2).encode()
+            self._send_json(data)
+
         # ------------------------------------------------------------------ #
         # Helpers                                                              #
         # ------------------------------------------------------------------ #
@@ -1668,7 +2062,7 @@ def _make_handler(guard: Any):  # type: ignore[return]
 
         def _add_cors(self) -> None:
             self.send_header("Access-Control-Allow-Origin", "*")
-            self.send_header("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS")
+            self.send_header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
             self.send_header("Access-Control-Allow-Headers", "Content-Type")
 
         def log_message(self, *_args: object) -> None:

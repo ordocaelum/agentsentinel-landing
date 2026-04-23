@@ -34,6 +34,16 @@ const NAV = [
 // ── App state ──────────────────────────────────────────────────────────────
 let _currentPage = null;
 
+/** Returns true when serving from localhost — Supabase is not required. */
+function _isLocalMode() {
+  try {
+    const { hostname } = window.location;
+    return hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '';
+  } catch {
+    return false;
+  }
+}
+
 class AdminApp {
   constructor() {
     this.currentPage = 'overview';
@@ -41,13 +51,13 @@ class AdminApp {
 
   /** Boot sequence */
   async init() {
-    // Always render setup screen if no config
-    if (!hasConfig()) {
-      this._showSetup();
+    // In local dev mode the Supabase backend is not available — skip setup.
+    if (_isLocalMode() || hasConfig()) {
+      this._showApp();
+      this.navigate(this._getPageFromHash() || 'overview');
       return;
     }
-    this._showApp();
-    this.navigate(this._getPageFromHash() || 'overview');
+    this._showSetup();
   }
 
   // ── Setup screen ──────────────────────────────────────────────────────────
