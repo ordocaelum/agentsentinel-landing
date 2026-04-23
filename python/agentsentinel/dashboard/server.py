@@ -101,7 +101,7 @@ import threading
 import time
 import uuid
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse, parse_qs
+from urllib.parse import urlparse, parse_qs, unquote
 
 # ---------------------------------------------------------------------------
 # Path to the bundled static HTML file
@@ -697,6 +697,20 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_notifications_unread()
             elif path == "/api/notifications/settings":
                 self._serve_notification_settings()
+            # Dev-only debug endpoint
+            elif path == "/api/debug/static-status":
+                if _is_dev_mode() or os.getenv("AGENTSENTINEL_DASHBOARD_DEBUG") == "1":
+                    self._serve_debug_static_status()
+                else:
+                    self.send_error(404, "Not Found")
+            # Root-level aliases for admin static assets
+            # ./css/admin.css in index.html resolves to /css/... when served at /admin
+            elif path.startswith("/css/"):
+                self._serve_file_from(_ADMIN_DIR, path[1:])
+            elif path.startswith("/js/"):
+                self._serve_file_from(_ADMIN_DIR, path[1:])
+            elif path.startswith("/svg/"):
+                self._serve_file_from(_ADMIN_DIR, path[1:])
             else:
                 self.send_error(404, "Not Found")
 
@@ -867,13 +881,32 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self.send_error(404, "Admin dashboard not found")
 
         def _serve_admin_static(self, relative_path: str) -> None:
-            # Guard against path-traversal attacks: resolve to a real path and
-            # verify it sits strictly inside _ADMIN_DIR before opening anything.
-            safe_base = os.path.realpath(_ADMIN_DIR)
+            self._serve_file_from(_ADMIN_DIR, relative_path)
 
-            # Strip any leading separators that could anchor to the filesystem root.
-            clean = relative_path.lstrip("/").lstrip("\\")
-            requested = os.path.realpath(os.path.join(_ADMIN_DIR, clean))
+        def _serve_file_from(self, base_dir: str, relative_path: str) -> None:
+            """Serve a static file from *base_dir* / *relative_path*.
+
+            Security
+            --------
+            * URL-decodes the path via :func:`urllib.parse.unquote`.
+            * Normalises OS separators.
+            * Resolves to a ``realpath`` and verifies the result is strictly
+              inside *base_dir* to prevent path-traversal attacks.
+
+            MIME types
+            ----------
+            ``mimetypes.guess_type`` is called on the full resolved path.
+            A hard-coded fallback ensures that ``.js`` files always receive
+            ``application/javascript`` even on platforms with missing MIME
+            databases.
+            """
+            safe_base = os.path.realpath(base_dir)
+
+            # URL-decode then strip any leading separators that could anchor to
+            # the filesystem root, then normalise to the OS path separator.
+            decoded = unquote(relative_path)
+            clean = os.path.normpath(decoded.lstrip("/").lstrip("\\"))
+            requested = os.path.realpath(os.path.join(base_dir, clean))
 
             if not requested.startswith(safe_base + os.sep):
                 self.send_error(403, "Forbidden")
@@ -882,10 +915,18 @@ def _make_handler(guard: Any):  # type: ignore[return]
             try:
                 with open(requested, "rb") as fh:
                     content = fh.read()
-                # Derive MIME type from the *filename only* (not the full path)
-                # to avoid leaking path information and to prevent header injection.
-                mime, _ = mimetypes.guess_type(os.path.basename(requested))
-                safe_mime = (mime or "application/octet-stream").split("\n")[0].split("\r")[0]
+                # Guess MIME type from the full path so extensions are found
+                # correctly; hard-coded overrides ensure .js/.css always get the
+                # right type even on platforms with incomplete MIME databases.
+                ext = os.path.splitext(requested)[1].lower()
+                if ext == ".js":
+                    mime = "application/javascript"
+                elif ext == ".css":
+                    mime = "text/css"
+                else:
+                    guessed, _ = mimetypes.guess_type(requested)
+                    mime = guessed or "application/octet-stream"
+                safe_mime = mime.split("\n")[0].split("\r")[0]
                 self.send_response(200)
                 self.send_header("Content-Type", safe_mime)
                 self.send_header("Content-Length", str(len(content)))
@@ -893,6 +934,35 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self.wfile.write(content)
             except FileNotFoundError:
                 self.send_error(404, "Not Found")
+
+        def _serve_debug_static_status(self) -> None:
+            """Dev-only: return JSON with static directory info and key file checks."""
+            admin_dir_real = os.path.realpath(_ADMIN_DIR)
+            try:
+                listing = os.listdir(admin_dir_real)
+            except OSError:
+                listing = []
+
+            key_files = {
+                "admin/index.html": os.path.join(_ADMIN_DIR, "index.html"),
+                "admin/css/admin.css": os.path.join(_ADMIN_DIR, "css", "admin.css"),
+                "admin/js/app.js": os.path.join(_ADMIN_DIR, "js", "app.js"),
+            }
+            existence = {name: os.path.isfile(path) for name, path in key_files.items()}
+
+            payload = json.dumps(
+                {
+                    "_STATIC_DIR": _STATIC_DIR,
+                    "_ADMIN_DIR": _ADMIN_DIR,
+                    "admin_dir_realpath": admin_dir_real,
+                    "admin_dir_exists": os.path.isdir(admin_dir_real),
+                    "key_files": existence,
+                    "admin_dir_listing": sorted(listing),
+                },
+                indent=2,
+            ).encode()
+            self._send_json(payload)
+
 
         def _serve_stats(self) -> None:
             data = json.dumps(_collect_stats(guard), indent=2).encode()
