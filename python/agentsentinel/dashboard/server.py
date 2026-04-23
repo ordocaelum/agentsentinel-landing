@@ -994,7 +994,7 @@ def _make_handler(guard: Any):  # type: ignore[return]
             data = json.dumps(payload, indent=2).encode()
             self._send_json(data)
 
-
+        def _serve_stats(self) -> None:
             data = json.dumps(_collect_stats(guard), indent=2).encode()
             self._send_json(data)
 
