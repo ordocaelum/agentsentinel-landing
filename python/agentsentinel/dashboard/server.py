@@ -106,9 +106,11 @@ import http.server
 import json
 import mimetypes
 import os
+import re as _re
 import threading
 import time
 import uuid
+from datetime import datetime as _datetime, timezone as _timezone
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse, parse_qs, unquote
 
@@ -640,7 +642,6 @@ def _seed_demo_notifications() -> None:
 
 def _seed_demo_promos() -> None:
     """Populate demo promo codes (dev mode only)."""
-    import datetime as _dt
     with _promos_lock:
         if _promos:
             return  # already seeded
@@ -650,7 +651,7 @@ def _seed_demo_promos() -> None:
         near_future = now + 7 * 86400  # 7 days from now
 
         def _iso(ts: float) -> str:
-            return _dt.datetime.fromtimestamp(ts, tz=_dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
+            return _datetime.fromtimestamp(ts, tz=_timezone.utc).strftime("%Y-%m-%dT%H:%M:%S") + "Z"
 
         demo: List[Dict[str, Any]] = [
             {
@@ -721,8 +722,6 @@ def _seed_demo_promos() -> None:
 # ---------------------------------------------------------------------------
 # Validation helpers for promo codes
 # ---------------------------------------------------------------------------
-
-import re as _re
 
 _PROMO_CODE_RE = _re.compile(r"^[A-Z0-9_-]{3,20}$")
 _VALID_PROMO_TYPES = {"discount_percent", "discount_fixed", "trial_extension", "unlimited_trial"}
