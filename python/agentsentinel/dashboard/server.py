@@ -10,6 +10,11 @@ Zero external dependencies — built on :mod:`http.server` from the stdlib.
 The dashboard exposes:
 
 * ``GET /``                            — the single-page Tailwind CSS dark-theme UI
+* ``GET /admin``                       — redirect to ``/admin/`` (301)
+* ``GET /admin/``                      — admin SPA (index.html)
+* ``GET /admin/*``                     — admin static assets
+* ``GET /css/*``, ``/js/*``, ``/svg/*``, ``/assets/*`` — root-path aliases for admin assets
+* ``GET /api/debug/static-status``     — (dev-only) JSON report on static-file locations
 * ``GET /api/stats``                   — JSON snapshot of all audit events
 * ``GET /api/stats/history``           — time-series data for charts
 * ``GET /api/events``                  — paginated events with filtering
@@ -111,6 +116,36 @@ _INDEX_HTML = os.path.join(_STATIC_DIR, "index.html")
 _ADMIN_DIR = os.path.join(_STATIC_DIR, "admin")
 
 _INF = float("inf")
+
+# ---------------------------------------------------------------------------
+# MIME type fallback map — used when mimetypes.guess_type returns None.
+# Python's mimetypes database varies by OS; JavaScript in particular is
+# missing or wrong on some systems.
+# ---------------------------------------------------------------------------
+_MIME_FALLBACK: Dict[str, str] = {
+    ".js":    "application/javascript",
+    ".mjs":   "application/javascript",
+    ".css":   "text/css",
+    ".json":  "application/json",
+    ".svg":   "image/svg+xml",
+    ".woff":  "font/woff",
+    ".woff2": "font/woff2",
+    ".ttf":   "font/ttf",
+    ".ico":   "image/x-icon",
+    ".png":   "image/png",
+    ".jpg":   "image/jpeg",
+    ".jpeg":  "image/jpeg",
+    ".webp":  "image/webp",
+    ".html":  "text/html; charset=utf-8",
+    ".txt":   "text/plain; charset=utf-8",
+}
+
+# Root-level path prefixes that are aliased into the admin static directory.
+# When the browser requests e.g. /css/admin.css (because the HTML was loaded
+# at /admin without a trailing slash, making relative URLs resolve to the site
+# root), we transparently remap those requests to /admin/css/admin.css.
+_ADMIN_STATIC_ROOT_PREFIXES = ("/css/", "/js/", "/svg/", "/assets/", "/fonts/", "/img/")
+_ADMIN_STATIC_ROOT_FILES    = ("/admin.css", "/app.js")
 
 # ---------------------------------------------------------------------------
 # In-memory store for approvals and alerts (demo/mock data)
@@ -638,10 +673,26 @@ def _make_handler(guard: Any):  # type: ignore[return]
 
             if path in ("/", "/index.html"):
                 self._serve_index()
-            elif path in ("/admin", "/admin/", "/admin/index.html"):
+            elif path == "/admin":
+                # Redirect to the canonical URL with a trailing slash so that
+                # relative asset references in index.html (e.g. ./css/admin.css)
+                # resolve to /admin/css/admin.css instead of /css/admin.css.
+                self.send_response(301)
+                self.send_header("Location", "/admin/")
+                self.send_header("Content-Length", "0")
+                self._add_cors()
+                self.end_headers()
+            elif path in ("/admin/", "/admin/index.html"):
                 self._serve_admin_index()
             elif path.startswith("/admin/"):
                 self._serve_admin_static(path[len("/admin/"):])
+            elif path == "/api/debug/static-status":
+                self._serve_debug_static_status()
+            elif path in _ADMIN_STATIC_ROOT_FILES or path.startswith(_ADMIN_STATIC_ROOT_PREFIXES):
+                # Root-path alias: map /css/…, /js/…, etc. into the admin
+                # static bundle.  This handles browsers that loaded the admin
+                # page without a trailing slash and computed absolute paths.
+                self._serve_admin_static(path.lstrip("/"))
             elif path == "/api/stats":
                 self._serve_stats()
             elif path == "/api/stats/history":
@@ -884,7 +935,11 @@ def _make_handler(guard: Any):  # type: ignore[return]
                     content = fh.read()
                 # Derive MIME type from the *filename only* (not the full path)
                 # to avoid leaking path information and to prevent header injection.
-                mime, _ = mimetypes.guess_type(os.path.basename(requested))
+                basename = os.path.basename(requested)
+                mime, _ = mimetypes.guess_type(basename)
+                if mime is None:
+                    _, ext = os.path.splitext(basename)
+                    mime = _MIME_FALLBACK.get(ext.lower())
                 safe_mime = (mime or "application/octet-stream").split("\n")[0].split("\r")[0]
                 self.send_response(200)
                 self.send_header("Content-Type", safe_mime)
@@ -894,7 +949,52 @@ def _make_handler(guard: Any):  # type: ignore[return]
             except FileNotFoundError:
                 self.send_error(404, "Not Found")
 
-        def _serve_stats(self) -> None:
+        def _serve_debug_static_status(self) -> None:
+            """Return a JSON summary of static-file locations and existence.
+
+            Only active when ``AGENTSENTINEL_DEV=1`` or
+            ``AGENTSENTINEL_DASHBOARD_DEBUG=1`` is set — **never** expose this
+            in production as it leaks internal filesystem paths.
+            """
+            dev = (
+                os.getenv("AGENTSENTINEL_DEV") == "1"
+                or os.getenv("AGENTSENTINEL_DASHBOARD_DEBUG") == "1"
+            )
+            if not dev:
+                self.send_error(
+                    403,
+                    "Forbidden - set AGENTSENTINEL_DEV=1 or "
+                    "AGENTSENTINEL_DASHBOARD_DEBUG=1 to enable this endpoint",
+                )
+                return
+
+            def _check(p: str) -> Dict[str, Any]:
+                return {
+                    "path": p,
+                    "exists": os.path.exists(p),
+                    "is_file": os.path.isfile(p),
+                }
+
+            admin_children: List[str] = []
+            if os.path.isdir(_ADMIN_DIR):
+                admin_children = sorted(os.listdir(_ADMIN_DIR))
+
+            payload: Dict[str, Any] = {
+                "_STATIC_DIR": _STATIC_DIR,
+                "_ADMIN_DIR": _ADMIN_DIR,
+                "static_dir_exists": os.path.isdir(_STATIC_DIR),
+                "admin_dir_exists": os.path.isdir(_ADMIN_DIR),
+                "key_files": [
+                    _check(os.path.join(_ADMIN_DIR, "index.html")),
+                    _check(os.path.join(_ADMIN_DIR, "css", "admin.css")),
+                    _check(os.path.join(_ADMIN_DIR, "js", "app.js")),
+                ],
+                "admin_dir_children": admin_children,
+            }
+            data = json.dumps(payload, indent=2).encode()
+            self._send_json(data)
+
+
             data = json.dumps(_collect_stats(guard), indent=2).encode()
             self._send_json(data)
 
