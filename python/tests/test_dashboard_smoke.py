@@ -19,10 +19,12 @@ Strategy
 
 from __future__ import annotations
 
+import json
 import os
 import sys
 import threading
 import time
+import urllib.request
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -188,3 +190,93 @@ def test_start_dashboard_ephemeral_port(monkeypatch):
 
     # Shut down cleanly
     server.shutdown()
+
+
+# ---------------------------------------------------------------------------
+# 6. Regression: root-path static assets return 200
+# ---------------------------------------------------------------------------
+
+
+def _make_guard() -> MagicMock:
+    guard = MagicMock()
+    guard.daily_spent = 0.0
+    guard.hourly_spent = 0.0
+    guard.policy = MagicMock(daily_budget=float("inf"), hourly_budget=float("inf"))
+    guard.audit_logger = MagicMock(_sinks=[])
+    guard.cost_tracker = MagicMock(
+        get_all_usage=MagicMock(return_value={}),
+        config=MagicMock(model_budgets={}),
+    )
+    return guard
+
+
+@pytest.fixture()
+def live_server(monkeypatch):
+    """Start the dashboard on an ephemeral port and yield (host, port).
+
+    Shuts the server down after the test.
+    """
+    monkeypatch.setenv("AGENTSENTINEL_DEV", "1")
+    from agentsentinel.dashboard.server import start_dashboard
+
+    guard = _make_guard()
+    server = start_dashboard(guard, port=0, host="127.0.0.1", background=True)
+    assert server is not None
+    # The OS-assigned port is available via the internal HTTPServer socket.
+    port = server._server.server_address[1]
+    time.sleep(0.05)
+    yield "127.0.0.1", port
+    server.shutdown()
+
+
+def _get(host: str, port: int, path: str):
+    url = f"http://{host}:{port}{path}"
+    with urllib.request.urlopen(url, timeout=5) as resp:
+        return resp.status, dict(resp.headers)
+
+
+def test_admin_page_returns_200(live_server):
+    """/admin must return HTTP 200 with text/html content."""
+    host, port = live_server
+    status, headers = _get(host, port, "/admin")
+    assert status == 200
+    assert "text/html" in headers.get("Content-Type", "")
+
+
+def test_css_admin_returns_200(live_server):
+    """/css/admin.css must return HTTP 200 with text/css content-type."""
+    host, port = live_server
+    status, headers = _get(host, port, "/css/admin.css")
+    assert status == 200
+    assert "text/css" in headers.get("Content-Type", "")
+
+
+def test_js_app_returns_200(live_server):
+    """/js/app.js must return HTTP 200 with application/javascript content-type."""
+    host, port = live_server
+    status, headers = _get(host, port, "/js/app.js")
+    assert status == 200
+    ct = headers.get("Content-Type", "")
+    assert "javascript" in ct
+
+
+def test_admin_css_via_admin_prefix_returns_200(live_server):
+    """/admin/css/admin.css (original prefix route) must continue to return 200."""
+    host, port = live_server
+    status, headers = _get(host, port, "/admin/css/admin.css")
+    assert status == 200
+    assert "text/css" in headers.get("Content-Type", "")
+
+
+def test_debug_static_status_in_dev_mode(live_server):
+    """/api/debug/static-status returns 200 JSON in dev mode."""
+    host, port = live_server
+    url = f"http://{host}:{port}/api/debug/static-status"
+    with urllib.request.urlopen(url, timeout=5) as resp:
+        status = resp.status
+        body = json.loads(resp.read())
+    assert status == 200
+    assert "_STATIC_DIR" in body
+    assert "_ADMIN_DIR" in body
+    assert "key_files" in body
+    assert "admin_dir_listing" in body
