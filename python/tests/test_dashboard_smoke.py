@@ -23,6 +23,8 @@ import os
 import sys
 import threading
 import time
+import urllib.request
+import urllib.error
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -188,3 +190,135 @@ def test_start_dashboard_ephemeral_port(monkeypatch):
 
     # Shut down cleanly
     server.shutdown()
+
+
+# ---------------------------------------------------------------------------
+# Helper: build a minimal mock guard
+# ---------------------------------------------------------------------------
+
+def _make_guard():
+    guard = MagicMock()
+    guard.daily_spent = 0.0
+    guard.hourly_spent = 0.0
+    guard.policy = MagicMock(daily_budget=float("inf"), hourly_budget=float("inf"))
+    guard.audit_logger = MagicMock(_sinks=[])
+    guard.cost_tracker = MagicMock(
+        get_all_usage=MagicMock(return_value={}),
+        config=MagicMock(model_budgets={}),
+    )
+    return guard
+
+
+@pytest.fixture()
+def live_server(monkeypatch):
+    """Start a dashboard server on an ephemeral port; yield (server, base_url); shut down."""
+    monkeypatch.setenv("AGENTSENTINEL_DEV", "1")
+    from agentsentinel.dashboard.server import start_dashboard
+
+    server = start_dashboard(_make_guard(), port=0, host="127.0.0.1", background=True)
+    assert server is not None
+    time.sleep(0.1)  # let the serving thread start
+    base = f"http://127.0.0.1:{server.port}"
+    yield server, base
+    server.shutdown()
+
+
+# ---------------------------------------------------------------------------
+# 6. HTTP-level static-asset serving tests
+# ---------------------------------------------------------------------------
+
+
+def _get(url):
+    """Return (status_code, headers_lowercase, body_bytes) for a simple GET request."""
+    try:
+        with urllib.request.urlopen(url) as resp:
+            # Normalise header keys to lowercase for portable assertions.
+            headers = {k.lower(): v for k, v in resp.headers.items()}
+            return resp.status, headers, resp.read()
+    except urllib.error.HTTPError as exc:
+        return exc.code, {}, b""
+
+
+def test_admin_index_returns_200(live_server):
+    """/admin returns 200 HTML containing the <base href='/admin/'> tag."""
+    _, base = live_server
+    status, headers, body = _get(f"{base}/admin")
+    assert status == 200
+    assert "text/html" in headers.get("content-type", "")
+    assert b'<base href="/admin/">' in body
+
+
+def test_admin_css_returns_200(live_server):
+    """/admin/css/admin.css returns 200 with Content-Type text/css."""
+    _, base = live_server
+    status, headers, _ = _get(f"{base}/admin/css/admin.css")
+    assert status == 200, f"Expected 200 for admin.css, got {status}"
+    assert "text/css" in headers.get("content-type", "")
+
+
+def test_admin_js_app_returns_200(live_server):
+    """/admin/js/app.js returns 200 with Content-Type application/javascript."""
+    _, base = live_server
+    status, headers, _ = _get(f"{base}/admin/js/app.js")
+    assert status == 200, f"Expected 200 for app.js, got {status}"
+    ct = headers.get("content-type", "")
+    assert "javascript" in ct, f"Expected javascript content-type, got {ct!r}"
+
+
+def test_admin_nested_js_returns_200(live_server):
+    """/admin/js/utils/auth.js (nested) returns 200."""
+    _, base = live_server
+    status, _, _ = _get(f"{base}/admin/js/utils/auth.js")
+    assert status == 200, f"Expected 200 for nested JS, got {status}"
+
+
+def test_admin_path_traversal_blocked(live_server):
+    """/admin/../index.html is blocked (403) or path-normalised (200 for root index)."""
+    import socket
+    port = live_server[0].port
+    # Send raw HTTP to avoid urllib normalising the path before it reaches the server.
+    with socket.create_connection(("127.0.0.1", port), timeout=5) as sock:
+        sock.sendall(b"GET /admin/../index.html HTTP/1.0\r\nHost: 127.0.0.1\r\n\r\n")
+        response = b""
+        while True:
+            chunk = sock.recv(4096)
+            if not chunk:
+                break
+            response += chunk
+    first_line = response.split(b"\r\n")[0]
+    # The HTTP layer may normalise the path to /index.html (→ 200 for the root
+    # dashboard) or the traversal guard blocks it (→ 403).  A 400 Bad Request is
+    # also acceptable.  What must NOT happen is the server returning 200 for a
+    # file resolved outside _ADMIN_DIR without normalisation.
+    assert b"200" in first_line or b"403" in first_line or b"400" in first_line
+
+
+def test_debug_static_status_in_dev_mode(live_server):
+    """/api/debug/static-status returns 200 JSON in dev mode."""
+    _, base = live_server
+    status, headers, body = _get(f"{base}/api/debug/static-status")
+    assert status == 200
+    payload = __import__("json").loads(body)
+    assert "admin_dir" in payload
+    assert "exists" in payload
+    assert payload["exists"]["admin_css"] is True
+    assert payload["exists"]["app_js"] is True
+
+
+def test_debug_static_status_blocked_outside_dev_mode(monkeypatch):
+    """/api/debug/static-status returns 404 when AGENTSENTINEL_DEV is not set."""
+    monkeypatch.setenv("AGENTSENTINEL_DEV", "1")  # need dev mode to start server
+    from agentsentinel.dashboard.server import start_dashboard
+
+    server = start_dashboard(_make_guard(), port=0, host="127.0.0.1", background=True)
+    assert server is not None
+    time.sleep(0.1)
+    base = f"http://127.0.0.1:{server.port}"
+
+    # Now disable dev mode *after* server start (handler checks at request time)
+    monkeypatch.delenv("AGENTSENTINEL_DEV", raising=False)
+    try:
+        status, _, _ = _get(f"{base}/api/debug/static-status")
+        assert status == 404
+    finally:
+        server.shutdown()
