@@ -337,7 +337,10 @@ def test_debug_static_status_blocked_outside_dev(monkeypatch):
     time.sleep(0.15)
     port = server._server.server_address[1]
 
-    # Now disable dev mode so the endpoint blocks
+    # Now disable dev mode so the endpoint blocks.
+    # Note: _serve_debug_static_status reads os.getenv() at *request* time
+    # (not at server start), so changing the env var here is effective for the
+    # request that follows.
     monkeypatch.setenv("AGENTSENTINEL_DEV", "0")
 
     import http.client

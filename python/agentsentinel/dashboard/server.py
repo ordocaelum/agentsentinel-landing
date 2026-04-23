@@ -688,11 +688,6 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_admin_static(path[len("/admin/"):])
             elif path == "/api/debug/static-status":
                 self._serve_debug_static_status()
-            elif path in _ADMIN_STATIC_ROOT_FILES or path.startswith(_ADMIN_STATIC_ROOT_PREFIXES):
-                # Root-path alias: map /css/…, /js/…, etc. into the admin
-                # static bundle.  This handles browsers that loaded the admin
-                # page without a trailing slash and computed absolute paths.
-                self._serve_admin_static(path.lstrip("/"))
             elif path == "/api/stats":
                 self._serve_stats()
             elif path == "/api/stats/history":
@@ -748,6 +743,12 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_notifications_unread()
             elif path == "/api/notifications/settings":
                 self._serve_notification_settings()
+            elif path in _ADMIN_STATIC_ROOT_FILES or path.startswith(_ADMIN_STATIC_ROOT_PREFIXES):
+                # Root-path alias: map /css/…, /js/…, etc. into the admin
+                # static bundle.  This handles browsers that loaded the admin
+                # page without a trailing slash and computed absolute paths.
+                # Kept after all /api/ routes so API paths are never shadowed.
+                self._serve_admin_static(path.lstrip("/"))
             else:
                 self.send_error(404, "Not Found")
 
