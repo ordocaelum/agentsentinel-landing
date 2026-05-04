@@ -1,5 +1,6 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
+import { VALID_TIERS } from "../_shared/tiers.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
@@ -29,15 +30,13 @@ const VALID_PROMO_TYPES = new Set([
   "unlimited_trial",
 ]);
 
-const VALID_TIERS = new Set(["free", "pro", "team"]);
-
 // POST /functions/v1/admin-generate-promo
 // Headers: Authorization: Bearer <ADMIN_API_SECRET>
 // Body: {
 //   code: string,           — required; regex ^[A-Z0-9_-]{3,20}$
 //   type: 'discount_percent' | 'discount_fixed' | 'trial_extension' | 'unlimited_trial',
 //   value: number,          — required for all types except unlimited_trial (defaults to 0)
-//   tier?: 'free'|'pro'|'team'|null,
+//   tier?: 'free'|'starter'|'pro'|'pro_team'|'team'|'enterprise'|null,
 //   max_uses?: number | null,
 //   expires_at?: ISO string | null,
 //   description?: string,

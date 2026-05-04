@@ -305,8 +305,11 @@ export const webhookAPI = {
     params.set('limit', pageSize);
     params.set('offset', (page - 1) * pageSize);
 
-    if (status === 'processed')    params.set('processed', 'eq.true');
-    if (status === 'unprocessed')  params.set('processed', 'eq.false');
+    // Filter by the `status` column (added in migration 012) which carries
+    // granular values: pending | processed | failed.
+    if (status === 'processed') params.set('status', 'eq.processed');
+    if (status === 'pending')   params.set('status', 'eq.pending');
+    if (status === 'failed')    params.set('status', 'eq.failed');
     if (type)   params.set('event_type', `eq.${type}`);
     if (search) params.set('stripe_event_id', `ilike.*${search}*`);
 
