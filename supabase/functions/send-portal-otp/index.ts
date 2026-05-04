@@ -14,14 +14,14 @@ const corsHeaders = {
 };
 
 // ─── OTP request rate limiting (per email) ───────────────────────────────────
-// Sliding-window: max 5 OTP requests per 15 minutes per email address.
+// Sliding-window: max 3 OTP requests per 15 minutes per email address.
 // Prevents OTP spam and brute-force via mail-provider rate limits.
 //
 // Note: this is in-memory, best-effort protection within a single isolate
 // lifetime.  It does not persist across cold starts or scale across multiple
 // function instances.  For production-grade multi-instance rate limiting, back
 // this with a Supabase table or an external store (same caveat as validate-license).
-const OTP_RATE_LIMIT_MAX = 5;
+const OTP_RATE_LIMIT_MAX = 3;
 const OTP_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
 
 interface RateLimitEntry {

@@ -17,6 +17,7 @@ const corsHeaders = {
 
 // ─── OTP verification rate limiting (per email, on failure) ──────────────────
 // Sliding-window: max 5 failed OTP attempts per 15 minutes per email address.
+// After 5 failures the email is locked for 1 hour (OTP_LOCK_DURATION_MS).
 // Prevents brute-forcing the 6-digit OTP (only 1,000,000 possibilities).
 //
 // Note: this is in-memory, best-effort protection within a single isolate
@@ -25,9 +26,11 @@ const corsHeaders = {
 // this with a Supabase table or an external store (same caveat as validate-license).
 const OTP_VERIFY_RATE_LIMIT_MAX = 5;
 const OTP_VERIFY_RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+const OTP_LOCK_DURATION_MS = 60 * 60 * 1000; // 1 hour lock after exceeding limit
 
 interface RateLimitEntry {
   failTimestamps: number[];
+  lockedUntil?: number; // epoch ms; present when the account is locked out
 }
 
 const otpVerifyRateLimitStore = new Map<string, RateLimitEntry>();
@@ -35,18 +38,38 @@ const otpVerifyRateLimitStore = new Map<string, RateLimitEntry>();
 /**
  * Check whether the email is currently rate-limited for failed OTP attempts.
  * Returns true when the caller should be allowed, false when rate-limited.
+ * Also returns a retryAfterSeconds value for the Retry-After header.
  */
-function checkOtpVerifyRateLimit(email: string): boolean {
+function checkOtpVerifyRateLimit(email: string): { allowed: boolean; retryAfterSeconds: number } {
   const now = Date.now();
   const windowStart = now - OTP_VERIFY_RATE_LIMIT_WINDOW_MS;
 
   let entry = otpVerifyRateLimitStore.get(email);
   if (!entry) {
-    return true;
+    return { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  // Check for active lockout first.
+  if (entry.lockedUntil && now < entry.lockedUntil) {
+    const retryAfterSeconds = Math.ceil((entry.lockedUntil - now) / 1000);
+    return { allowed: false, retryAfterSeconds };
+  }
+
+  // Clear expired lock.
+  if (entry.lockedUntil && now >= entry.lockedUntil) {
+    entry.lockedUntil = undefined;
+    entry.failTimestamps = [];
   }
 
   entry.failTimestamps = entry.failTimestamps.filter((t) => t > windowStart);
-  return entry.failTimestamps.length < OTP_VERIFY_RATE_LIMIT_MAX;
+  if (entry.failTimestamps.length < OTP_VERIFY_RATE_LIMIT_MAX) {
+    return { allowed: true, retryAfterSeconds: 0 };
+  }
+
+  // Rate limit exceeded — apply the 1-hour lock.
+  entry.lockedUntil = now + OTP_LOCK_DURATION_MS;
+  const retryAfterSeconds = Math.ceil(OTP_LOCK_DURATION_MS / 1000);
+  return { allowed: false, retryAfterSeconds };
 }
 
 /** Record a failed OTP attempt for an email address. */
@@ -204,18 +227,20 @@ serve(async (req) => {
     }
 
     // ── OTP brute-force rate limiting ────────────────────────────────────
-    if (!checkOtpVerifyRateLimit(email)) {
+    const { allowed: otpAllowed, retryAfterSeconds } = checkOtpVerifyRateLimit(email);
+    if (!otpAllowed) {
       console.warn(`customer-portal: OTP rate limit exceeded for ${email}`);
+      const retryMsg = retryAfterSeconds > 900
+        ? "Too many failed attempts. Your account is locked for 1 hour."
+        : "Too many failed attempts. Please wait 15 minutes before trying again.";
       return new Response(
-        JSON.stringify({
-          error: "Too many failed attempts. Please wait 15 minutes before trying again.",
-        }),
+        JSON.stringify({ error: retryMsg }),
         {
           status: 429,
           headers: {
             ...corsHeaders,
             "Content-Type": "application/json",
-            "Retry-After": "900",
+            "Retry-After": String(retryAfterSeconds),
           },
         },
       );

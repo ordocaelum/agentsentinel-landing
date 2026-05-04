@@ -318,6 +318,53 @@ export const webhookAPI = {
 // ADMIN LOGS
 // ═══════════════════════════════════════════════════════════════════
 
+// ─── Sensitive-field masking ─────────────────────────────────────────────────
+// Any object key matching this pattern has its value replaced with
+// SHA-256(value).slice(0,8) + '...' before being written to admin_logs.
+const SENSITIVE_KEY_RE = /secret|key|token|password/i;
+
+/**
+ * Compute SHA-256 of a string value and return the first 8 hex chars.
+ * Falls back to a static placeholder when SubtleCrypto is unavailable
+ * (e.g. non-HTTPS contexts or very old browsers).
+ */
+async function _sha256Prefix(value) {
+  try {
+    const encoded = new TextEncoder().encode(String(value));
+    const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
+    const hexChars = Array.from(new Uint8Array(hashBuffer), b => b.toString(16).padStart(2, '0'));
+    return hexChars.slice(0, 4).join(''); // 4 bytes = 8 hex chars
+  } catch (_) {
+    return '????????';
+  }
+}
+
+/**
+ * Recursively walk an object/array and mask any value whose key matches
+ * SENSITIVE_KEY_RE with "<sha256prefix>...".
+ * Returns a new object — the original is not mutated.
+ */
+async function maskSensitiveFields(obj) {
+  if (obj === null || typeof obj !== 'object') return obj;
+
+  if (Array.isArray(obj)) {
+    return Promise.all(obj.map(item => maskSensitiveFields(item)));
+  }
+
+  const result = {};
+  for (const [k, v] of Object.entries(obj)) {
+    if (SENSITIVE_KEY_RE.test(k) && v != null && v !== '') {
+      const prefix = await _sha256Prefix(v);
+      result[k] = `${prefix}...`;
+    } else if (v !== null && typeof v === 'object') {
+      result[k] = await maskSensitiveFields(v);
+    } else {
+      result[k] = v;
+    }
+  }
+  return result;
+}
+
 export const auditAPI = {
   async list({ adminId = '', action = '', entityType = '', page = 1, pageSize = 50 } = {}) {
     const params = new URLSearchParams();
@@ -336,13 +383,20 @@ export const auditAPI = {
   async log(entry) {
     // In local dev mode there is no Supabase backend; silently succeed.
     if (_isLocalMode()) return null;
+
+    // Mask sensitive fields before persisting to admin_logs.
+    const [maskedOld, maskedNew] = await Promise.all([
+      entry.oldValues ? maskSensitiveFields(entry.oldValues) : Promise.resolve(null),
+      entry.newValues ? maskSensitiveFields(entry.newValues) : Promise.resolve(null),
+    ]);
+
     return post('admin_logs', {
       admin_id:    entry.adminId || 'admin',
       action:      entry.action,
       entity_type: entry.entityType,
       entity_id:   entry.entityId || null,
-      old_values:  entry.oldValues || null,
-      new_values:  entry.newValues || null,
+      old_values:  maskedOld,
+      new_values:  maskedNew,
       ip_address:  entry.ipAddress || null,
       status:      entry.status || 'success',
     });

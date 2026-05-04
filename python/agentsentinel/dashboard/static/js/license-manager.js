@@ -33,7 +33,7 @@
   /* ── Load saved license ─────────────────────────────────────────────────── */
   function loadSavedLicense() {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = sessionStorage.getItem(STORAGE_KEY);
       if (saved) {
         currentLicense = JSON.parse(saved);
         updateLicenseDisplay();
@@ -69,7 +69,7 @@
         activated_at: new Date().toISOString(),
         locally_stored: true,
       };
-      try { localStorage.setItem(STORAGE_KEY, JSON.stringify(currentLicense)); } catch (e) {}
+      try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(currentLicense)); } catch (e) {}
       statusDiv.innerHTML = '<span style="color:#f59e0b">⚠ License stored locally (no remote validation configured)</span>';
       input.value = '';
       updateLicenseDisplay();
@@ -98,7 +98,7 @@
           activated_at: new Date().toISOString(),
         };
 
-        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(currentLicense)); } catch (e) {}
+        try { sessionStorage.setItem(STORAGE_KEY, JSON.stringify(currentLicense)); } catch (e) {}
 
         statusDiv.innerHTML = '<span style="color:#34d399">✓ License activated!</span>';
         input.value = '';
@@ -232,7 +232,7 @@
   /* ── Remove license ──────────────────────────────────────────────────────── */
   function removeLicense() {
     currentLicense = null;
-    try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+    try { sessionStorage.removeItem(STORAGE_KEY); } catch (e) {}
     updateLicenseDisplay();
     updateLicenseBadge();
     const statusDiv = document.getElementById('license-status');
