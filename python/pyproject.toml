@@ -47,6 +47,7 @@ dev = [
 
 [project.scripts]
 agentsentinel-dashboard = "agentsentinel.dashboard.__main__:main"
+agentsentinel-config-check = "agentsentinel.config_check:main"
 
 [project.urls]
 Homepage = "https://agentsentinel.net"
