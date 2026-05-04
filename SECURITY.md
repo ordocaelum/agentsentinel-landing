@@ -57,3 +57,44 @@ Because Supabase Edge Function isolates are stateless and short-lived, this limi
 New license keys use the `asv1_` HMAC-signed format and can be verified offline without a network request. Legacy `as_<tier>_*` keys are still accepted by the validation endpoint.
 
 The `AGENTSENTINEL_LICENSE_SIGNING_SECRET` must be a sufficiently long random string (at least 32 bytes of entropy). Rotate it if you suspect it has been compromised.
+
+## HMAC Signing Algorithm
+
+All `asv1_*` license keys are signed with **HMAC-SHA256**.
+
+**Payload canonicalization:**
+
+```
+payload_json = JSON({
+  "exp": <unix_timestamp>,
+  "iat": <unix_timestamp>,
+  "nonce": "<base64url_random>",
+  "tier": "<tier_string>"
+}, keys_sorted_alphabetically, no_spaces)
+```
+
+Keys are sorted alphabetically (`exp`, `iat`, `nonce`, `tier`) and the JSON is compact (no spaces).  This ensures byte-for-byte identical output in Python (`sort_keys=True`) and TypeScript (`JSON.stringify` with explicit replacer array).
+
+**Signature:**
+
+```
+payload_b64 = base64url(payload_json)   # no padding
+sig_b64     = base64url(HMAC-SHA256(signing_secret, payload_b64))  # no padding
+key         = "asv1_" + payload_b64 + "." + sig_b64
+```
+
+The HMAC is computed over `payload_b64` (the base64url-encoded string), **not** over the raw JSON bytes.
+
+See [`docs/license-key-format.md`](docs/license-key-format.md) for the full specification and reference implementations in both Python and TypeScript.
+
+## Key Rotation Procedure
+
+1. Generate a new 48-byte secret:  
+   `openssl rand -base64 48`
+2. Update Supabase secrets:  
+   `supabase secrets set AGENTSENTINEL_LICENSE_SIGNING_SECRET=<new_secret>`
+3. Update the secret in all Python SDK deployments.
+4. Re-issue licenses for all active customers (existing `asv1_*` keys signed with the old secret will fail offline verification after rotation).
+5. Notify affected customers to update their license keys.
+
+> **Revocation:** Key revocation (before expiry) is handled via the `licenses.status` column in the database.  Set `status = 'revoked'` to block a specific key.  Offline verification does not check revocation — only the database lookup does.
