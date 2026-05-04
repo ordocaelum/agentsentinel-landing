@@ -5,13 +5,20 @@
 -- existing webhook_events table so the stripe-webhook Edge Function can
 -- implement proper INSERT … ON CONFLICT deduplication.
 --
--- Status values: pending | processed | failed | deduplicated
+-- Status values: pending | processed | failed
+--   pending   — event inserted but not yet fully processed
+--   processed — business logic completed successfully
+--   failed    — processing threw an exception; Stripe will retry
+--
+-- Note: deduplicated events are detected by INSERT … ON CONFLICT returning
+-- count=0 and are returned to Stripe immediately without inserting a new row,
+-- so there is no 'deduplicated' status stored in this table.
 -- ============================================================
 
 -- Add status column (safe to re-run with the IF NOT EXISTS guard on the index).
 ALTER TABLE webhook_events
   ADD COLUMN IF NOT EXISTS status TEXT NOT NULL DEFAULT 'pending'
-    CHECK (status IN ('pending', 'processed', 'failed', 'deduplicated'));
+    CHECK (status IN ('pending', 'processed', 'failed'));
 
 -- Add metadata column for storing extracted IDs (license_id, customer_id, etc.)
 ALTER TABLE webhook_events

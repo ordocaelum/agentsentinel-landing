@@ -728,7 +728,9 @@ serve(async (req) => {
       .eq("stripe_event_id", event.id)
       .then(() => {}, (err) => console.warn("Failed to mark webhook as failed:", err));
 
-    // Return a non-2xx so Stripe will retry the event.
+    // Return a non-2xx so Stripe retries the event.  HTTP 500 signals a
+    // transient server-side failure; Stripe will back off and retry according
+    // to its retry schedule.
     return new Response(
       JSON.stringify({ error: "Webhook processing failed" }),
       { status: 500 },

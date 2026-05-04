@@ -333,7 +333,9 @@ async function _sha256Prefix(value) {
     const encoded = new TextEncoder().encode(String(value));
     const hashBuffer = await crypto.subtle.digest('SHA-256', encoded);
     const hexChars = Array.from(new Uint8Array(hashBuffer), b => b.toString(16).padStart(2, '0'));
-    return hexChars.slice(0, 4).join(''); // 4 bytes = 8 hex chars
+    // Each element of hexChars is a 2-character hex string (one byte).
+    // Taking the first 4 elements gives 4 bytes = 8 hex characters.
+    return hexChars.slice(0, 4).join('');
   } catch (_) {
     return '????????';
   }

@@ -35,7 +35,10 @@ The Edge Function processes events in this order:
 | `pending`    | Inserted; processing not yet complete.                   |
 | `processed`  | Successfully processed.                                  |
 | `failed`     | Processing threw an exception; Stripe will retry.        |
-| `deduplicated` | Second delivery of an already-processed event_id.     |
+
+> **Deduplicated events** never have a row created with a `deduplicated` status.
+> When a replay is detected (INSERT returns count=0) the handler returns
+> `{ deduplicated: true }` immediately without inserting or updating any row.
 
 ---
 
