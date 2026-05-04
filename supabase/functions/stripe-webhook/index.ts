@@ -388,11 +388,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
         })
         .eq("id", licenseRow.id);
 
-      // Increment promo usage
-      await supabase
-        .from("promo_codes")
-        .update({ used_count: promo.used_count + 1 })
-        .eq("id", promo.id);
+      // Increment promo usage atomically to prevent race conditions
+      await supabase.rpc("increment_promo_used_count", { promo_code_id: promo.id });
 
       console.log(`\u2705 Promo code applied: ${promo.code} (${promo.type}, value=${promo.value})`);
     } else {

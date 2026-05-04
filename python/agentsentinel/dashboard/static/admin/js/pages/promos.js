@@ -396,7 +396,7 @@ async function submitForm() {
       await auditAPI.log({ action: 'updated', entityType: 'promo', entityId: id, newValues: { type, value, tier, max_uses: maxUses } });
       notify.success('Promo code updated');
     } else {
-      const created = await promoAPI.create({ code, type, value, tier, max_uses: maxUses, expires_at: expires, description: desc });
+      const created = await promoAPI.create({ code, type, value, tier, max_uses: maxUses, expires_at: expires, description: desc, active });
       await auditAPI.log({ action: 'created', entityType: 'promo', entityId: created.id, newValues: { code, type, value } });
       notify.success(`Promo "${created.code}" created!`);
     }
