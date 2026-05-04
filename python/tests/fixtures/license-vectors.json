@@ -1,0 +1,121 @@
+{
+  "secret": "test-hmac-parity-secret-for-ci",
+  "valid": [
+    {
+      "description": "valid free tier key",
+      "tier": "free",
+      "nonce": "freeNonce123",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"freeNonce123\",\"tier\":\"free\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJmcmVlTm9uY2UxMjMiLCJ0aWVyIjoiZnJlZSJ9",
+      "hmac_signature_b64": "7OR3I6DRno-J9zXj9QLKIfVVVcx9DgzBvsurrq68nMs",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJmcmVlTm9uY2UxMjMiLCJ0aWVyIjoiZnJlZSJ9.7OR3I6DRno-J9zXj9QLKIfVVVcx9DgzBvsurrq68nMs",
+      "expected_valid": true,
+      "expected_tier": "free"
+    },
+    {
+      "description": "valid starter tier key",
+      "tier": "starter",
+      "nonce": "startNonce45",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"startNonce45\",\"tier\":\"starter\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJzdGFydE5vbmNlNDUiLCJ0aWVyIjoic3RhcnRlciJ9",
+      "hmac_signature_b64": "V2iCbh51XNiYgXvYA5WRAd8pY3l9Rumypq3EsjazD3A",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJzdGFydE5vbmNlNDUiLCJ0aWVyIjoic3RhcnRlciJ9.V2iCbh51XNiYgXvYA5WRAd8pY3l9Rumypq3EsjazD3A",
+      "expected_valid": true,
+      "expected_tier": "starter"
+    },
+    {
+      "description": "valid pro tier key",
+      "tier": "pro",
+      "nonce": "proNonce6789",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"proNonce6789\",\"tier\":\"pro\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJwcm9Ob25jZTY3ODkiLCJ0aWVyIjoicHJvIn0",
+      "hmac_signature_b64": "4T9Sa1zYxTxNazMeiIu6xH0V50wpVZWfPWJ8rss8Y8o",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJwcm9Ob25jZTY3ODkiLCJ0aWVyIjoicHJvIn0.4T9Sa1zYxTxNazMeiIu6xH0V50wpVZWfPWJ8rss8Y8o",
+      "expected_valid": true,
+      "expected_tier": "pro"
+    },
+    {
+      "description": "valid pro_team tier key",
+      "tier": "pro_team",
+      "nonce": "proTeamNonce0",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"proTeamNonce0\",\"tier\":\"pro_team\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJwcm9UZWFtTm9uY2UwIiwidGllciI6InByb190ZWFtIn0",
+      "hmac_signature_b64": "AWCr0suW8C5o_NNxnjwYjCPYcVox9vh8FjwOLjbVHuI",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJwcm9UZWFtTm9uY2UwIiwidGllciI6InByb190ZWFtIn0.AWCr0suW8C5o_NNxnjwYjCPYcVox9vh8FjwOLjbVHuI",
+      "expected_valid": true,
+      "expected_tier": "pro_team"
+    },
+    {
+      "description": "valid team tier key",
+      "tier": "team",
+      "nonce": "teamNonceABCD",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"teamNonceABCD\",\"tier\":\"team\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ0ZWFtTm9uY2VBQkNEIiwidGllciI6InRlYW0ifQ",
+      "hmac_signature_b64": "9UgwsHjfv3hXFhg9gQXZJlQJcp6_jVRB9P4ZB6w9vwM",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ0ZWFtTm9uY2VBQkNEIiwidGllciI6InRlYW0ifQ.9UgwsHjfv3hXFhg9gQXZJlQJcp6_jVRB9P4ZB6w9vwM",
+      "expected_valid": true,
+      "expected_tier": "team"
+    },
+    {
+      "description": "valid enterprise tier key",
+      "tier": "enterprise",
+      "nonce": "entNonceEFGH",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"entNonceEFGH\",\"tier\":\"enterprise\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJlbnROb25jZUVGR0giLCJ0aWVyIjoiZW50ZXJwcmlzZSJ9",
+      "hmac_signature_b64": "eP3YZbRC14fBkN2v4IJ17bH40sb_ttPdra4CbPJHXBE",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJlbnROb25jZUVGR0giLCJ0aWVyIjoiZW50ZXJwcmlzZSJ9.eP3YZbRC14fBkN2v4IJ17bH40sb_ttPdra4CbPJHXBE",
+      "expected_valid": true,
+      "expected_tier": "enterprise"
+    }
+  ],
+  "invalid": [
+    {
+      "description": "expired key (exp in the past)",
+      "tier": "pro",
+      "nonce": "expiredNonce1",
+      "payload_json": "{\"exp\":1000000000,\"iat\":1700000000,\"nonce\":\"expiredNonce1\",\"tier\":\"pro\"}",
+      "payload_b64": "eyJleHAiOjEwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJleHBpcmVkTm9uY2UxIiwidGllciI6InBybyJ9",
+      "hmac_signature_b64": "wZ-VmtyI84ArLQmKnnr9QI0CsPa7O5PCXjoUHT5D7Vo",
+      "key": "asv1_eyJleHAiOjEwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJleHBpcmVkTm9uY2UxIiwidGllciI6InBybyJ9.wZ-VmtyI84ArLQmKnnr9QI0CsPa7O5PCXjoUHT5D7Vo",
+      "expected_valid": false,
+      "expected_error_contains": "expired"
+    },
+    {
+      "description": "tampered payload (enterprise payload with pro signature)",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ0YW1wZXJlZE5vbjEiLCJ0aWVyIjoiZW50ZXJwcmlzZSJ9.T0HEw2wSpTaqgafqbHg4DZycih2vZyLgxCEBLi29PYM",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"tamperedNon1\",\"tier\":\"enterprise\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ0YW1wZXJlZE5vbjEiLCJ0aWVyIjoiZW50ZXJwcmlzZSJ9",
+      "hmac_signature_b64": "T0HEw2wSpTaqgafqbHg4DZycih2vZyLgxCEBLi29PYM",
+      "expected_valid": false,
+      "expected_error_contains": "signature"
+    },
+    {
+      "description": "wrong signature (all zeros)",
+      "tier": "pro",
+      "nonce": "wrongSig1234",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ3cm9uZ1NpZzEyMzQiLCJ0aWVyIjoicHJvIn0.AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"wrongSig1234\",\"tier\":\"pro\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ3cm9uZ1NpZzEyMzQiLCJ0aWVyIjoicHJvIn0",
+      "hmac_signature_b64": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+      "expected_valid": false,
+      "expected_error_contains": "signature"
+    },
+    {
+      "description": "malformed key (no dot separator)",
+      "key": "asv1_nodotinhere",
+      "expected_valid": false,
+      "expected_error_contains": "malformed"
+    },
+    {
+      "description": "key with unknown tier",
+      "tier": "ultra_mega",
+      "nonce": "unknownTier1",
+      "payload_json": "{\"exp\":2000000000,\"iat\":1700000000,\"nonce\":\"unknownTier1\",\"tier\":\"ultra_mega\"}",
+      "payload_b64": "eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ1bmtub3duVGllcjEiLCJ0aWVyIjoidWx0cmFfbWVnYSJ9",
+      "hmac_signature_b64": "OWJUjEidgZfYV4rOgDpGg1YKqQ3nsGpc33SWbh6VklM",
+      "key": "asv1_eyJleHAiOjIwMDAwMDAwMDAsImlhdCI6MTcwMDAwMDAwMCwibm9uY2UiOiJ1bmtub3duVGllcjEiLCJ0aWVyIjoidWx0cmFfbWVnYSJ9.OWJUjEidgZfYV4rOgDpGg1YKqQ3nsGpc33SWbh6VklM",
+      "expected_valid": false,
+      "expected_error_contains": "tier"
+    }
+  ]
+}

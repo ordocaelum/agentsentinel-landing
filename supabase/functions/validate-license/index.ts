@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.220.1/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.3";
 import { VALID_TIERS } from "../_shared/tiers.ts";
+import { createRateLimiter } from "../_shared/rate-limit.ts";
 
 const supabaseUrl = Deno.env.get("SUPABASE_URL") as string;
 const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") as string;
@@ -14,45 +15,11 @@ const corsHeaders = {
 };
 
 // ─── In-memory rate limiting ──────────────────────────────────────────────────
-// 20 requests per minute per IP, implemented as a sliding-window counter.
-// Because Deno Edge Function isolates are short-lived and stateless, this
-// provides best-effort protection within a single isolate lifetime.
-// For production-grade, multi-instance rate limiting, back this with a
-// Supabase table or an external store.
-
-const RATE_LIMIT_MAX = 20;
-const RATE_LIMIT_WINDOW_MS = 60_000; // 1 minute
-
-interface RateLimitEntry {
-  timestamps: number[];
-}
-
-const rateLimitStore = new Map<string, RateLimitEntry>();
-
-/**
- * Returns true when the caller should be allowed, false when rate-limited.
- * Prunes timestamps older than the window before checking.
- */
-function checkRateLimit(ip: string): boolean {
-  const now = Date.now();
-  const windowStart = now - RATE_LIMIT_WINDOW_MS;
-
-  let entry = rateLimitStore.get(ip);
-  if (!entry) {
-    entry = { timestamps: [] };
-    rateLimitStore.set(ip, entry);
-  }
-
-  // Remove timestamps outside the sliding window.
-  entry.timestamps = entry.timestamps.filter((t) => t > windowStart);
-
-  if (entry.timestamps.length >= RATE_LIMIT_MAX) {
-    return false;
-  }
-
-  entry.timestamps.push(now);
-  return true;
-}
+// 20 requests per minute per IP, sliding-window counter.
+// Because Deno Edge Function isolates are stateless and short-lived, this is
+// best-effort per isolate.  For strict multi-instance limiting, back the
+// counter with a Supabase table.
+const rateLimiter = createRateLimiter({ max: 20, windowMs: 60_000 });
 
 // POST /functions/v1/validate-license
 // Body: { license_key: string }
@@ -75,7 +42,18 @@ serve(async (req) => {
 
   // ── Rate limiting ────────────────────────────────────────────────────────
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
-  if (!checkRateLimit(clientIp)) {
+  if (!rateLimiter.check(clientIp)) {
+    // Log the rate-limited request (best-effort, no license key available yet).
+    await supabase.from("license_validations").insert({
+      license_key_hash: null,
+      license_id: null,
+      is_valid: false,
+      validation_outcome: "rate_limited",
+      validation_source: req.headers.get("x-validation-source") || "api",
+      ip_address: clientIp,
+      user_agent: req.headers.get("user-agent") || "unknown",
+    }).then(() => {}, (err) => console.warn("Failed to log rate-limited request:", err));
+
     return new Response(
       JSON.stringify({ valid: false, error: "Too many requests. Please retry later." }),
       {
@@ -108,7 +86,7 @@ serve(async (req) => {
     const isSignedFormat = license_key.startsWith("asv1_");
     if (!isLegacyFormat && !isSignedFormat) {
       return new Response(
-        JSON.stringify({ valid: false, error: "Unrecognised license key format" }),
+        JSON.stringify({ valid: false, reason: "malformed", error: "Unrecognised license key format" }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
@@ -139,6 +117,10 @@ serve(async (req) => {
       license_key_hash: licenseKeyHash,
       license_id: license?.id || null,
       is_valid: !!license && license.status === "active",
+      validation_outcome: !license ? "not_found"
+        : license.status !== "active" ? "invalid"
+        : (license.expires_at && new Date(license.expires_at) < new Date()) ? "expired"
+        : "valid",
       validation_source: req.headers.get("x-validation-source") || "api",
       ip_address: clientIp,
       user_agent: req.headers.get("user-agent") || "unknown",
@@ -165,7 +147,7 @@ serve(async (req) => {
     // Check expiration
     if (license.expires_at && new Date(license.expires_at) < new Date()) {
       return new Response(
-        JSON.stringify({ valid: false, error: "License has expired" }),
+        JSON.stringify({ valid: false, reason: "expired", error: "License has expired" }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } },
       );
     }
