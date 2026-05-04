@@ -64,6 +64,17 @@ def _starts_with_or_empty(*prefixes: str):
     return _check
 
 
+def _url_if_set():
+    """Validate as a URL only when the value is non-empty."""
+    def _check(v: str) -> Optional[str]:
+        if not v:
+            return None
+        if not (v.startswith("http://") or v.startswith("https://")):
+            return "must be a URL starting with http:// or https://"
+        return None
+    return _check
+
+
 def _hex_len(n: int):
     """Exactly n hex characters."""
     def _check(v: str) -> Optional[str]:
@@ -247,7 +258,7 @@ VARS: List[VarSpec] = [
         required_dev=False,
         required_prod=False,
         description="License validation API URL (SDK override)",
-        validator=_url() if False else None,  # optional; only validate when set
+        validator=_url_if_set(),
     ),
 ]
 
