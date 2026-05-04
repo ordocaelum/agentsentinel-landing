@@ -41,54 +41,60 @@ function checkRateLimit(ip: string): boolean {
   return true;
 }
 
-function jsonResponse(body: unknown, status = 200): Response {
+function jsonResponse(body: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { ...corsHeaders, "Content-Type": "application/json" },
+    headers: { ...corsHeaders, "Content-Type": "application/json", ...extraHeaders },
   });
 }
 
 // POST /functions/v1/validate-promo
-// Body:     { promo_code: string, tier?: string }
-// Response: { valid: bool, discount: int, type: string, message: string, id?: string }
+// Body:     { code: string, tier?: string }   (also accepts legacy field name promo_code)
+// Response (valid):   { valid: true, id, type, value, description }
+// Response (invalid): { valid: false, reason }  — reasons: not_found | inactive | expired | exhausted | tier_mismatch
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
   }
 
   if (req.method !== "POST") {
-    return jsonResponse({ valid: false, message: "Method not allowed" }, 405);
+    return jsonResponse({ valid: false, reason: "not_found" }, 405);
   }
 
   // ── Request size guard ─────────────────────────────────────────────────────
   const MAX_BODY_BYTES = 8 * 1024;
   const contentLength = req.headers.get("content-length");
   if (contentLength && parseInt(contentLength, 10) > MAX_BODY_BYTES) {
-    return jsonResponse({ valid: false, message: "Request payload too large" }, 413);
+    return jsonResponse({ valid: false, reason: "not_found" }, 413);
   }
 
   // ── Rate limiting ──────────────────────────────────────────────────────────
   const clientIp = req.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "unknown";
   if (!checkRateLimit(clientIp)) {
-    return jsonResponse({ valid: false, message: "Too many requests. Please retry later." }, 429);
+    return jsonResponse(
+      { valid: false, reason: "not_found" },
+      429,
+      { "Retry-After": "60" },
+    );
   }
 
-  let body: { promo_code?: string; tier?: string };
+  let body: { code?: string; promo_code?: string; tier?: string };
   try {
     body = await req.json();
   } catch {
-    return jsonResponse({ valid: false, message: "Invalid JSON body" }, 400);
+    return jsonResponse({ valid: false, reason: "not_found" }, 400);
   }
 
-  const rawCode = body.promo_code;
+  // Accept both `code` (preferred) and legacy `promo_code`
+  const rawCode = body.code ?? body.promo_code;
   if (!rawCode || typeof rawCode !== "string") {
-    return jsonResponse({ valid: false, message: "promo_code is required" }, 400);
+    return jsonResponse({ valid: false, reason: "not_found" }, 400);
   }
 
   // Normalise: uppercase, trim whitespace, allow only safe chars
   const code = rawCode.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, "");
-  if (!code || code.length > 64) {
-    return jsonResponse({ valid: false, message: "Invalid promo code format" }, 400);
+  if (!code || code.length < 3 || code.length > 20) {
+    return jsonResponse({ valid: false, reason: "not_found" }, 400);
   }
 
   const tier = typeof body.tier === "string" ? body.tier.trim().toLowerCase() : null;
@@ -96,71 +102,43 @@ serve(async (req) => {
   // ── Look up promo code ─────────────────────────────────────────────────────
   const { data: promo, error } = await supabase
     .from("promo_codes")
-    .select("*")
+    .select("id, type, value, description, active, expires_at, max_uses, used_count, tier")
     .eq("code", code)
     .maybeSingle();
 
   if (error) {
     console.error("Error looking up promo code:", error);
-    return jsonResponse({ valid: false, message: "Error validating promo code" }, 500);
+    return jsonResponse({ valid: false, reason: "not_found" }, 500);
   }
 
   if (!promo) {
-    return jsonResponse({ valid: false, message: "Promo code not found" });
+    return jsonResponse({ valid: false, reason: "not_found" });
   }
 
-  // ── Validation checks ─────────────────────────────────────────────────────
+  // ── Validation checks — return structured reason codes ────────────────────
   if (!promo.active) {
-    return jsonResponse({ valid: false, message: "This promo code is no longer active" });
+    return jsonResponse({ valid: false, reason: "inactive" });
   }
 
   if (promo.expires_at && new Date(promo.expires_at) < new Date()) {
-    return jsonResponse({ valid: false, message: "This promo code has expired" });
+    return jsonResponse({ valid: false, reason: "expired" });
   }
 
   if (promo.max_uses !== null && promo.used_count >= promo.max_uses) {
-    return jsonResponse({ valid: false, message: "This promo code has reached its usage limit" });
+    return jsonResponse({ valid: false, reason: "exhausted" });
   }
 
-  // Check tier restriction
-  if (promo.tier !== null && tier !== null && promo.tier !== tier) {
-    return jsonResponse({
-      valid: false,
-      message: `This promo code is only valid for the ${promo.tier} plan`,
-    });
+  // Tier restriction: only check when both the promo and the caller specify a tier
+  if (promo.tier && tier && promo.tier !== tier) {
+    return jsonResponse({ valid: false, reason: "tier_mismatch" });
   }
 
-  // ── Build response message ─────────────────────────────────────────────────
-  let message = "";
-  switch (promo.type) {
-    case "discount_percent":
-      message = `${promo.value}% discount applied!`;
-      break;
-    case "discount_fixed":
-      message = `$${(promo.value / 100).toFixed(2)} discount applied!`;
-      break;
-    case "trial_extension":
-      message = `${promo.value} extra trial days added!`;
-      break;
-    case "unlimited_trial":
-      message = "Unlimited trial activated!";
-      break;
-    default:
-      message = "Promo code applied!";
-  }
-
-  if (promo.description) {
-    message = promo.description;
-  }
-
+  // ── Success — return only the fields needed by the client ─────────────────
   return jsonResponse({
     valid: true,
     id: promo.id,
-    code: promo.code,
     type: promo.type,
     value: promo.value,
-    discount: promo.value,
-    tier: promo.tier,
-    message,
+    description: promo.description ?? null,
   });
 });

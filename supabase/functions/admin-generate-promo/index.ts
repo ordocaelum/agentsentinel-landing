@@ -29,16 +29,19 @@ const VALID_PROMO_TYPES = new Set([
   "unlimited_trial",
 ]);
 
+const VALID_TIERS = new Set(["free", "pro", "team"]);
+
 // POST /functions/v1/admin-generate-promo
 // Headers: Authorization: Bearer <ADMIN_API_SECRET>
 // Body: {
-//   code: string,
+//   code: string,           — required; regex ^[A-Z0-9_-]{3,20}$
 //   type: 'discount_percent' | 'discount_fixed' | 'trial_extension' | 'unlimited_trial',
-//   value: number,
-//   tier?: string | null,
+//   value: number,          — required for all types except unlimited_trial (defaults to 0)
+//   tier?: 'free'|'pro'|'team'|null,
 //   max_uses?: number | null,
 //   expires_at?: ISO string | null,
-//   description?: string
+//   description?: string,
+//   active?: boolean        — defaults to true
 // }
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -72,6 +75,7 @@ serve(async (req) => {
     max_uses?: number | null;
     expires_at?: string | null;
     description?: string;
+    active?: boolean;
     created_by?: string;
   };
 
@@ -87,8 +91,8 @@ serve(async (req) => {
   }
 
   const code = body.code.trim().toUpperCase().replace(/[^A-Z0-9_\-]/g, "");
-  if (!code || code.length < 3 || code.length > 64) {
-    return jsonResponse({ error: "code must be 3-64 alphanumeric characters" }, 400);
+  if (!code || !/^[A-Z0-9_-]{3,20}$/.test(code)) {
+    return jsonResponse({ error: "code must be 3-20 characters: letters, numbers, dash, underscore" }, 400);
   }
 
   if (!body.type || !VALID_PROMO_TYPES.has(body.type)) {
@@ -97,12 +101,29 @@ serve(async (req) => {
     }, 400);
   }
 
-  if (typeof body.value !== "number" || !Number.isInteger(body.value) || body.value < 0) {
-    return jsonResponse({ error: "value must be a non-negative integer" }, 400);
+  // value is optional for unlimited_trial (defaults to 0); required for all others
+  let value: number;
+  if (body.type === "unlimited_trial") {
+    value = body.value !== undefined ? body.value : 0;
+    if (typeof value !== "number" || !Number.isInteger(value) || value < 0) {
+      return jsonResponse({ error: "value must be a non-negative integer" }, 400);
+    }
+  } else {
+    if (typeof body.value !== "number" || !Number.isInteger(body.value) || body.value < 0) {
+      return jsonResponse({ error: "value is required and must be a non-negative integer" }, 400);
+    }
+    value = body.value;
   }
 
-  if (body.type === "discount_percent" && body.value > 100) {
+  if (body.type === "discount_percent" && value > 100) {
     return jsonResponse({ error: "discount_percent value must be 0-100" }, 400);
+  }
+
+  // Validate tier if provided
+  if (body.tier !== null && body.tier !== undefined && body.tier !== "") {
+    if (!VALID_TIERS.has(body.tier)) {
+      return jsonResponse({ error: `tier must be one of: ${[...VALID_TIERS].join(", ")}` }, 400);
+    }
   }
 
   // Validate expires_at if provided
@@ -116,16 +137,18 @@ serve(async (req) => {
     }
   }
 
+  const active = body.active !== undefined ? Boolean(body.active) : true;
+
   // ── Insert promo code ─────────────────────────────────────────────────────
   const { data: promo, error } = await supabase
     .from("promo_codes")
     .insert({
       code,
       type: body.type,
-      value: body.value,
+      value,
       description: body.description || null,
       tier: body.tier || null,
-      active: true,
+      active,
       expires_at: body.expires_at || null,
       max_uses: body.max_uses !== undefined ? body.max_uses : null,
       used_count: 0,
@@ -136,13 +159,22 @@ serve(async (req) => {
 
   if (error) {
     if (error.code === "23505") {
-      return jsonResponse({ error: `Promo code "${code}" already exists` }, 409);
+      // Idempotency: return the existing row's id alongside the 409
+      const { data: existing } = await supabase
+        .from("promo_codes")
+        .select("id, code, type, value, active, created_at")
+        .eq("code", code)
+        .single();
+      return jsonResponse(
+        { error: `Promo code "${code}" already exists`, id: existing?.id ?? null },
+        409,
+      );
     }
     console.error("Error creating promo code:", error);
     return jsonResponse({ error: "Failed to create promo code" }, 500);
   }
 
-  console.log(`✅ Promo code created: ${code} (${body.type}, value=${body.value})`);
+  console.log(`✅ Promo code created: ${code} (${body.type}, value=${value})`);
 
   return jsonResponse(promo, 201);
 });
