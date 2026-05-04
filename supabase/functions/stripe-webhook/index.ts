@@ -591,32 +591,87 @@ serve(async (req) => {
     return new Response(JSON.stringify({ error: "Request payload too large" }), { status: 413 });
   }
 
+  // Body must be read before signature verification (constructEvent needs the
+  // raw bytes exactly as they arrived).
+  let body: string;
   try {
-    const body = await req.text();
+    body = await req.text();
+  } catch (_readErr) {
+    return new Response(JSON.stringify({ error: "Failed to read request body" }), { status: 400 });
+  }
+
+  // ── Step 1: Verify Stripe signature ───────────────────────────────────────
+  // This MUST happen before the dedup INSERT so that unsigned requests cannot
+  // pollute the webhook_events table with arbitrary event_ids.
+  let event: Stripe.Event;
+  try {
     const webhookSecret = Deno.env.get("STRIPE_WEBHOOK_SECRET") as string;
-    const event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+    event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
+  } catch (sigErr) {
+    console.error("Webhook signature verification failed:", sigErr);
+    return new Response(JSON.stringify({ error: "Invalid signature" }), { status: 400 });
+  }
 
-    console.log(`\uD83D\uDCE9 Received Stripe event: ${event.type}`);
+  console.log(`\uD83D\uDCE9 Received Stripe event: ${event.type} (${event.id})`);
 
-    // Log the webhook event for auditing (best-effort)
-    await supabase.from("webhook_events").insert({
+  // ── Step 2: Idempotency — INSERT ... ON CONFLICT DO NOTHING ───────────────
+  // Atomically claim this event_id.  If Stripe retries the same event, the
+  // insert will silently skip (ON CONFLICT DO NOTHING) and count = 0, which
+  // tells us to return early without re-processing.
+  const { count: insertCount, error: insertError } = await supabase
+    .from("webhook_events")
+    .insert({
       stripe_event_id: event.id,
       event_type: event.type,
       payload: event.data.object,
       processed: false,
-    }).then(() => {}, (err) => console.warn("Failed to log webhook event:", err));
+      status: "pending",
+    }, { count: "exact" });
 
+  if (insertError && insertError.code !== "23505") {
+    // 23505 = unique_violation — that is the expected "already exists" path;
+    // anything else is a real DB error.
+    console.error("Failed to insert webhook event:", insertError);
+    // Continue processing anyway — we don't want a DB hiccup to cause Stripe
+    // to give up retrying legitimate events.
+  }
+
+  // insertCount === 0  →  ON CONFLICT fired  →  already processed (or in-flight).
+  if (insertCount === 0) {
+    console.warn(`\u23ED\uFE0F Deduplicated Stripe event ${event.id} — already exists in webhook_events`);
+    return new Response(
+      JSON.stringify({ deduplicated: true }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  }
+
+  // ── Step 3: Process the event ──────────────────────────────────────────────
+  // Collect any ids produced during processing so we can store them as
+  // metadata for observability / replay tooling.
+  const metadata: Record<string, unknown> = {};
+
+  try {
     switch (event.type) {
       case "checkout.session.completed":
         await handleCheckoutCompleted(event.data.object as Stripe.Checkout.Session);
+        {
+          const sess = event.data.object as Stripe.Checkout.Session;
+          if (sess.subscription) metadata.subscription_id = sess.subscription;
+          if (sess.customer) metadata.stripe_customer_id = sess.customer;
+        }
         break;
 
       case "customer.subscription.deleted":
         await handleSubscriptionDeleted(event.data.object as Stripe.Subscription);
+        metadata.subscription_id = (event.data.object as Stripe.Subscription).id;
         break;
 
       case "invoice.payment_failed":
         await handlePaymentFailed(event.data.object as Stripe.Invoice);
+        {
+          const inv = event.data.object as Stripe.Invoice;
+          if (inv.subscription) metadata.subscription_id = inv.subscription;
+        }
         break;
 
       case "invoice.payment_succeeded": {
@@ -634,6 +689,7 @@ serve(async (req) => {
           } else {
             console.log(`\u2705 License reactivated for subscription ${subId}`);
           }
+          metadata.subscription_id = subId;
         }
         break;
       }
@@ -645,31 +701,53 @@ serve(async (req) => {
       case "customer.subscription.created":
       case "customer.subscription.updated":
         await handleSubscriptionUpdated(event.data.object as Stripe.Subscription);
+        metadata.subscription_id = (event.data.object as Stripe.Subscription).id;
         break;
 
       default:
         console.log(`\u2139\uFE0F Unhandled event type: ${event.type}`);
     }
+  } catch (processingErr) {
+    // ── Step 4a: Mark as failed so the runbook can identify stuck rows ────────
+    const errMessage = processingErr instanceof Error
+      ? processingErr.stack ?? processingErr.message
+      : String(processingErr);
 
-    // Mark webhook as processed (best-effort)
+    console.error("Webhook processing error:", processingErr);
+
     await supabase
       .from("webhook_events")
-      .update({ processed: true, processed_at: new Date().toISOString() })
+      .update({
+        status: "failed",
+        error_message: errMessage,
+        processed: false,
+      })
       .eq("stripe_event_id", event.id)
-      .then(() => {}, (err) => console.warn("Failed to update webhook event:", err));
+      .then(() => {}, (err) => console.warn("Failed to mark webhook as failed:", err));
 
-    return new Response(JSON.stringify({ received: true }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  } catch (err) {
-    // Log the full error server-side but never expose internal details to the
-    // caller — this prevents leaking stack traces, secret env var names, or
-    // Stripe API internals through the webhook response body.
-    console.error("Webhook error:", err);
+    // Return a non-2xx so Stripe retries the event.  HTTP 500 signals a
+    // transient server-side failure; Stripe will back off and retry according
+    // to its retry schedule.
     return new Response(
       JSON.stringify({ error: "Webhook processing failed" }),
-      { status: 400 },
+      { status: 500 },
     );
   }
+
+  // ── Step 4b: Mark as processed ────────────────────────────────────────────
+  await supabase
+    .from("webhook_events")
+    .update({
+      processed: true,
+      processed_at: new Date().toISOString(),
+      status: "processed",
+      metadata: Object.keys(metadata).length > 0 ? metadata : null,
+    })
+    .eq("stripe_event_id", event.id)
+    .then(() => {}, (err) => console.warn("Failed to mark webhook as processed:", err));
+
+  return new Response(JSON.stringify({ received: true }), {
+    status: 200,
+    headers: { "Content-Type": "application/json" },
+  });
 });
