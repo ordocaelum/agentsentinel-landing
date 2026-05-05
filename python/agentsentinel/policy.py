@@ -89,3 +89,13 @@ class AgentPolicy:
     # Per-model budget limits — convenience shortcut; values are max USD spend
     # per model name pattern (supports fnmatch wildcards, e.g. "claude-*": 5.0)
     model_budgets: Dict[str, float] = field(default_factory=dict)
+
+    # ── Event streaming to customer dashboard ────────────────────────────────
+    # When webhook_url is set the guard streams tool-decision events
+    # asynchronously to the customer dashboard endpoint in the background
+    # without blocking tool execution.
+    webhook_url: Optional[str] = None
+    webhook_key: Optional[str] = None  # license key used as auth in event body
+    stream_events: bool = True
+    stream_batch_size: int = 10
+    stream_interval: float = 5.0

@@ -66,6 +66,10 @@ export class AgentGuard {
   private _hourlySpent = 0;
   private _hourlyResetAt = Date.now();
 
+  // Event streaming
+  private readonly _eventQueue: Array<Record<string, unknown>> = [];
+  private _flushTimer: ReturnType<typeof setInterval> | null = null;
+
   constructor({
     policy,
     approvalHandler,
@@ -89,6 +93,23 @@ export class AgentGuard {
     this.contentInspector = new ContentInspector(policy.inspectorConfig);
     this.networkGuard = new NetworkGuard(policy.networkPolicy);
     this.costTracker = new CostTracker(policy.costTracking);
+
+    // Start background flush timer when streaming is enabled
+    if (policy.webhookUrl && policy.streamEvents) {
+      this._flushTimer = setInterval(
+        () => { this._flushEvents(); },
+        policy.streamIntervalMs,
+      );
+    }
+  }
+
+  /** Stop the background flush timer and flush any remaining events. */
+  destroy(): void {
+    if (this._flushTimer !== null) {
+      clearInterval(this._flushTimer);
+      this._flushTimer = null;
+    }
+    this._flushEvents();
   }
 
   // -----------------------------------------------------------------------
@@ -130,6 +151,46 @@ export class AgentGuard {
   }
 
   // -----------------------------------------------------------------------
+  // Event streaming helpers (non-blocking, fire-and-forget)
+  // -----------------------------------------------------------------------
+
+  private _enqueueEvent(
+    toolName: string,
+    status: "allowed" | "blocked" | "pending" | "expired",
+    cost: number,
+    metadata?: Record<string, unknown>,
+  ): void {
+    if (!this.policy.webhookUrl || !this.policy.streamEvents) return;
+    const ev: Record<string, unknown> = {
+      license_key: this.policy.webhookKey ?? "",
+      agent_id: "ts-agent",
+      tool_name: toolName,
+      status,
+      cost: cost || undefined,
+      timestamp: new Date().toISOString(),
+    };
+    if (metadata) ev["metadata"] = metadata;
+    this._eventQueue.push(ev);
+    if (this._eventQueue.length >= this.policy.streamBatchSize) {
+      this._flushEvents();
+    }
+  }
+
+  private _flushEvents(): void {
+    if (!this.policy.webhookUrl || this._eventQueue.length === 0) return;
+    const batch = this._eventQueue.splice(0, this._eventQueue.length);
+    const url = this.policy.webhookUrl;
+    // Fire-and-forget: never await this or throw
+    Promise.resolve().then(() =>
+      fetch(url, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ events: batch }),
+      }).catch(() => { /* best-effort */ })
+    );
+  }
+
+  // -----------------------------------------------------------------------
   // Public API
   // -----------------------------------------------------------------------
 
@@ -157,6 +218,7 @@ export class AgentGuard {
             reason: "tool_in_blocked_list",
           })
         );
+        self._enqueueEvent(resolvedName, "blocked", 0, { reason: "tool_in_blocked_list" });
         throw new ToolBlockedError(
           `Tool '${resolvedName}' is permanently blocked by security policy.`,
           { toolName: resolvedName }
@@ -285,6 +347,9 @@ export class AgentGuard {
         }
 
         self.auditLogger.record(AuditEvent.now(resolvedName, "success", invocationCost, "allowed"));
+
+        // Stream event to customer dashboard (non-blocking, fire-and-forget)
+        self._enqueueEvent(resolvedName, "allowed", invocationCost);
 
         return result as Awaited<ReturnType<T>>;
       } catch (err) {

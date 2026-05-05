@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Get Started | AgentSentinel Dashboard</title>
+  <meta name="description" content="Set up your AgentSentinel monitoring dashboard in 3 steps." />
+  <!-- CSP: allow inline scripts for Tailwind config and inline event handlers -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://dash.agentsentinel.net;" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    .hero-bg {
+      background-color: #050d1a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.25) 0%, transparent 70%),
+        radial-gradient(ellipse 60% 40% at 80% 60%, rgba(6,182,212,0.12) 0%, transparent 60%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.15' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+
+    pre, code {
+      font-family: 'Fira Code', 'Cascadia Code', 'Menlo', 'Courier New', monospace;
+    }
+
+    .lang-active {
+      background: rgba(14, 165, 233, 0.2) !important;
+      border-color: #0ea5e9 !important;
+      color: #38bdf8 !important;
+    }
+
+    .step-active { background: #0ea5e9; color: white; }
+    .step-done   { background: #059669; color: white; }
+    .step-todo   { background: rgba(51,65,85,0.8); color: #94a3b8; }
+
+    .copy-btn.copied { color: #34d399 !important; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body class="hero-bg min-h-screen text-white antialiased">
+
+  <!-- ── Nav ── -->
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-4xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2.5">
+        <svg class="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 6v6c0 4.4 3.4 8.2 8 9.9 4.6-1.7 8-5.5 8-9.9V6L12 2z" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="7.5" y1="12" x2="16.5" y2="12" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.3" fill="#38bdf8"/>
+        </svg>
+        <span class="text-lg font-bold tracking-tight text-white">AgentSentinel™</span>
+        <span class="text-slate-500 font-normal text-sm ml-1">/ Setup</span>
+      </a>
+    </div>
+  </nav>
+
+  <!-- ── Main ── -->
+  <main class="max-w-3xl mx-auto px-4 py-12">
+
+    <!-- Error banner -->
+    <div id="onb-error" class="hidden mb-6 p-4 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm"></div>
+
+    <!-- Step indicators -->
+    <div class="flex items-center justify-center gap-3 mb-10" aria-label="Setup progress">
+      <div class="onb-step-indicator flex items-center gap-2" data-step="1">
+        <span class="step-active w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors">1</span>
+        <span class="text-sm font-medium text-slate-300 hidden sm:block">Choose Language</span>
+      </div>
+      <div class="w-8 h-px bg-slate-700"></div>
+      <div class="onb-step-indicator flex items-center gap-2" data-step="2">
+        <span class="step-todo w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors">2</span>
+        <span class="text-sm font-medium text-slate-500 hidden sm:block">Install &amp; Configure</span>
+      </div>
+      <div class="w-8 h-px bg-slate-700"></div>
+      <div class="onb-step-indicator flex items-center gap-2" data-step="3">
+        <span class="step-todo w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-colors">3</span>
+        <span class="text-sm font-medium text-slate-500 hidden sm:block">Test &amp; Launch</span>
+      </div>
+    </div>
+
+    <!-- ── Step 1: Language picker ── -->
+    <section class="onb-step glass-card rounded-2xl p-8" data-step="1">
+      <h1 class="text-2xl font-bold mb-2">Welcome to AgentSentinel 🛡️</h1>
+      <p class="text-slate-400 mb-8">Select your language to get personalised setup code for your AI agent monitoring dashboard.</p>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-10">
+        <button data-lang="python"
+          class="lang-active flex items-center gap-4 p-5 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-sky-500/60 transition-all text-left cursor-pointer">
+          <span class="text-4xl">🐍</span>
+          <div>
+            <div class="font-semibold text-white text-lg">Python</div>
+            <div class="text-slate-400 text-sm mt-0.5">agentsentinel-core</div>
+          </div>
+        </button>
+        <button data-lang="typescript"
+          class="flex items-center gap-4 p-5 rounded-xl border border-slate-700 bg-slate-800/40 hover:border-sky-500/60 transition-all text-left cursor-pointer">
+          <span class="text-4xl">🟦</span>
+          <div>
+            <div class="font-semibold text-white text-lg">TypeScript / JS</div>
+            <div class="text-slate-400 text-sm mt-0.5">@agentsentinel/sdk</div>
+          </div>
+        </button>
+      </div>
+
+      <div class="flex justify-end">
+        <button id="onb-next-1" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-xl transition-colors">
+          Continue →
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Step 2: Install & Configure ── -->
+    <section class="onb-step hidden glass-card rounded-2xl p-8" data-step="2">
+      <h2 class="text-2xl font-bold mb-2">Install &amp; Configure</h2>
+      <p class="text-slate-400 mb-8">Your license key and webhook URL are pre-filled. Copy, paste, and you're done.</p>
+
+      <!-- Install -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold text-slate-300 uppercase tracking-wide">1. Install</span>
+          <button class="copy-btn text-slate-400 hover:text-sky-400 text-xs font-medium transition-colors" data-copy-target="onb-install-code">Copy</button>
+        </div>
+        <div class="relative bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-x-auto">
+          <pre><code id="onb-install-code" class="text-green-300 text-sm"></code></pre>
+        </div>
+      </div>
+
+      <!-- Configure -->
+      <div class="mb-8">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold text-slate-300 uppercase tracking-wide">2. Configure</span>
+          <button class="copy-btn text-slate-400 hover:text-sky-400 text-xs font-medium transition-colors" data-copy-target="onb-config-code">Copy</button>
+        </div>
+        <div class="relative bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-x-auto">
+          <pre><code id="onb-config-code" class="text-sky-200 text-sm"></code></pre>
+        </div>
+        <p class="text-slate-500 text-xs mt-2">
+          Your license key and dashboard webhook URL are already filled in above.
+        </p>
+      </div>
+
+      <div class="flex justify-between">
+        <button id="onb-prev-2" class="px-5 py-2.5 border border-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors text-sm">← Back</button>
+        <button id="onb-next-2" class="px-6 py-3 bg-sky-500 hover:bg-sky-400 text-white font-semibold rounded-xl transition-colors">
+          Continue →
+        </button>
+      </div>
+    </section>
+
+    <!-- ── Step 3: Test & Launch ── -->
+    <section class="onb-step hidden glass-card rounded-2xl p-8" data-step="3">
+      <h2 class="text-2xl font-bold mb-2">Test &amp; Launch 🚀</h2>
+      <p class="text-slate-400 mb-8">Paste this test script into your environment, run it, then click "Send Test Event" below. Events will appear on your live dashboard within ~5 seconds.</p>
+
+      <!-- Test script -->
+      <div class="mb-6">
+        <div class="flex items-center justify-between mb-2">
+          <span class="text-sm font-semibold text-slate-300 uppercase tracking-wide">Test Script</span>
+          <button class="copy-btn text-slate-400 hover:text-sky-400 text-xs font-medium transition-colors" data-copy-target="onb-test-code">Copy</button>
+        </div>
+        <div class="bg-slate-900 rounded-xl border border-slate-700 p-4 overflow-x-auto">
+          <pre><code id="onb-test-code" class="text-yellow-200 text-sm"></code></pre>
+        </div>
+      </div>
+
+      <!-- Test via browser -->
+      <div class="bg-slate-800/50 rounded-xl border border-slate-700 p-5 mb-8">
+        <p class="text-slate-300 text-sm mb-3">Or verify the pipeline directly from this page:</p>
+        <button id="onb-test-btn" class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl font-semibold transition-colors text-sm">
+          Send Test Event
+        </button>
+        <div id="onb-test-result" class="hidden"></div>
+      </div>
+
+      <div class="flex justify-between">
+        <button id="onb-prev-3" class="px-5 py-2.5 border border-slate-700 text-slate-300 hover:text-white rounded-xl transition-colors text-sm">← Back</button>
+        <button id="onb-start-btn" class="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl transition-colors">
+          🎉 Start Monitoring →
+        </button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Hidden data (populated by JS) -->
+  <span id="onb-license-key" class="hidden" aria-hidden="true"></span>
+  <span id="onb-webhook-url" class="hidden" aria-hidden="true"></span>
+
+  <script type="module">
+    // Set Supabase URL before loading modules
+    window.__AS_SUPABASE_URL = "https://your-project.supabase.co"; // replaced at deploy time
+    import { initOnboarding } from "/dashboard/static/customer/onboarding.js";
+    document.addEventListener("DOMContentLoaded", () => initOnboarding());
+  </script>
+</body>
+</html>

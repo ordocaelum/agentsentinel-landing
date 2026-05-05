@@ -9,10 +9,14 @@ from __future__ import annotations
 
 import fnmatch
 import functools
+import json
+import queue
 import threading
 import time
+import urllib.request
 import uuid
 import warnings
+from datetime import datetime, timezone
 from typing import Any, Callable, Dict, List, Optional
 
 from .approval import ApprovalHandler, DenyAllApprover
@@ -30,11 +34,80 @@ from .policy import AgentPolicy
 from .rate_limit import RateLimiter
 from .security import SecurityConfig, is_tool_blocked, redact_sensitive
 
+
 def _safe_error_str(message: str, sec: "SecurityConfig") -> str:
     """Return *message* with sensitive patterns redacted when logging errors."""
     if sec.log_full_params:
         return message
     return redact_sensitive(message, sec.redact_patterns)
+
+
+class _EventStreamer:
+    """Background thread that batches tool-decision events and POSTs them to
+    the customer dashboard endpoint without blocking tool execution.
+
+    Thread safety: :meth:`enqueue` is safe to call from any thread.
+    The flusher thread is a daemon so it never prevents process exit.
+    """
+
+    def __init__(self, webhook_url: str, license_key: str, batch_size: int, interval: float) -> None:
+        self._url = webhook_url
+        self._key = license_key
+        self._batch_size = max(1, batch_size)
+        self._interval = max(0.1, interval)
+        self._queue: queue.Queue[Dict[str, Any]] = queue.Queue(maxsize=5000)
+        self._stop_event = threading.Event()
+        self._thread = threading.Thread(target=self._run, daemon=True, name="as-event-stream")
+        self._thread.start()
+
+    def enqueue(self, event: Dict[str, Any]) -> None:
+        """Non-blocking enqueue.  Silently drops events when the queue is full."""
+        try:
+            self._queue.put_nowait(event)
+        except queue.Full:
+            pass
+
+    def _flush(self, events: List[Dict[str, Any]]) -> None:
+        if not events:
+            return
+        payload = json.dumps({"events": events}).encode("utf-8")
+        try:
+            req = urllib.request.Request(
+                self._url,
+                data=payload,
+                headers={"Content-Type": "application/json"},
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10):  # noqa: S310
+                pass
+        except Exception:
+            pass  # Best-effort: never raise from background thread
+
+    def _run(self) -> None:
+        while not self._stop_event.is_set():
+            batch: List[Dict[str, Any]] = []
+            deadline = time.monotonic() + self._interval
+            while time.monotonic() < deadline and len(batch) < self._batch_size:
+                remaining = deadline - time.monotonic()
+                try:
+                    ev = self._queue.get(timeout=max(0.05, remaining))
+                    batch.append(ev)
+                except queue.Empty:
+                    break
+            self._flush(batch)
+
+    def stop(self) -> None:
+        """Signal the flusher thread to exit and flush remaining events."""
+        self._stop_event.set()
+        # Drain remaining events
+        remaining: List[Dict[str, Any]] = []
+        while True:
+            try:
+                remaining.append(self._queue.get_nowait())
+            except queue.Empty:
+                break
+        self._flush(remaining)
+
 
 class AgentGuard:
     """Wraps agent tools with spend controls, approval gates, rate limiting,
@@ -127,12 +200,29 @@ class AgentGuard:
             )
         self.cost_tracker = CostTracker(tracker_config)
 
+        # ── Event streaming to customer dashboard ────────────────────────────
+        self._streamer: Optional[_EventStreamer] = None
+        if policy.webhook_url and policy.stream_events:
+            key = policy.webhook_key or license_key or ""
+            if key:
+                self._streamer = _EventStreamer(
+                    webhook_url=policy.webhook_url,
+                    license_key=key,
+                    batch_size=policy.stream_batch_size,
+                    interval=policy.stream_interval,
+                )
+
     def __del__(self) -> None:
         """Unregister this agent from the license manager when destroyed."""
         try:
             get_license_manager().unregister_agent(self._agent_id)
         except Exception:
             pass  # Never raise in __del__
+        try:
+            if self._streamer is not None:
+                self._streamer.stop()
+        except Exception:
+            pass
 
     # ------------------------------------------------------------------
     # Internal helpers
@@ -221,6 +311,8 @@ class AgentGuard:
                     )
                     self.audit_logger.record(event)
                     from .errors import ToolBlockedError
+                    self._stream_tool_event(resolved_name, "blocked", 0.0,
+                                            {"reason": "tool_in_blocked_list"})
                     raise ToolBlockedError(
                         f"Tool '{resolved_name}' is permanently blocked by security policy.",
                         tool_name=resolved_name,
@@ -419,6 +511,13 @@ class AgentGuard:
                 )
                 self.audit_logger.record(event)
 
+                # --- Stream event to customer dashboard (non-blocking) ---
+                self._stream_tool_event(
+                    resolved_name,
+                    "allowed",
+                    invocation_cost,
+                )
+
                 return result
 
             return wrapper
@@ -427,6 +526,34 @@ class AgentGuard:
         if func is not None:
             return decorator(func)
         return decorator
+
+    def _stream_tool_event(
+        self,
+        tool_name: str,
+        status: str,
+        cost: float,
+        metadata: Optional[Dict[str, Any]] = None,
+    ) -> None:
+        """Enqueue a tool-decision event for background streaming.
+
+        This is a no-op when :attr:`_streamer` is ``None`` (i.e. when
+        ``policy.webhook_url`` is not set or ``policy.stream_events`` is
+        ``False``).  It never blocks or raises.
+        """
+        if self._streamer is None:
+            return
+        key = self.policy.webhook_key or ""
+        ev: Dict[str, Any] = {
+            "license_key": key,
+            "agent_id": self._agent_id,
+            "tool_name": tool_name,
+            "status": status,
+            "cost": cost if cost else None,
+            "timestamp": datetime.now(tz=timezone.utc).isoformat(),
+        }
+        if metadata:
+            ev["metadata"] = metadata
+        self._streamer.enqueue(ev)
 
     @property
     def daily_spent(self) -> float:

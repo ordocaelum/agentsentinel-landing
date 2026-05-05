@@ -168,6 +168,8 @@ async function sendLicenseEmail(
   name: string | null,
   licenseKey: string,
   tier: string,
+  customerId?: string | null,
+  dashboardToken?: string | null,
 ): Promise<void> {
   const limits = TIER_LIMITS[tier] || TIER_LIMITS.starter;
   const tierDisplay = tierDisplayName(tier);
@@ -176,9 +178,27 @@ async function sendLicenseEmail(
   const safeLicenseKey = escapeHtml(licenseKey);
   const safeTierDisplay = escapeHtml(tierDisplay);
 
+  const DASHBOARD_BASE_URL = Deno.env.get("CUSTOMER_DASHBOARD_BASE_URL") ||
+    "https://dash.agentsentinel.net";
+
+  const dashboardUrl = customerId && dashboardToken
+    ? `${DASHBOARD_BASE_URL}/d/${customerId}/${dashboardToken}`
+    : null;
+
+  const dashboardCta = dashboardUrl
+    ? `
+    <div style="background:linear-gradient(135deg,#0ea5e9 0%,#6366f1 100%);padding:24px;border-radius:12px;margin:24px 0;text-align:center;">
+      <p style="color:white;margin:0 0 12px;font-size:16px;font-weight:600;">&#x1F4CA; Your Live Monitoring Dashboard is Ready!</p>
+      <p style="color:rgba(255,255,255,0.85);margin:0 0 16px;font-size:14px;">Watch your AI agents in real-time. Zero setup required.</p>
+      <a href="${escapeHtml(dashboardUrl)}" style="display:inline-block;background:white;color:#0ea5e9;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:bold;font-size:15px;">Launch Dashboard &#x2192;</a>
+      <p style="color:rgba(255,255,255,0.7);margin:12px 0 0;font-size:12px;">Link valid for 30 days &mdash; after that, sign in via <a href="https://agentsentinel.net/portal.html" style="color:rgba(255,255,255,0.85);">agentsentinel.net/portal</a></p>
+    </div>`
+    : "";
+
   const content = `
     <p>Hi ${safeName},</p>
     <p>Thank you for purchasing <strong>AgentSentinel ${safeTierDisplay}</strong>! &#x1F389;</p>
+    ${dashboardCta}
     <p>Here's your license key:</p>
     <div style="background:#1e293b;color:#fff;padding:20px;border-radius:8px;font-family:monospace;font-size:18px;text-align:center;margin:20px 0;word-break:break-all;">
       ${safeLicenseKey}
@@ -367,7 +387,39 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
 
   console.log(`\u2705 License created: ${maskLicenseKey(licenseKey)}`);
 
-  // 4. Apply promo code if present in session metadata
+  // 4a. Provision customer dashboard (new in Mission Control Lite)
+  let dashboardToken: string | null = null;
+  if (licenseRow?.id) {
+    const { data: dashboardRow, error: dashboardError } = await supabase
+      .from("customer_dashboards")
+      .insert({
+        license_id: licenseRow.id,
+        customer_id: customer.id,
+        status: "active",
+      })
+      .select("id, dashboard_token")
+      .single();
+
+    if (dashboardError) {
+      // Non-fatal — dashboard can be provisioned manually later.
+      console.error("\u26A0\uFE0F Error creating customer dashboard:", dashboardError);
+    } else {
+      dashboardToken = dashboardRow?.dashboard_token ?? null;
+
+      // Insert synthetic bootstrap event so the dashboard shows something immediately.
+      await supabase.from("agent_events").insert({
+        dashboard_id: dashboardRow.id,
+        agent_id: "system",
+        tool_name: "dashboard_setup",
+        status: "dashboard_created",
+        metadata: { tier, license_key_prefix: maskLicenseKey(licenseKey) },
+      });
+
+      console.log(`\u2705 Customer dashboard created: token=${dashboardToken}`);
+    }
+  }
+
+  // 4b. Apply promo code if present in session metadata
   const promoCodeId = session.metadata?.promo_code_id;
   if (promoCodeId && licenseRow?.id) {
     const { data: promo } = await supabase
@@ -397,8 +449,8 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session): Promis
     }
   }
 
-  // 5. Send welcome email
-  await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier);
+  // 5. Send welcome email (with dashboard URL when available)
+  await sendLicenseEmail(customerEmail, customerName ?? null, licenseKey, tier, customer.id, dashboardToken);
 
   console.log(`\u2705 Checkout complete for ${customerEmail} \u2014 ${tier} plan`);
 }
