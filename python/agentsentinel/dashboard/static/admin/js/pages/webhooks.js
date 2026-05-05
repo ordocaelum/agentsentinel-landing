@@ -126,9 +126,9 @@ function renderTable() {
       <td><code class="key-pill" style="font-size:.7rem">${(e.stripe_event_id||'').slice(0,24)}…</code></td>
       <td style="font-size:.78rem;color:#94a3b8">${e.event_type || '—'}</td>
       <td>
-        ${e.processed
+        ${e.status === 'processed'
           ? '<span class="badge badge-success">Processed</span>'
-          : e.error_message
+          : e.status === 'failed'
           ? '<span class="badge badge-danger">Failed</span>'
           : '<span class="badge badge-warning">Pending</span>'
         }

@@ -418,7 +418,7 @@ export const metricsAPI = {
     const [licenseRows, customerRows, webhookRows, promoRows] = await Promise.allSettled([
       get('licenses',      'select=id,status,tier,created_at'),
       get('customers',     'select=id,created_at'),
-      get('webhook_events','select=id,processed,error_message&limit=500&order=created_at.desc'),
+      get('webhook_events','select=id,status&limit=500&order=created_at.desc'),
       get('promo_codes',   'select=id,active,used_count'),
     ]);
 
@@ -437,7 +437,9 @@ export const metricsAPI = {
       active_licenses:  licenses.filter(l => l.status === 'active').length,
       licenses_by_tier: {
         free:       licenses.filter(l => l.tier === 'free').length,
+        starter:    licenses.filter(l => l.tier === 'starter').length,
         pro:        licenses.filter(l => l.tier === 'pro').length,
+        pro_team:   licenses.filter(l => l.tier === 'pro_team').length,
         team:       licenses.filter(l => l.tier === 'team').length,
         enterprise: licenses.filter(l => l.tier === 'enterprise').length,
       },
@@ -449,8 +451,8 @@ export const metricsAPI = {
       new_customers_month: customers.filter(c => now - new Date(c.created_at) < month).length,
 
       total_webhooks:    webhooks.length,
-      processed_webhooks: webhooks.filter(w => w.processed).length,
-      failed_webhooks:   webhooks.filter(w => !w.processed && w.error_message).length,
+      processed_webhooks: webhooks.filter(w => w.status === 'processed').length,
+      failed_webhooks:   webhooks.filter(w => w.status === 'failed').length,
 
       total_promos:  promos.length,
       active_promos: promos.filter(p => p.active).length,
