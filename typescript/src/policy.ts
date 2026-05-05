@@ -69,6 +69,25 @@ export interface AgentPolicyOptions {
    * Merged into `costTracking.modelBudgets`.
    */
   modelBudgets?: Record<string, number>;
+
+  // ── Event streaming to customer dashboard ──────────────────────────────
+  /**
+   * When set, tool-decision events are POSTed to this URL asynchronously
+   * without blocking tool execution.
+   * Value: your customer dashboard webhook URL (from the onboarding wizard).
+   */
+  webhookUrl?: string;
+  /**
+   * License key sent as `license_key` in each event payload for server-side
+   * authentication.  Defaults to the top-level license key when omitted.
+   */
+  webhookKey?: string;
+  /** Enable event streaming to the customer dashboard. Default: true. */
+  streamEvents?: boolean;
+  /** Maximum events to batch before flushing. Default: 10. */
+  streamBatchSize?: number;
+  /** Flush interval in milliseconds. Default: 5000. */
+  streamIntervalMs?: number;
 }
 
 /** Immutable policy value object used by {@link AgentGuard}. */
@@ -89,6 +108,11 @@ export class AgentPolicy {
   readonly dlpBlockOnViolation: boolean;
   readonly costTracking: CostTrackerConfig;
   readonly modelBudgets: Readonly<Record<string, number>>;
+  readonly webhookUrl: string | undefined;
+  readonly webhookKey: string | undefined;
+  readonly streamEvents: boolean;
+  readonly streamBatchSize: number;
+  readonly streamIntervalMs: number;
 
   constructor(options: AgentPolicyOptions = {}) {
     this.dailyBudget = options.dailyBudget ?? Infinity;
@@ -106,6 +130,11 @@ export class AgentPolicy {
     this.dlpEnabled = options.dlpEnabled ?? true;
     this.dlpBlockOnViolation = options.dlpBlockOnViolation ?? true;
     this.modelBudgets = Object.freeze(options.modelBudgets ?? {});
+    this.webhookUrl = options.webhookUrl;
+    this.webhookKey = options.webhookKey;
+    this.streamEvents = options.streamEvents ?? true;
+    this.streamBatchSize = options.streamBatchSize ?? 10;
+    this.streamIntervalMs = options.streamIntervalMs ?? 5000;
     // Merge modelBudgets shortcut into cost tracking config
     const mergedBudgets = { ...(options.costTracking?.modelBudgets ?? {}), ...this.modelBudgets };
     this.costTracking = new CostTrackerConfig({

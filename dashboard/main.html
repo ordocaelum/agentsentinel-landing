@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Live Dashboard | AgentSentinel</title>
+  <meta name="description" content="Real-time AI agent monitoring dashboard." />
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src 'self' https://*.supabase.co https://dash.agentsentinel.net;" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: { extend: { fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] } } }
+    }
+  </script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', system-ui, sans-serif; }
+
+    .hero-bg {
+      background-color: #050d1a;
+      background-image:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37,99,235,0.18) 0%, transparent 70%),
+        url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.1' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+    }
+
+    .glass-card {
+      background: rgba(15, 23, 42, 0.6);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+
+    .stat-card {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(51, 65, 85, 0.5);
+      border-radius: 1rem;
+      padding: 1.5rem;
+    }
+
+    .progress-bar { transition: width 0.6s ease; }
+
+    @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+    .pulse-dot { animation: pulse-dot 1.5s ease-in-out infinite; }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spinner {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(255,255,255,0.2);
+      border-top-color: #38bdf8;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: inline-block;
+    }
+  </style>
+</head>
+
+<body class="hero-bg min-h-screen text-white antialiased">
+
+  <!-- ── Nav ── -->
+  <nav class="sticky top-0 z-50 border-b border-slate-800/60 backdrop-blur-md" style="background-color:rgba(5,13,26,0.92)">
+    <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <a href="/index.html" class="flex items-center gap-2.5">
+        <svg class="w-6 h-6 shrink-0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M12 2L4 6v6c0 4.4 3.4 8.2 8 9.9 4.6-1.7 8-5.5 8-9.9V6L12 2z" fill="rgba(56,189,248,0.12)" stroke="#38bdf8" stroke-width="1.5" stroke-linejoin="round"/>
+          <line x1="7.5" y1="12" x2="16.5" y2="12" stroke="#38bdf8" stroke-width="1" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.3" fill="#38bdf8"/>
+        </svg>
+        <span class="text-base font-bold tracking-tight text-white">AgentSentinel™</span>
+        <span class="text-slate-500 font-normal text-sm ml-1">/ Dashboard</span>
+      </a>
+
+      <!-- Agent status header pill -->
+      <div class="flex items-center gap-3">
+        <div class="flex items-center gap-2 px-3 py-1.5 rounded-full bg-slate-800/60 border border-slate-700 text-sm">
+          <span class="pulse-dot w-2 h-2 rounded-full bg-emerald-400 inline-block"></span>
+          <span id="stat-status" class="text-slate-200 font-medium">Loading…</span>
+        </div>
+        <span class="text-slate-500 text-xs" id="stat-tier">—</span>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ── Fatal error ── -->
+  <div id="dash-fatal-error" class="hidden max-w-2xl mx-auto mt-12 p-5 bg-red-900/30 border border-red-700/50 rounded-xl text-red-300 text-sm text-center"></div>
+
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+
+    <!-- ── Stats cards ── -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-1">Total Spend</div>
+        <div id="stat-spend" class="text-2xl font-bold text-white">—</div>
+        <div class="text-slate-500 text-xs mt-1">cumulative (USD)</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-1">Events</div>
+        <div id="stat-events" class="text-2xl font-bold text-white">—</div>
+        <div class="text-slate-500 text-xs mt-1">tool invocations</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-1">Approvals Pending</div>
+        <div id="stat-approvals" class="text-2xl font-bold text-yellow-300">—</div>
+        <div class="text-slate-500 text-xs mt-1">awaiting review</div>
+      </div>
+      <div class="stat-card">
+        <div class="text-slate-400 text-xs font-semibold uppercase tracking-wide mb-1">Uptime</div>
+        <div id="stat-uptime" class="text-2xl font-bold text-emerald-400">—</div>
+        <div class="text-slate-500 text-xs mt-1">since setup</div>
+      </div>
+    </div>
+
+    <!-- ── Budget progress ── -->
+    <div id="budget-section" class="glass-card rounded-2xl p-6 mb-8">
+      <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide mb-4">Budget</h2>
+      <div>
+        <div class="flex justify-between text-xs text-slate-400 mb-1">
+          <span>Daily spend</span>
+          <span id="lbl-daily">—</span>
+        </div>
+        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div id="bar-daily" class="h-full bg-sky-500 rounded-full progress-bar" style="width:0%"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Live event stream ── -->
+    <div class="glass-card rounded-2xl overflow-hidden mb-8">
+      <div class="flex items-center justify-between px-6 py-4 border-b border-slate-800">
+        <div class="flex items-center gap-3">
+          <h2 class="text-sm font-semibold text-slate-300 uppercase tracking-wide">Live Event Stream</h2>
+          <span class="pulse-dot w-2 h-2 rounded-full bg-sky-400 inline-block"></span>
+        </div>
+        <span class="text-slate-500 text-xs">Auto-refreshes every 5s</span>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="text-slate-500 text-xs uppercase tracking-wide border-b border-slate-800">
+              <th class="px-4 py-3 text-left font-medium">Time</th>
+              <th class="px-4 py-3 text-left font-medium">Agent ID</th>
+              <th class="px-4 py-3 text-left font-medium">Tool</th>
+              <th class="px-4 py-3 text-left font-medium">Status</th>
+              <th class="px-4 py-3 text-left font-medium">Cost</th>
+            </tr>
+          </thead>
+          <tbody id="event-table-body">
+            <tr>
+              <td colspan="5" class="text-center text-slate-500 py-8">
+                <span class="spinner"></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ── Quick links ── -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <a href="/dashboard/onboarding.html" class="glass-card rounded-xl px-5 py-4 hover:border-sky-500/50 transition-colors flex items-center gap-3">
+        <span class="text-2xl">🚀</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Re-run Onboarding</div>
+          <div class="text-xs text-slate-400 mt-0.5">Update SDK setup code</div>
+        </div>
+      </a>
+      <a href="/portal.html" class="glass-card rounded-xl px-5 py-4 hover:border-sky-500/50 transition-colors flex items-center gap-3">
+        <span class="text-2xl">🔑</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Manage License</div>
+          <div class="text-xs text-slate-400 mt-0.5">View key, billing, usage</div>
+        </div>
+      </a>
+      <a href="mailto:contact@agentsentinel.net" class="glass-card rounded-xl px-5 py-4 hover:border-sky-500/50 transition-colors flex items-center gap-3">
+        <span class="text-2xl">💬</span>
+        <div>
+          <div class="text-sm font-semibold text-white">Get Support</div>
+          <div class="text-xs text-slate-400 mt-0.5">contact@agentsentinel.net</div>
+        </div>
+      </a>
+    </div>
+
+  </main>
+
+  <script type="module">
+    window.__AS_SUPABASE_URL = "https://your-project.supabase.co"; // replaced at deploy time
+    import { initDashboard } from "/dashboard/static/customer/live-dashboard.js";
+    document.addEventListener("DOMContentLoaded", () => initDashboard());
+  </script>
+</body>
+</html>
