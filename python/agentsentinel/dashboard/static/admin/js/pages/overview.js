@@ -113,7 +113,7 @@ function renderKpis(m) {
 function renderTierBars(m) {
   const tiers = m.licenses_by_tier || {};
   const total = m.total_licenses || 1;
-  const colors = { free: '#64748b', pro: '#0ea5e9', team: '#8b5cf6', enterprise: '#f59e0b' };
+  const colors = { free: '#64748b', starter: '#06b6d4', pro: '#0ea5e9', pro_team: '#6366f1', team: '#8b5cf6', enterprise: '#f59e0b' };
   for (const [tier, cnt] of Object.entries(tiers)) {
     const bar = document.getElementById(`tier-bar-${tier}`);
     const lbl = document.getElementById(`tier-count-${tier}`);
