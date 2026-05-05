@@ -36,7 +36,8 @@ export async function render(container) {
         <select class="filter-select" id="wh-filter-status">
           <option value="">All Status</option>
           <option value="processed">Processed</option>
-          <option value="unprocessed">Unprocessed</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
         </select>
       </div>
     </div>
@@ -101,9 +102,9 @@ async function loadEvents() {
 }
 
 function renderKpis() {
-  const processed = _events.filter(e => e.processed).length;
-  const failed    = _events.filter(e => !e.processed && e.error_message).length;
-  const pending   = _events.filter(e => !e.processed && !e.error_message).length;
+  const processed = _events.filter(e => e.status === 'processed').length;
+  const failed    = _events.filter(e => e.status === 'failed').length;
+  const pending   = _events.filter(e => e.status === 'pending').length;
   document.getElementById('wh-total').textContent     = fmt.number(_events.length);
   document.getElementById('wh-processed').textContent = fmt.number(processed);
   document.getElementById('wh-failed').textContent    = fmt.number(failed);

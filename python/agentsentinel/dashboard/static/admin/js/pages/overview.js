@@ -45,7 +45,7 @@ export async function render(container) {
           <span class="card-title">🎫 License Tiers</span>
         </div>
         <div id="tier-breakdown" style="display:flex;flex-direction:column;gap:10px">
-          ${['free','pro','team','enterprise'].map(tier => `
+          ${['free','starter','pro','pro_team','team','enterprise'].map(tier => `
             <div style="display:flex;align-items:center;gap:10px">
               <span class="badge ${fmt.tierBadge(tier)}" style="min-width:72px;justify-content:center">${tier.toUpperCase()}</span>
               <div style="flex:1;background:rgba(148,163,184,.1);border-radius:4px;height:6px;overflow:hidden">
