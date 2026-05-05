@@ -194,6 +194,24 @@ const result = await searchWeb("AI safety best practices");
 
 ---
 
+## Documentation
+
+Full documentation is in the [`docs/`](docs/) directory. Start with the index:
+
+> 📖 **[docs/README.md](docs/README.md)** — Documentation index with role-based start guides
+
+| Document | Description |
+|----------|-------------|
+| [docs/ADMIN_WORKFLOW.md](docs/ADMIN_WORKFLOW.md) | Step-by-step admin dashboard guide: setup, all 8 pages, promo codes, license management |
+| [docs/CUSTOMER_JOURNEY.md](docs/CUSTOMER_JOURNEY.md) | End-to-end customer flow from visitor → Stripe → portal → SDK, with Mermaid diagrams |
+| [docs/SDK_INTEGRATION.md](docs/SDK_INTEGRATION.md) | 5-minute quickstart for Python and TypeScript SDKs, HMAC verification, error codes |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | Deploy the Python dashboard and Supabase Edge Functions; full env var checklist |
+| [docs/RUNBOOKS.md](docs/RUNBOOKS.md) | On-call runbooks: failed webhooks, stuck licenses, secret rotation, DB integrity |
+| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Common errors and fixes: 401s, invalid licenses, promo issues, portal problems |
+| [docs/SECURITY_CHECKLIST.md](docs/SECURITY_CHECKLIST.md) | Production sign-off checklist: secrets, rate limits, localStorage, audit logging |
+
+---
+
 ## About the Landing Site
 
 `index.html` and `docs.html` are static GitHub Pages files. They serve as the public face of the project and contain real SDK API examples matching the code in this repo.
