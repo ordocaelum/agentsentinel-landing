@@ -12,7 +12,6 @@
 import {
   assertEquals,
   assertMatch,
-  assertNotEquals,
 } from "https://deno.land/std@0.220.1/assert/mod.ts";
 import { createRateLimiter } from "../_shared/rate-limit.ts";
 

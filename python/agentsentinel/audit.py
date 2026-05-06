@@ -17,6 +17,8 @@ Decision = Literal[
     "blocked_budget",
     "blocked_rate_limit",
     "blocked_security",
+    "blocked_pii",
+    "blocked_content",
     "approval_required",
     "approved",
     "error",

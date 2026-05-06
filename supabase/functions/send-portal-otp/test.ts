@@ -8,7 +8,7 @@
  *   deno test supabase/functions/send-portal-otp/test.ts --allow-env
  */
 
-import { assertEquals, assertExists } from "https://deno.land/std@0.220.1/assert/mod.ts";
+import { assertEquals } from "https://deno.land/std@0.220.1/assert/mod.ts";
 
 // ─── Re-implement the rate-limiter locally for isolated testing ───────────────
 // (Mirrors the logic in index.ts so we can test it without importing the
@@ -53,7 +53,7 @@ function checkVerifyRateLimit(
   now = Date.now(),
 ): { allowed: boolean; retryAfterSeconds: number } {
   const windowStart = now - OTP_RATE_LIMIT_WINDOW_MS;
-  let entry = verifyStore.get(email);
+  const entry = verifyStore.get(email);
   if (!entry) return { allowed: true, retryAfterSeconds: 0 };
 
   if (entry.lockedUntil && now < entry.lockedUntil) {
@@ -148,7 +148,7 @@ Deno.test("rate limit is per-email — different emails are independent", () => 
 
 // ─── Enumeration-resistance test ─────────────────────────────────────────────
 
-Deno.test("send-portal-otp returns same shape for existing and non-existing email", async () => {
+Deno.test("send-portal-otp returns same shape for existing and non-existing email", () => {
   // The function always returns { message: "If an account exists, an OTP has been sent." }
   // Whether or not the email is registered.  We simulate both paths here.
   const EXPECTED_MESSAGE = "If an account exists, an OTP has been sent.";

@@ -11,7 +11,6 @@ import argparse
 import os
 import secrets
 import sys
-import time
 from datetime import datetime, timezone
 
 
@@ -56,7 +55,7 @@ def _cmd_validate(args: argparse.Namespace) -> int:
             expiry_str = "N/A"
 
         print(f"Key:        {key}")
-        print(f"Valid:      True")
+        print("Valid:      True")
         print(f"Tier:       {result['tier']}")
         print(f"Expires:    {expiry_str}")
         return 0
@@ -65,13 +64,13 @@ def _cmd_validate(args: argparse.Namespace) -> int:
         # If signing secret is unavailable the offline check cannot run; note it clearly.
         if "Signing secret unavailable" in error:
             print(f"Key:        {key}")
-            print(f"Valid:      Unknown (offline check skipped — signing secret not set)")
+            print("Valid:      Unknown (offline check skipped — signing secret not set)")
             print(
                 "Set AGENTSENTINEL_LICENSE_SIGNING_SECRET to verify HMAC-signed keys offline."
             )
         else:
             print(f"Key:        {key}")
-            print(f"Valid:      False")
+            print("Valid:      False")
             print(f"Error:      {error}")
         return 1
 
@@ -229,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
 
-    return args.func(args)
+    return int(args.func(args))
 
 
 if __name__ == "__main__":

@@ -13,7 +13,7 @@ from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Optional
 
-from .pricing import calculate_cost, get_model_pricing
+from .pricing import calculate_cost
 
 
 @dataclass

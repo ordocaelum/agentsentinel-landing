@@ -143,6 +143,7 @@ class LicenseManager:
 
     _instance: Optional["LicenseManager"] = None
     _lock = threading.Lock()
+    _initialized: bool
 
     def __new__(cls) -> "LicenseManager":
         """Singleton pattern."""

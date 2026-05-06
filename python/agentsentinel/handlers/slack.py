@@ -38,16 +38,14 @@ from __future__ import annotations
 
 import json
 import threading
-import time
 import urllib.error
 import urllib.parse
 import urllib.request
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Optional
 
 from ..approval import ApprovalHandler
 from ..errors import ApprovalRequiredError
-
 
 # ---------------------------------------------------------------------------
 # Configuration
@@ -272,7 +270,7 @@ def _post_approval_message(
         body = json.loads(resp.read())
     if not body.get("ok"):
         raise RuntimeError(f"Slack API error: {body.get('error', 'unknown')}")
-    return body["ts"]
+    return str(body["ts"])
 
 
 # ---------------------------------------------------------------------------

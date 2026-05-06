@@ -8,10 +8,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional
 
-from .pii import PIIScanner, PIIConfig, PIIMatch
+from .pii import PIIConfig, PIIMatch, PIIScanner
 
 
 class InspectionResult(Enum):

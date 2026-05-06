@@ -37,7 +37,7 @@ Usage::
 from __future__ import annotations
 
 import functools
-from typing import Any, Callable, Dict, List, Optional, TypeVar, Union
+from typing import Any, Callable, List, Optional, TypeVar, Union
 
 from ..guard import AgentGuard
 from ..policy import AgentPolicy

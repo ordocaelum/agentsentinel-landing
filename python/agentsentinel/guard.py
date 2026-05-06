@@ -22,12 +22,16 @@ from typing import Any, Callable, Dict, List, Optional
 from .approval import ApprovalHandler, DenyAllApprover
 from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
 from .cost_tracker import CostTracker
-from .errors import BudgetExceededError, ContentInspectionError, ModelBudgetExceededError, PIIDetectedError
+from .errors import (
+    BudgetExceededError,
+    ContentInspectionError,
+    ModelBudgetExceededError,
+    PIIDetectedError,
+)
 from .inspector import ContentInspector, InspectionResult
 from .licensing import (
-    get_license_manager,
-    LicenseError,
     UsageLimitExceededError,
+    get_license_manager,
 )
 from .network import NetworkGuard
 from .policy import AgentPolicy

@@ -110,9 +110,10 @@ import re as _re
 import threading
 import time
 import uuid
-from datetime import datetime as _datetime, timezone as _timezone
+from datetime import datetime as _datetime
+from datetime import timezone as _timezone
 from typing import Any, Dict, List, Optional
-from urllib.parse import urlparse, parse_qs, unquote
+from urllib.parse import parse_qs, unquote, urlparse
 
 # ---------------------------------------------------------------------------
 # Path to the bundled static HTML file
@@ -2181,7 +2182,7 @@ def start_dashboard(
         # Non-blocking (continue running your agent in the same process)
         server = start_dashboard(guard, port=8080, background=True)
     """
-    from agentsentinel.licensing import require_feature, FeatureNotAvailableError
+    from agentsentinel.licensing import FeatureNotAvailableError, require_feature
 
     if _is_dev_mode():
         print(

@@ -27,7 +27,7 @@ function makeSupabaseMock() {
         update: () => noop,
         select: () => noop,
         eq: () => noop,
-        maybeSingle: async () => ({ data: null, error: null }),
+        maybeSingle: () => Promise.resolve({ data: null, error: null }),
         then: (_ok: unknown, _err: unknown) => Promise.resolve(),
       };
       return noop;
@@ -94,7 +94,7 @@ function makeSupabaseMock() {
  * otherwise inserts with status='pending' and returns null (caller should
  * proceed to process).
  */
-async function tryClaimEvent(
+function tryClaimEvent(
   supabase: ReturnType<typeof makeSupabaseMock>,
   eventId: string,
   eventType: string,
@@ -115,9 +115,9 @@ async function tryClaimEvent(
   }
 
   if (insertCount === 0) {
-    return { deduplicated: true };
+    return Promise.resolve({ deduplicated: true });
   }
-  return null;
+  return Promise.resolve(null);
 }
 
 async function markProcessed(

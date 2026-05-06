@@ -7,7 +7,13 @@
 
 from .approval import ApprovalHandler, DenyAllApprover, InMemoryApprover
 from .audit import AuditEvent, AuditLogger, ConsoleAuditSink, InMemoryAuditSink
-from .cost_tracker import CostTracker, CostTrackerConfig, ModelUsage, count_tokens, estimate_tokens_from_response
+from .cost_tracker import (
+    CostTracker,
+    CostTrackerConfig,
+    ModelUsage,
+    count_tokens,
+    estimate_tokens_from_response,
+)
 from .errors import (
     AgentSentinelError,
     ApprovalRequiredError,
@@ -22,11 +28,11 @@ from .errors import (
 from .guard import AgentGuard
 from .inspector import ContentInspector, InspectionReport, InspectionResult, InspectorConfig
 from .licensing import (
+    FeatureNotAvailableError,
     LicenseError,
     LicenseInfo,
     LicenseManager,
     LicenseTier,
-    FeatureNotAvailableError,
     UsageLimitExceededError,
     get_license_info,
     get_license_manager,
