@@ -41,7 +41,6 @@ from typing import Any, Callable, Dict, Optional
 from ..guard import AgentGuard
 from ..policy import AgentPolicy
 
-
 # ---------------------------------------------------------------------------
 # Core guard class
 # ---------------------------------------------------------------------------
