@@ -98,7 +98,7 @@ function tryClaimEvent(
   supabase: ReturnType<typeof makeSupabaseMock>,
   eventId: string,
   eventType: string,
-): { deduplicated: true } | null {
+): Promise<{ deduplicated: true } | null> {
   const { count: insertCount, error: insertError } = supabase.from("webhook_events").insert(
     {
       stripe_event_id: eventId,
@@ -115,9 +115,9 @@ function tryClaimEvent(
   }
 
   if (insertCount === 0) {
-    return { deduplicated: true };
+    return Promise.resolve({ deduplicated: true });
   }
-  return null;
+  return Promise.resolve(null);
 }
 
 async function markProcessed(
