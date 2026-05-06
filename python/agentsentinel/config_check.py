@@ -359,7 +359,7 @@ def run_check(env: Dict[str, str], dev_mode: Optional[bool] = None) -> int:
             else:
                 status = "·  optional"
         elif spec.validator is not None:
-            error = spec.validator(value)  # type: ignore[call-arg]
+            error = spec.validator(value)  # type: ignore[operator]
             if error:
                 status = _colour(False, f"✗  {error[:30]}")
                 failures += 1

@@ -165,7 +165,7 @@ const result = await searchWeb("AI safety best practices");
 
 ## What's Implemented vs Planned
 
-### ✅ Implemented (v0.1.0-preview)
+### ✅ Implemented (v1.2.0)
 
 | Feature | Python | TypeScript |
 |---|---|---|
@@ -183,13 +183,15 @@ const result = await searchWeb("AI safety best practices");
 | Wildcard pattern matching | ✅ | ✅ |
 | Audit event model | ✅ | ✅ |
 
-### 🔜 Planned (v0.2+)
+| Customer dashboard (Mission Control Lite) | ✅ | — |
+| Event streaming from SDK to dashboard | ✅ | — |
+| Onboarding wizard (3-step setup) | ✅ | — |
+| Live monitoring (stats, events, approvals) | ✅ | — |
+| Admin dashboard (web UI) | ✅ | — |
+
+### 🔜 Planned (v1.3+)
 
 - Slack / webhook approval and alert adapters
-- LangChain, AutoGen, and CrewAI first-class adapters
-- Persistent audit sinks (file, database)
-- Dashboard / UI for audit review
-- Token-count-based cost estimation (OpenAI, Anthropic)
 - Daily budget counter reset at midnight UTC
 
 ---

@@ -270,7 +270,7 @@ def _post_approval_message(
         body = json.loads(resp.read())
     if not body.get("ok"):
         raise RuntimeError(f"Slack API error: {body.get('error', 'unknown')}")
-    return body["ts"]
+    return str(body["ts"])
 
 
 # ---------------------------------------------------------------------------

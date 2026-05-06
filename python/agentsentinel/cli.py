@@ -228,7 +228,7 @@ def main(argv: list[str] | None = None) -> int:
         parser.print_help()
         return 0
 
-    return args.func(args)
+    return int(args.func(args))
 
 
 if __name__ == "__main__":

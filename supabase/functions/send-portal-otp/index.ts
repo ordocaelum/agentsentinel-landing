@@ -149,7 +149,7 @@ serve(async (req) => {
     // modulo bias (CodeQL: js/biased-cryptographic-random).
     // The range 100000–999999 has 900000 values; we sample 32-bit random
     // values and reject those that would introduce bias.
-    function generateOtp(): string {
+    const generateOtp = (): string => {
       const range = 900000; // 999999 - 100000 + 1
       // 2^32 = 4294967296; max unbiased value = floor(4294967296 / range) * range - 1
       const maxUnbiased = Math.floor(4294967296 / range) * range;

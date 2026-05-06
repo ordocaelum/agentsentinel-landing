@@ -44,7 +44,7 @@ function checkOtpVerifyRateLimit(email: string): { allowed: boolean; retryAfterS
   const now = Date.now();
   const windowStart = now - OTP_VERIFY_RATE_LIMIT_WINDOW_MS;
 
-  let entry = otpVerifyRateLimitStore.get(email);
+  const entry = otpVerifyRateLimitStore.get(email);
   if (!entry) {
     return { allowed: true, retryAfterSeconds: 0 };
   }
