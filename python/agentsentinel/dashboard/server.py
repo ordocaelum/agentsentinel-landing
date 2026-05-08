@@ -121,6 +121,7 @@ from urllib.parse import parse_qs, unquote, urlparse
 _STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 _INDEX_HTML = os.path.join(_STATIC_DIR, "index.html")
 _ADMIN_DIR = os.path.join(_STATIC_DIR, "admin")
+_CUSTOMER_DIR = os.path.join(_STATIC_DIR, "customer")
 
 _INF = float("inf")
 
@@ -874,6 +875,8 @@ def _make_handler(guard: Any):  # type: ignore[return]
                 self._serve_file_from(_ADMIN_DIR, path[1:])
             elif path.startswith("/svg/"):
                 self._serve_file_from(_ADMIN_DIR, path[1:])
+            elif path.startswith("/static/"):
+                self._serve_file_from(_CUSTOMER_DIR, path[len("/static/"):])
             else:
                 self.send_error(404, "Not Found")
 
