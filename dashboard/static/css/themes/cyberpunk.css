@@ -102,7 +102,7 @@
   box-shadow:   var(--glow-accent), var(--shadow-card);
 }
 
-/* KPI value colours */
+/* KPI value colors */
 [data-theme="cyberpunk"] .stat-card .text-2xl {
   color: var(--text-primary);
 }
@@ -155,7 +155,7 @@
   letter-spacing: 0.08em;
 }
 
-/* Semantic row colours (added by live-dashboard.js) */
+/* Semantic row colors (added by live-dashboard.js) */
 [data-theme="cyberpunk"] .event-allowed   { color: var(--color-success); }
 [data-theme="cyberpunk"] .event-blocked   { color: var(--color-danger);  }
 [data-theme="cyberpunk"] .event-pending   { color: var(--color-warning); }
