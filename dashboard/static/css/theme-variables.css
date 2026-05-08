@@ -1,0 +1,63 @@
+/* ============================================================
+   AgentSentinel — CSS Theme Variables
+   Defines all CSS custom properties consumed by base-styles.css
+   and theme overrides.  The :root block provides neutral defaults;
+   each [data-theme="…"] block in themes/ overrides these tokens.
+   ============================================================ */
+
+:root {
+  /* ── Colour palette ───────────────────────────────────────── */
+  --color-primary:   #0ea5e9;   /* sky-500   */
+  --color-accent:    #6366f1;   /* indigo-500 */
+  --color-success:   #10b981;   /* emerald-500 */
+  --color-warning:   #f59e0b;   /* amber-500  */
+  --color-danger:    #ef4444;   /* red-500    */
+
+  /* ── Backgrounds ──────────────────────────────────────────── */
+  --bg-base:         #050d1a;
+  --bg-surface:      #0f172a;
+  --bg-card:         #1e293b;
+  --bg-card-hover:   #2d3f56;
+  --bg-nav:          rgba(5, 13, 26, 0.92);
+  --bg-overlay:      rgba(15, 23, 42, 0.60);
+
+  /* ── Text ─────────────────────────────────────────────────── */
+  --text-primary:    #f1f5f9;
+  --text-muted:      #94a3b8;
+  --text-subtle:     #64748b;
+  --text-code:       #7dd3fc;
+
+  /* ── Borders ──────────────────────────────────────────────── */
+  --border-base:     rgba(51, 65, 85, 0.60);
+  --border-subtle:   rgba(51, 65, 85, 0.30);
+  --border-focus:    var(--color-primary);
+
+  /* ── Glow / Shadow ────────────────────────────────────────── */
+  --glow-primary:    none;
+  --glow-accent:     none;
+  --glow-success:    none;
+  --shadow-card:     0 1px 3px rgba(0, 0, 0, 0.40);
+
+  /* ── Typography ───────────────────────────────────────────── */
+  --font-sans:       'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:       'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+
+  --font-size-xs:    0.75rem;    /* 12px */
+  --font-size-sm:    0.875rem;   /* 14px */
+  --font-size-base:  1rem;       /* 16px */
+  --font-size-lg:    1.125rem;   /* 18px */
+  --font-size-xl:    1.25rem;    /* 20px */
+  --font-size-2xl:   1.5rem;     /* 24px */
+
+  /* ── Spacing / Radius ─────────────────────────────────────── */
+  --radius-sm:       0.5rem;     /* 8px  */
+  --radius-md:       0.75rem;    /* 12px */
+  --radius-lg:       1rem;       /* 16px */
+  --radius-xl:       1.25rem;    /* 20px */
+  --radius-full:     9999px;
+
+  /* ── Motion ───────────────────────────────────────────────── */
+  --transition-fast: 0.15s ease;
+  --transition-base: 0.30s ease;
+  --transition-slow: 0.50s ease;
+}
