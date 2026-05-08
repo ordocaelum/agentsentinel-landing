@@ -1,0 +1,321 @@
+/* ============================================================
+   AgentSentinel — Cyberpunk Theme
+   Activated via:  <html data-theme="cyberpunk">
+
+   Palette:
+     Primary  #FF006E  – hot pink / magenta
+     Accent   #00F5FF  – electric cyan
+     Success  #00D084  – neon green
+     Warning  #FFB703  – electric orange
+     Danger   #FF4757  – neon red
+     Bg base  #0A0E27  – very dark blue
+     Surface  #1A1F3A  – dark blue
+     Card     #202A45  – slightly lighter blue
+   ============================================================ */
+
+/* ── Token overrides ──────────────────────────────────────── */
+[data-theme="cyberpunk"] {
+  --color-primary:  #FF006E;
+  --color-accent:   #00F5FF;
+  --color-success:  #00D084;
+  --color-warning:  #FFB703;
+  --color-danger:   #FF4757;
+
+  --bg-base:        #0A0E27;
+  --bg-surface:     #1A1F3A;
+  --bg-card:        #202A45;
+  --bg-card-hover:  #263052;
+  --bg-nav:         rgba(10, 14, 39, 0.94);
+  --bg-overlay:     rgba(32, 42, 69, 0.80);
+
+  --text-primary:   #F0F4FF;
+  --text-muted:     #8899BB;
+  --text-subtle:    #5566AA;
+  --text-code:      #00F5FF;
+
+  --border-base:    rgba(0, 245, 255, 0.15);
+  --border-subtle:  rgba(0, 245, 255, 0.08);
+  --border-focus:   #FF006E;
+
+  --glow-primary:   0 0 12px rgba(255,   0, 110, 0.50),
+                    0 0 30px rgba(255,   0, 110, 0.20);
+  --glow-accent:    0 0 12px rgba(  0, 245, 255, 0.50),
+                    0 0 30px rgba(  0, 245, 255, 0.20);
+  --glow-success:   0 0 10px rgba(  0, 208, 132, 0.50);
+  --shadow-card:    0 2px 20px rgba(0, 0, 0, 0.60),
+                    0 0 0 1px rgba(0, 245, 255, 0.08);
+}
+
+/* ── Background ───────────────────────────────────────────── */
+[data-theme="cyberpunk"] .hero-bg {
+  background-color: var(--bg-base);
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 245, 255, 0.018) 2px,
+      rgba(0, 245, 255, 0.018) 4px
+    ),
+    radial-gradient(ellipse 100% 60% at 50% -5%,  rgba(255, 0, 110, 0.12) 0%, transparent 60%),
+    radial-gradient(ellipse 70%  50% at 85%  70%, rgba(0, 245, 255, 0.07) 0%, transparent 55%),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300F5FF' fill-opacity='0.025' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── Navigation ───────────────────────────────────────────── */
+[data-theme="cyberpunk"] nav {
+  background-color:  var(--bg-nav) !important;
+  border-bottom:     1px solid rgba(0, 245, 255, 0.15) !important;
+}
+
+/* Brand wordmark gradient */
+[data-theme="cyberpunk"] nav .font-bold {
+  background:             linear-gradient(90deg, #FF006E 0%, #00F5FF 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip:         text;
+}
+
+/* Nav logo SVG glow */
+[data-theme="cyberpunk"] nav svg path,
+[data-theme="cyberpunk"] nav svg line,
+[data-theme="cyberpunk"] nav svg circle {
+  stroke: var(--color-accent) !important;
+  filter: drop-shadow(0 0 5px var(--color-accent));
+}
+
+/* ── Status pill ──────────────────────────────────────────── */
+[data-theme="cyberpunk"] .pulse-dot {
+  background-color: var(--color-success) !important;
+  box-shadow:       0 0 8px var(--color-success);
+}
+
+/* ── Stat cards ───────────────────────────────────────────── */
+[data-theme="cyberpunk"] .stat-card {
+  background:   var(--bg-card);
+  border-color: rgba(0, 245, 255, 0.15);
+  box-shadow:   var(--shadow-card);
+}
+
+[data-theme="cyberpunk"] .stat-card:hover {
+  border-color: rgba(0, 245, 255, 0.40);
+  box-shadow:   var(--glow-accent), var(--shadow-card);
+}
+
+/* KPI value colors */
+[data-theme="cyberpunk"] .stat-card .text-2xl {
+  color: var(--text-primary);
+}
+
+[data-theme="cyberpunk"] .stat-card .text-yellow-300 {
+  color:       var(--color-warning) !important;
+  text-shadow: 0 0 8px rgba(255, 183, 3, 0.60);
+}
+
+[data-theme="cyberpunk"] .stat-card .text-emerald-400 {
+  color:       var(--color-success) !important;
+  text-shadow: 0 0 8px rgba(0, 208, 132, 0.60);
+}
+
+/* ── Glass cards ──────────────────────────────────────────── */
+[data-theme="cyberpunk"] .glass-card {
+  background:   var(--bg-card);
+  border-color: rgba(0, 245, 255, 0.15);
+  box-shadow:   var(--shadow-card);
+}
+
+[data-theme="cyberpunk"] .glass-card:hover {
+  border-color: rgba(0, 245, 255, 0.35);
+  box-shadow:   var(--glow-accent), var(--shadow-card);
+}
+
+/* Quick-link cards hover: primary glow */
+[data-theme="cyberpunk"] a.glass-card:hover {
+  border-color: rgba(255, 0, 110, 0.45) !important;
+  box-shadow:   var(--glow-primary) !important;
+}
+
+/* ── Budget bar ───────────────────────────────────────────── */
+[data-theme="cyberpunk"] #bar-daily {
+  background: linear-gradient(90deg, var(--color-primary), var(--color-accent)) !important;
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.50);
+}
+
+[data-theme="cyberpunk"] .w-full.h-2.bg-slate-800 {
+  background: rgba(26, 31, 58, 0.80) !important;
+}
+
+/* ── Event table ──────────────────────────────────────────── */
+[data-theme="cyberpunk"] table thead tr {
+  border-bottom-color: rgba(0, 245, 255, 0.12);
+}
+
+[data-theme="cyberpunk"] table thead th {
+  color:          var(--color-accent);
+  letter-spacing: 0.08em;
+}
+
+/* Semantic row colors (added by live-dashboard.js) */
+[data-theme="cyberpunk"] .event-allowed   { color: var(--color-success); }
+[data-theme="cyberpunk"] .event-blocked   { color: var(--color-danger);  }
+[data-theme="cyberpunk"] .event-pending   { color: var(--color-warning); }
+[data-theme="cyberpunk"] .event-error     { color: var(--color-danger);  opacity: 0.75; }
+
+/* ── Buttons ──────────────────────────────────────────────── */
+
+/* Primary / sky CTA */
+[data-theme="cyberpunk"] button.bg-sky-500,
+[data-theme="cyberpunk"] a.bg-sky-500 {
+  background: var(--color-primary) !important;
+  box-shadow: var(--glow-primary);
+  transition: background var(--transition-base), box-shadow var(--transition-base);
+}
+
+[data-theme="cyberpunk"] button.bg-sky-500:hover,
+[data-theme="cyberpunk"] a.bg-sky-500:hover {
+  background: #ff2d7d !important;
+}
+
+/* Accent / indigo CTA (Test Event button) */
+[data-theme="cyberpunk"] button.bg-indigo-600,
+[data-theme="cyberpunk"] a.bg-indigo-600 {
+  background: var(--color-accent) !important;
+  color:      var(--bg-base) !important;
+  box-shadow: var(--glow-accent);
+}
+
+[data-theme="cyberpunk"] button.bg-indigo-600:hover {
+  background: #33f8ff !important;
+}
+
+/* Success / emerald CTA (Start Monitoring) */
+[data-theme="cyberpunk"] button.bg-emerald-600,
+[data-theme="cyberpunk"] a.bg-emerald-600 {
+  background: var(--color-success) !important;
+  box-shadow: var(--glow-success);
+}
+
+[data-theme="cyberpunk"] button.bg-emerald-600:hover {
+  background: #00e890 !important;
+}
+
+/* Outlined back button */
+[data-theme="cyberpunk"] button.border-slate-700 {
+  border-color: rgba(0, 245, 255, 0.25) !important;
+  color:        var(--text-muted) !important;
+  transition:   border-color var(--transition-base), color var(--transition-base);
+}
+
+[data-theme="cyberpunk"] button.border-slate-700:hover {
+  border-color: var(--color-accent) !important;
+  color:        var(--color-accent) !important;
+}
+
+/* ── Onboarding step indicators ───────────────────────────── */
+[data-theme="cyberpunk"] .step-active {
+  background: var(--color-primary);
+  box-shadow: var(--glow-primary);
+  color:      white;
+}
+
+[data-theme="cyberpunk"] .step-done {
+  background: var(--color-success);
+  box-shadow: var(--glow-success);
+  color:      white;
+}
+
+[data-theme="cyberpunk"] .step-todo {
+  background: rgba(32, 42, 69, 0.80);
+  color:      var(--text-muted);
+}
+
+/* ── Language picker ──────────────────────────────────────── */
+[data-theme="cyberpunk"] button[data-lang] {
+  border-color: rgba(0, 245, 255, 0.15);
+  background:   rgba(32, 42, 69, 0.60);
+  color:        var(--text-primary);
+  transition:   border-color var(--transition-base),
+                box-shadow   var(--transition-base),
+                background   var(--transition-base);
+}
+
+[data-theme="cyberpunk"] button[data-lang]:hover {
+  border-color: rgba(0, 245, 255, 0.40);
+  box-shadow:   var(--glow-accent);
+}
+
+[data-theme="cyberpunk"] .lang-active {
+  background:   rgba(255, 0, 110, 0.12) !important;
+  border-color: var(--color-primary) !important;
+  color:        var(--color-primary) !important;
+  box-shadow:   0 0 12px rgba(255, 0, 110, 0.20) !important;
+}
+
+/* ── Code blocks ──────────────────────────────────────────── */
+[data-theme="cyberpunk"] .bg-slate-900 {
+  background:   rgba(10, 14, 39, 0.90) !important;
+  border-color: rgba(0, 245, 255, 0.15) !important;
+}
+
+[data-theme="cyberpunk"] pre,
+[data-theme="cyberpunk"] code {
+  font-family: var(--font-mono);
+  color:       var(--text-code);
+}
+
+[data-theme="cyberpunk"] .text-green-300  { color: var(--color-success) !important; }
+[data-theme="cyberpunk"] .text-sky-200    { color: var(--color-accent)  !important; }
+[data-theme="cyberpunk"] .text-yellow-200 { color: var(--color-warning) !important; }
+
+/* ── Inline test-result area ──────────────────────────────── */
+[data-theme="cyberpunk"] .bg-slate-800\/50 {
+  background:   rgba(26, 31, 58, 0.50) !important;
+  border-color: rgba(0, 245, 255, 0.15) !important;
+}
+
+/* ── Error / alert banners ────────────────────────────────── */
+[data-theme="cyberpunk"] #dash-fatal-error,
+[data-theme="cyberpunk"] #onb-error {
+  background:   rgba(255, 71, 87, 0.12) !important;
+  border-color: rgba(255, 71, 87, 0.40) !important;
+  color:        var(--color-danger) !important;
+}
+
+/* ── Copy button feedback ─────────────────────────────────── */
+[data-theme="cyberpunk"] .copy-btn {
+  color:      var(--text-muted);
+  transition: color var(--transition-fast);
+}
+
+[data-theme="cyberpunk"] .copy-btn:hover  { color: var(--color-accent) !important; }
+[data-theme="cyberpunk"] .copy-btn.copied { color: var(--color-success) !important; }
+
+/* ── Custom scrollbar ─────────────────────────────────────── */
+[data-theme="cyberpunk"] ::-webkit-scrollbar {
+  width:  6px;
+  height: 6px;
+}
+
+[data-theme="cyberpunk"] ::-webkit-scrollbar-track {
+  background: var(--bg-base);
+}
+
+[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb {
+  background:    rgba(0, 245, 255, 0.30);
+  border-radius: 3px;
+}
+
+[data-theme="cyberpunk"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 245, 255, 0.60);
+}
+
+/* ── Focus ring override ──────────────────────────────────── */
+[data-theme="cyberpunk"] :focus-visible {
+  outline-color: var(--color-primary);
+}
+
+/* ── Text selection ───────────────────────────────────────── */
+[data-theme="cyberpunk"] ::selection {
+  background: rgba(255, 0, 110, 0.30);
+  color:      white;
+}

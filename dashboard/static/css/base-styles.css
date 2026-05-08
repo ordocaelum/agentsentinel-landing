@@ -1,0 +1,103 @@
+/* ============================================================
+   AgentSentinel — Base Styles
+   Depends on theme-variables.css being loaded first.
+   Provides resets, typography, layout utilities and shared
+   component patterns used by both main.html and onboarding.html.
+   ============================================================ */
+
+/* ── Reset / Normalise ────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family:              var(--font-sans);
+  font-size:                var(--font-size-base);
+  color:                    var(--text-primary);
+  background-color:         var(--bg-base);
+  line-height:              1.6;
+  -webkit-font-smoothing:   antialiased;
+  -moz-osx-font-smoothing:  grayscale;
+}
+
+pre, code, kbd {
+  font-family: var(--font-mono);
+}
+
+/* ── Background utility ───────────────────────────────────── */
+.hero-bg {
+  background-color: var(--bg-base);
+  background-image:
+    radial-gradient(ellipse 80% 60% at 50% -10%, rgba(37, 99, 235, 0.18) 0%, transparent 70%),
+    url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23334155' fill-opacity='0.08' fill-rule='evenodd'%3E%3Ccircle cx='1' cy='1' r='1'/%3E%3C/g%3E%3C/svg%3E");
+}
+
+/* ── Glass card ───────────────────────────────────────────── */
+.glass-card {
+  background:               var(--bg-overlay);
+  backdrop-filter:          blur(12px);
+  -webkit-backdrop-filter:  blur(12px);
+  border:                   1px solid var(--border-base);
+  border-radius:            var(--radius-lg);
+  transition:               border-color var(--transition-base),
+                            box-shadow   var(--transition-base);
+}
+
+/* ── Stat card ────────────────────────────────────────────── */
+.stat-card {
+  background:    rgba(15, 23, 42, 0.70);
+  border:        1px solid var(--border-base);
+  border-radius: var(--radius-lg);
+  padding:       1.5rem;
+  transition:    border-color var(--transition-base),
+                 box-shadow   var(--transition-base);
+}
+
+/* ── Progress bar ─────────────────────────────────────────── */
+.progress-bar { transition: width 0.6s ease; }
+
+/* ── Animated status dot ──────────────────────────────────── */
+@keyframes as-pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+.pulse-dot { animation: as-pulse-dot 1.5s ease-in-out infinite; }
+
+/* ── Spinner ──────────────────────────────────────────────── */
+@keyframes as-spin { to { transform: rotate(360deg); } }
+.spinner {
+  width:            18px;
+  height:           18px;
+  border:           2px solid rgba(255, 255, 255, 0.20);
+  border-top-color: var(--color-primary);
+  border-radius:    50%;
+  animation:        as-spin 0.7s linear infinite;
+  display:          inline-block;
+}
+
+/* ── Onboarding step indicators ───────────────────────────── */
+.step-active { background: var(--color-primary);              color: white; }
+.step-done   { background: var(--color-success);              color: white; }
+.step-todo   { background: rgba(51, 65, 85, 0.80);            color: var(--text-muted); }
+
+/* ── Language picker active state ─────────────────────────── */
+.lang-active {
+  background:   rgba(14, 165, 233, 0.15) !important;
+  border-color: var(--color-primary) !important;
+  color:        var(--color-primary) !important;
+}
+
+/* ── Copy button ──────────────────────────────────────────── */
+.copy-btn.copied { color: var(--color-success) !important; }
+
+/* ── Focus ring (accessibility) ───────────────────────────── */
+:focus-visible {
+  outline:        2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* ── Text selection ───────────────────────────────────────── */
+::selection {
+  background: rgba(14, 165, 233, 0.30);
+  color:      white;
+}
